@@ -1,3 +1,13 @@
-from django.test import TestCase
+from django.urls import reverse
+from rest_framework.test import APITestCase
+from rest_framework import status
 
-# Create your tests here.
+class HelloWorldTest(APITestCase):
+    def test_hello_world(self):
+        """
+        Тест для перевірки, що API 'hello_world' повертає коректну відповідь.
+        """
+        url = reverse('hello_world')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {"message": "Hello, World!"})
