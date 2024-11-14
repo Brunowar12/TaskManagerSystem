@@ -1,0 +1,175 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Plan My Day</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Open+Sans:400,300"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    />
+    <link rel="stylesheet" href="{% static 'auth/css/style.css' %}" />
+    <link rel="stylesheet" href="{% static 'auth/css/notifications.css' %}" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header>
+      <div class="header-container">
+        <img
+          src="{% static 'auth/img/logo.png' %}"
+          alt="Plan My Day"
+          class="logo"
+        />
+        <h1>PLAN MY DAY</h1>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+      <!-- Authorization box -->
+      <div class="auth-box">
+        <h2>PLAN MY DAY</h2>
+        <p>Authorization</p>
+
+        <!-- Лейбл з ім'ям користувача (показується, якщо авторизований) -->
+        <div class="user-label" id="userLabel" style="display: none">
+          <label>
+            <img
+              src="{% static 'auth/img/success.svg' %}"
+              alt="Success Icon"
+              style="margin-right: 8px"
+            />
+            <span id="usernameDisplay"></span>
+          </label>
+        </div>
+
+        <!-- Поля для входу (показуються, якщо користувач не авторизований) -->
+        <div class="input-fields">
+          <div class="form-group-auth">
+            <label for="login-email">Email</label>
+            <div class="input-wrapper">
+              <input
+                type="email"
+                id="login-email"
+                placeholder="Enter your email address"
+              />
+              <i class="material-icons input-icon">alternate_email</i>
+            </div>
+          </div>
+
+          <div class="form-group-auth">
+            <label for="login-password">Password</label>
+            <div class="input-wrapper">
+              <input
+                type="password"
+                id="login-password"
+                placeholder="Enter your password"
+              />
+              <i
+                class="material-icons input-icon"
+                onclick="togglePassword('login-password')"
+                >lock</i
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Кнопки -->
+        <button class="login-button">LOGIN</button>
+
+        <!-- Кнопка Welcome, яка відправляє на сайт (видима тільки після авторизації) -->
+        <button id="welcomeButton" style="display: none; margin-top: 10px">
+          Welcome
+        </button>
+
+        <button
+          id="changeAccountBtn"
+          style="
+            background-color: white;
+            color: #000;
+            border-radius: 5px;
+            width: 100%;
+            display: none;
+          "
+        >
+          Change account
+        </button>
+      </div>
+    </div>
+
+    <!-- Updated New User Registration Form -->
+    <div class="form-container">
+      <h4>New User Registration</h4>
+      <form id="registerForm">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="email">Email</label>
+          <div class="input-wrapper">
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="Enter your email address"
+              required
+            />
+            <i class="material-icons input-icon">alternate_email</i>
+          </div>
+        </div>
+
+        <hr class="form-separator" />
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Create and enter your password"
+              required
+            />
+            <i
+              class="material-icons input-icon"
+              onclick="togglePassword('password')"
+              >lock</i
+            >
+          </div>
+        </div>
+
+        <!-- Line -->
+        <hr class="space_password" />
+
+        <div class="form-group">
+          <label for="confirm_password">Confirm Password</label>
+          <div class="input-wrapper">
+            <input
+              type="password"
+              id="confirm_password"
+              placeholder="Enter created password"
+            />
+            <i
+              class="material-icons input-icon"
+              onclick="togglePassword('confirm_password')"
+              >lock</i
+            >
+          </div>
+        </div>
+
+        <hr class="form-separator" />
+
+        <button type="submit" class="create-account-button">
+          Create account
+        </button>
+      </form>
+    </div>
+
+    <script src="{% static 'auth/js/script.js' %}" defer></script>
+    <script src="{% static 'auth/js/controllers/login.js' %}" defer></script>
+    <script src="{% static 'auth/js/controllers/register.js' %}" defer></script>
+    <script src="{% static 'auth/js/notifications.js' %}" defer></script>
+  </body>
+</html>

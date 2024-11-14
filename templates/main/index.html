@@ -1,0 +1,312 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plan My Day</title>
+    <link rel="stylesheet" href="{% static 'main/css/style.css' %}" />
+    <link rel="stylesheet" href="{% static 'main/css/calendar.css' %}" />
+    <link rel="stylesheet" href="{% static 'main/css/task-style.css' %}" />
+    <link rel="stylesheet" href="{% static 'main/css/pop-up.css' %}" />
+    <link rel="stylesheet" href="{% static 'main/css/button.css' %}" />
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.5.1/moment.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-space">
+          <div class="header-container" id="toggle-sidebar">
+            <img
+              src="{% static 'main/img/logo.png' %}"
+              alt="Logo"
+              class="logo-image"
+            />
+            <div class="logo-text">Plan My Day</div>
+          </div>
+          <div class="separator"></div>
+          <!-- Calendar -->
+          <div class="sidebar-item">
+            <span class="sidebar-item-icon">&#128197;</span>
+            <!-- Иконка календаря -->
+            <div class="calendar sidebar-item-text">
+              <div id="calendar"></div>
+              <div class="separator-calendar"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-space">
+          <div class="categories">
+            <div class="categories-header">
+              <h3>My Calendar Categories</h3>
+              <button class="add-category-btn" onclick="addCategory()">
+                +
+              </button>
+            </div>
+            <div class="category-list">
+              <!-- Здесь будут динамически добавляться категории -->
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Header Section -->
+        <header class="header-main">
+          <div class="header-right">
+            <img
+              src="{% static 'main/img/gordon.jpeg' %}"
+              alt="User Avatar"
+              class="user-avatar"
+            />
+            <a href="user.html" style="text-decoration: none; color: black"></a>
+          </div>
+        </header>
+
+        <!-- Title Section -->
+        <section class="title-section">
+          <div class="title-left">
+            <h1>My Day</h1>
+            <p
+              id="date"
+              style="color: #fff; margin-top: 10px; font-weight: 600"
+            ></p>
+          </div>
+          <div class="title-right">
+            <button class="raise" onclick="openPopup()">Add Task</button>
+          </div>
+        </section>
+
+        <!-- Task Section -->
+        <section id="task-section" class="task-section">
+          <div class="task-list">
+            <div class="task low-priority toggle-details">
+              <!-- Индикатор приоритета в виде левой обводки -->
+
+              <!-- Чекбокс выполнения задачи -->
+              <input type="checkbox" id="task-1" class="task-checkbox" />
+
+              <!-- Основное содержимое задачи -->
+              <div class="task-content">
+                <div class="task-collapsed">
+                  <span class="task-title"
+                    >Completion of Programming Coursework</span
+                  >
+                  <div class="task-meta">
+                    <span class="task-date">End: 12 May 2023</span>
+                    <span class="task-category">Category: Work</span>
+                  </div>
+                </div>
+
+                <!-- Полное отображение задачи -->
+                <div class="task-expanded">
+                  <span class="task-title"
+                    >Completion of Programming Coursework</span
+                  >
+                  <p class="task-description">
+                    This is a detailed description of the task, explaining what
+                    needs to be done and by when.
+                  </p>
+                  <div class="task-meta">
+                    <span>Created: 01 April 2023</span>
+                    <span>End: 12 May 2023</span>
+                    <span>Category: Work</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Значки -->
+              <span class="task-star">&#9734;</span>
+              <span class="task-delete">&#128465;</span>
+            </div>
+          </div>
+          <div class="task-list">
+            <div class="task low-priority toggle-details">
+              <!-- Индикатор приоритета в виде левой обводки -->
+
+              <!-- Чекбокс выполнения задачи -->
+              <input type="checkbox" id="task-1" class="task-checkbox" />
+
+              <!-- Основное содержимое задачи -->
+              <div class="task-content">
+                <div class="task-collapsed">
+                  <span class="task-title"
+                    >Completion of Programming Coursework</span
+                  >
+                  <div class="task-meta">
+                    <span class="task-date">End: 12 May 2023</span>
+                    <span class="task-category">Category: Work</span>
+                  </div>
+                </div>
+
+                <!-- Полное отображение задачи -->
+                <div class="task-expanded">
+                  <span class="task-title"
+                    >Completion of Programming Coursework</span
+                  >
+                  <p class="task-description">
+                    This is a detailed description of the task, explaining what
+                    needs to be done and by when.
+                  </p>
+                  <div class="task-meta">
+                    <span>Created: 01 April 2023</span>
+                    <span>End: 12 May 2023</span>
+                    <span>Category: Work</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Значки -->
+              <span class="task-star">&#9734;</span>
+              <span class="task-delete">&#128465;</span>
+            </div>
+          </div>
+          <div class="task-list">
+            <div class="task low-priority toggle-details">
+              <!-- Индикатор приоритета в виде левой обводки -->
+
+              <!-- Чекбокс выполнения задачи -->
+              <input type="checkbox" id="task-1" class="task-checkbox" />
+
+              <!-- Основное содержимое задачи -->
+              <div class="task-content">
+                <div class="task-collapsed">
+                  <span class="task-title"
+                    >Completion of Programming Coursework</span
+                  >
+                  <div class="task-meta">
+                    <span class="task-date">End: 12 May 2023</span>
+                    <span class="task-category">Category: Work</span>
+                  </div>
+                </div>
+
+                <!-- Полное отображение задачи -->
+                <div class="task-expanded">
+                  <span class="task-title"
+                    >Completion of Programming Coursework</span
+                  >
+                  <p class="task-description">
+                    This is a detailed description of the task, explaining what
+                    needs to be done and by when.
+                  </p>
+                  <div class="task-meta">
+                    <span>Created: 01 April 2023</span>
+                    <span>End: 12 May 2023</span>
+                    <span>Category: Work</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Значки -->
+              <span class="task-star">&#9734;</span>
+              <span class="task-delete">&#128465;</span>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Попап для добавления задачи -->
+    <div id="addTaskPopup" class="popup-overlay">
+      <div class="popup-content wide">
+        <span class="close-btn" onclick="closePopup()">&times;</span>
+        <h2>Add New Task</h2>
+        <form id="addTaskForm">
+          <!-- Название задачи -->
+          <div class="form-group">
+            <label for="task-title">Task Title</label>
+            <div class="input-container">
+              <span class="icon">&#128196;</span>
+              <input
+                type="text"
+                id="task-title"
+                class="input-field"
+                placeholder="Enter task title"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Описание задачи -->
+          <div class="form-group">
+            <label for="task-description">Description</label>
+            <div class="input-container">
+              <span class="icon icon-top">&#128221;</span>
+              <textarea
+                id="task-description"
+                class="input-field"
+                placeholder="Add a description"
+                rows="2"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Дата и время окончания -->
+          <div class="form-group">
+            <label for="task-end-date">End Date and Time</label>
+            <div class="input-container">
+              <span class="icon">&#128197;</span>
+              <input
+                type="date"
+                id="task-end-date"
+                class="input-field"
+                required
+              />
+              <input
+                type="time"
+                id="task-end-time"
+                class="input-field"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Поле для выбора категории -->
+          <div class="form-group">
+            <label for="task-category">Category</label>
+            <div class="input-container">
+              <span class="icon">&#128198;</span>
+              <select id="task-category" class="input-field">
+                <option value="work">Work</option>
+                <option value="personal">Personal</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Поле для выбора приоритета -->
+          <div class="form-group">
+            <label for="task-priority">Priority</label>
+            <div class="input-container">
+              <span class="icon">&#128293;</span>
+              <select id="task-priority" class="input-field">
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Кнопки сохранения и отмены -->
+          <div class="popup-buttons">
+            <button type="button" onclick="closePopup()">Cancel</button>
+            <button type="submit">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="{% static 'main/js/script.js' %}"></script>
+    <script src="{% static 'main/js/calendar.js' %}"></script>
+    <script src="{% static 'main/js/add-category.js' %}"></script>
+    <script src="{% static 'main/js/task-toggle.js' %}"></script>
+    <script src="{% static 'main/js/pop-up.js' %}"></script>
+    <script
+      src="{% static 'main/js/controllers/authStatus.js' %}"
+      defer
+    ></script>
+  </body>
+</html>

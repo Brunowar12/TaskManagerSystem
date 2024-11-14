@@ -1,0 +1,63 @@
+<!-- Updated New User Registration Form -->
+<div class="form-container">
+  <h4>New User Registration</h4>
+  <form id="registerForm">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="email">Email</label>
+      <div class="input-wrapper">
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="Enter your email address"
+          required
+        />
+        <i class="material-icons input-icon">alternate_email</i>
+      </div>
+    </div>
+
+    <hr class="form-separator" />
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <div class="input-wrapper">
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Create and enter your password"
+          required
+        />
+        <i
+          class="material-icons input-icon"
+          onclick="togglePassword('password')"
+          >lock</i
+        >
+      </div>
+    </div>
+
+    <!-- Line -->
+    <hr class="space_password" />
+
+    <div class="form-group">
+      <label for="confirm_password">Confirm Password</label>
+      <div class="input-wrapper">
+        <input
+          type="password"
+          id="confirm_password"
+          placeholder="Enter created password"
+        />
+        <i
+          class="material-icons input-icon"
+          onclick="togglePassword('confirm_password')"
+          >lock</i
+        >
+      </div>
+    </div>
+
+    <hr class="form-separator" />
+
+    <button type="submit" class="create-account-button">Create account</button>
+  </form>
+</div>

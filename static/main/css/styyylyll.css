@@ -1,0 +1,199 @@
+/* Task Section */
+.task-section {
+  background-color: #f0f0f0;
+  margin: 0px 0px 0px 20px;
+  padding: 20px;
+  border-radius: 8px;
+  flex-grow: 1;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.task input[type='checkbox'] {
+  margin-right: 10px;
+}
+
+.task label {
+  flex-grow: 1;
+  color: #333;
+}
+
+.task-star {
+  color: #ffb400;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* Стили для секции задач */
+.task-section {
+  background-color: #3b3f58;
+  padding: 20px;
+  border-radius: 8px;
+  color: #ffffff;
+}
+
+/* Основные стили для задачи */
+.task {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: #4c4f69;
+  padding: 15px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  color: #ffffff;
+  transition: background-color 0.3s;
+}
+
+.task:hover {
+  background-color: #616482;
+}
+
+/* Индикатор приоритета слева от чекбокса */
+.priority-icon {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 10px;
+  border-radius: 50%;
+  background-color: #ff4c4c; /* Красный для высокого приоритета по умолчанию */
+  transition: background-color 0.3s;
+}
+
+/* Индикатор приоритета в виде левой обводки */
+.high-priority {
+  border-left: 4px solid #ff4c4c; /* Красный цвет для высокого приоритета */
+}
+
+.medium-priority {
+  border-left: 4px solid #ffa500; /* Оранжевый цвет для среднего приоритета */
+}
+
+.low-priority {
+  border-left: 4px solid #32cd32; /* Зеленый цвет для низкого приоритета */
+}
+
+/* Чекбокс */
+.task-checkbox {
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  margin-right: 10px;
+  border: 2px solid #9417e1;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  transition: background-color 0.3s;
+}
+
+.task-checkbox:checked {
+  background-color: #9417e1;
+  border-color: #9417e1;
+}
+
+.task-checkbox:checked::after {
+  content: '✔';
+  font-size: 14px;
+  color: #ffffff;
+  position: absolute;
+}
+.task-checkbox:checked + .task-content .task-title {
+  color: #bbb;
+  text-decoration: line-through;
+  font-style: italic;
+  transition: color 0.3s;
+}
+
+/* Основное содержимое задачи */
+.task-content {
+  flex-grow: 1;
+}
+
+/* Свернутое состояние */
+.task-collapsed {
+  display: flex;
+  flex-direction: column;
+}
+
+.task-collapsed .task-title {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.task-meta {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  font-size: 14px;
+  color: #bbbbbb;
+  margin-top: 3px;
+}
+
+/* Раскрытое состояние */
+.task-expanded {
+  display: none;
+  flex-direction: column;
+}
+
+.task.details-visible .task-collapsed {
+  display: none;
+}
+
+.task.details-visible .task-expanded {
+  display: flex;
+}
+
+.task-title {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.task-description {
+  font-size: 14px;
+  color: #d1d1e0;
+}
+
+/* Звездочка для избранного */
+.task-star {
+  font-size: 35px; /* Увеличенный размер звездочки */
+  color: #ffffff;
+  cursor: pointer;
+  margin-left: auto; /* Перемещение звездочки вправо */
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.task-star.active {
+  color: #ffd700; /* Желтая звезда для активного состояния */
+  transform: scale(1.1); /* Небольшое увеличение */
+}
+
+.task-delete {
+  font-size: 30px;
+  color: #ffffff;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.task-delete:hover {
+  color: #ff4c4c; /* Красный цвет при наведении для визуального акцента */
+  transform: scale(1.1); /* Небольшое увеличение */
+}

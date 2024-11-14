@@ -1,0 +1,392 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(to right, #b993d6, #8ca6db);
+  overflow: hidden;
+}
+
+.container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.sidebar {
+  width: 350px;
+  background-color: #5b2c82;
+  color: #fff;
+  transition: width 0.3s ease, transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Стили для свернутого состояния */
+.sidebar.collapsed {
+  width: 75px;
+}
+
+.sidebar.collapsed .logo-text,
+.sidebar.collapsed .calendar,
+.sidebar.collapsed .categories,
+.sidebar.collapsed .separator {
+  display: none; /* Полностью скрыть текст, календарь, категории и разделитель */
+}
+
+/* Отображение только иконок при свёрнутой панели */
+.sidebar.collapsed .sidebar-item-icon {
+  display: block; /* Показать иконки */
+}
+
+.sidebar .sidebar-item-icon {
+  display: none; /* Скрыть иконки в полном состоянии */
+  font-size: 24px;
+  margin: 15px auto;
+  color: #ffffff;
+}
+
+/* Дополнительно можно настроить расположение иконок для центрирования */
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-space {
+  padding: 0px 20px 0px 20px;
+  overflow: hidden; /* Прокрутка будет только внутри .category-list */
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 0px;
+  cursor: pointer;
+}
+
+.logo-image {
+  width: 75px;
+  height: 75px;
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.username a {
+  text-decoration: none;
+}
+
+.logo-text {
+  font-size: 24px;
+  color: #ffffff;
+  font-weight: bold;
+  transition: opacity 0.3s ease;
+}
+
+.menu-tabs {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.menu-tab {
+  flex: 1;
+  background-color: #5b2c82;
+  color: #ffffff;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  text-align: left;
+}
+
+.tab {
+  flex: 1;
+  background-color: #5b2c82;
+  color: #ffffff;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  text-align: center;
+}
+
+.tab:hover {
+  background-color: #764ba2;
+}
+
+.menu-content {
+  margin-top: 10px;
+  background-color: #5b2c82;
+  padding: 10px;
+  color: #ffffff;
+  border-radius: 4px;
+}
+.menu div {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #764ba2;
+}
+
+.menu-content div {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #764ba2;
+}
+
+.menu-content div:last-child {
+  border-bottom: none;
+}
+
+.menu-content div:hover {
+  background-color: #764ba2;
+}
+
+.vertical-separator {
+  width: 2px;
+  background-color: #764ba2;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #5b2c82;
+  overflow-y: auto;
+}
+
+.category-list {
+  max-height: 300px; /* Установите максимальную высоту для прокрутки */
+  overflow-y: auto; /* Включите прокрутку внутри категории */
+  padding-right: 10px;
+  margin-top: 10px;
+}
+
+.header-main {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  background-color: #5b2c82;
+  padding: 15px;
+  color: #fff;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+}
+
+.logout-icon {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  margin-left: 10px; /* Отступ между именем и иконкой */
+}
+
+.logout-icon:hover {
+  color: #ff5555; /* Цвет при наведении */
+}
+
+/* Separator Line */
+.separator {
+  height: 2px;
+  background-color: #764ba2;
+  margin: 10px 0;
+}
+/* Title Section */
+.title-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0px 50px 0px 50px;
+  margin-bottom: 20px;
+}
+
+.p #date {
+  color: #fff;
+}
+
+.title-left h1 {
+  font-size: 24px;
+  color: #fff;
+}
+
+.title-left p {
+  font-size: 14px;
+  color: #333;
+}
+
+.add-task-btn {
+  background: linear-gradient(135deg, #7c4dff, #651fff);
+  color: #ffffff;
+  padding: 10px 15px;
+  font-size: 14px;
+  font-weight: bold;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.add-task-btn:hover {
+  background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+  box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.add-task-btn:active {
+  background: linear-gradient(135deg, #7c4dff, #651fff);
+  box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.2);
+  transform: translateY(1px);
+}
+
+.add-task-btn .material-icons {
+  font-size: 20px;
+}
+
+.settings-btn {
+  background-color: #5b2c82;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  font-size: 18px;
+  margin-left: 10px;
+}
+
+/* Categories section under calendar with custom color checkboxes */
+.categories {
+  padding: 20px 0;
+}
+
+.categories h3 {
+  color: #ffffff;
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
+.category {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Расстояние между чекбоксом и текстом */
+  padding: 8px 0;
+}
+
+.color-checkbox {
+  margin-right: 10px;
+  appearance: none;
+  width: 24px; /* Увеличенный размер чекбокса */
+  height: 24px;
+  border-radius: 4px;
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+}
+
+.color-checkbox:checked::before {
+  content: '✔';
+  font-size: 16px; /* Увеличенный размер галочки */
+  color: #fff;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.category label {
+  margin-right: auto;
+  color: #ffffff;
+  font-size: 18px; /* Увеличенный размер текста */
+  cursor: pointer;
+}
+
+.categories-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0px 0px 20px 0px;
+}
+
+.categories-header h3 {
+  margin: 0px 0px 0px 0px;
+}
+
+.add-category-btn {
+  background: none;
+  border: none;
+  color: #ff5d5d;
+  font-size: 30px;
+  cursor: pointer;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+}
+
+.delete-category-btn {
+  background: none;
+  border: none;
+  color: #ff5d5d;
+  font-size: 20px;
+  cursor: pointer;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+}
+
+.delete-category-btn:hover {
+  color: #ff9999;
+}
+
+.category-input {
+  flex-grow: 1;
+  border: none; /* Убираем рамку */
+  background: transparent; /* Убираем белый фон */
+  color: #ffffff; /* Цвет текста */
+  font-size: 18px;
+  outline: none; /* Убираем обводку при фокусе */
+}
+
+/* Стилизация полосы прокрутки */
+.category-list::-webkit-scrollbar {
+  width: 8px; /* Ширина полосы прокрутки */
+}
+
+.category-list::-webkit-scrollbar-track {
+  background: #5b2c82; /* Цвет фона трека прокрутки */
+  border-radius: 10px;
+}
+
+.category-list::-webkit-scrollbar-thumb {
+  background-color: #764ba2; /* Цвет самой полосы прокрутки */
+  border-radius: 10px;
+  border: 2px solid #5b2c82; /* Добавляет отступ вокруг полосы прокрутки, чтобы она казалась тоньше */
+}
+
+.category-list::-webkit-scrollbar-thumb:hover {
+  background-color: #9e80c1; /* Цвет полосы прокрутки при наведении */
+}

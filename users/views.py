@@ -1,4 +1,4 @@
-# from django.shortcuts import render
+from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -24,3 +24,6 @@ class UpdateProfileView(generics.UpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+def auth_page(request):
+    return render(request, 'auth/index.html')
