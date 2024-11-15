@@ -11,7 +11,6 @@ class TaskCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        # При створенні задачі автоматично додаємо поточного користувача
         serializer.save(user=self.request.user)
 
 # Список задач
@@ -22,8 +21,7 @@ class TaskListView(generics.ListAPIView):
     filterset_fields = ['is_favorite']
 
     def get_queryset(self):
-        # return Task.objects.filter(user=self.request.user)
-        return Task.objects.select_related('user').prefetch_related('category').all()
+        return Task.objects.filter(user=self.request.user)
 
 # Деталі задачі, оновлення та видалення
 class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -32,7 +30,6 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Дозволяємо доступ лише до завдань поточного користувача
         return Task.objects.filter(user=self.request.user)
     
     @action(detail=True, methods=['post'])
