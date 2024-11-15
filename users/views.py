@@ -1,8 +1,13 @@
 from django.shortcuts import render
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserUpdateSerializer, UserProfileSerializer
+from .serializers import (
+    UserRegistrationSerializer,
+    UserLoginSerializer,
+    UserUpdateSerializer,
+    UserProfileSerializer
+)
 from django.contrib.auth import authenticate
 
 class RegisterView(generics.CreateAPIView):
@@ -26,4 +31,4 @@ class UpdateProfileView(generics.UpdateAPIView):
         return self.request.user
 
 def auth_page(request):
-    return render(request, 'auth/index.html')
+    return render(request, "auth/index.html")
