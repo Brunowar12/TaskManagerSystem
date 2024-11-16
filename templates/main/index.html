@@ -125,6 +125,17 @@
             </div>
           </div>
 
+          <!-- Category -->
+          <div class="form-group">
+            <label for="task-category">Category</label>
+            <div class="input-container">
+              <span class="icon">&#128203;</span>
+              <select id="category-task" class="input-field" name="category">
+                <!-- Здесь категории будут динамически добавляться через JavaScript -->
+              </select>
+            </div>
+          </div>
+
           <!-- End Date and Time -->
           <div class="form-group">
             <label for="task-end-date">End Date</label>
@@ -172,18 +183,14 @@
 
     <script src="{% static 'main/js/script.js' %}"></script>
     <script src="{% static 'main/js/calendar.js' %}"></script>
-    <script src="{% static 'main/js/add-category.js' %}"></script>
-    <script src="{% static 'main/js/task-toggle.js' %}"></script>
     <script src="{% static 'main/js/pop-up.js' %}"></script>
+
+    <!-- Controllers -->
     <script
       src="{% static 'main/js/controllers/authStatus.js' %}"
       defer
     ></script>
     <script src="{% static 'main/js/controllers/tasks.js' %}" defer></script>
-    <script
-      src="{% static 'main/js/controllers/taskcreate.js' %}"
-      defer
-    ></script>
     <script
       src="{% static 'main/js/controllers/taskEvents.js' %}"
       defer
@@ -193,7 +200,7 @@
       defer
     ></script>
     <script
-      src="{% static 'main/js/controllers/createcategory.js' %}"
+      src="{% static 'main/js/controllers/categories.js' %}"
       defer
     ></script>
   </body>

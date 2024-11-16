@@ -22,7 +22,8 @@ async function deleteTask(taskId) {
     const response = await fetch(`/tasks/${taskId}/`, {
       method: 'DELETE',
       headers: {
-        'X-CSRFToken': csrftoken,
+        Authorization: `Bearer ${accessToken}`,
+        'X-CSRFToken': getCookie('csrftoken'),
       },
     })
 
