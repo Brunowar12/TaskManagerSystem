@@ -83,127 +83,7 @@
         <!-- Task Section -->
         <section id="task-section" class="task-section">
           <div class="task-list">
-            <div class="task low-priority toggle-details">
-              <!-- Индикатор приоритета в виде левой обводки -->
-
-              <!-- Чекбокс выполнения задачи -->
-              <input type="checkbox" id="task-1" class="task-checkbox" />
-
-              <!-- Основное содержимое задачи -->
-              <div class="task-content">
-                <div class="task-collapsed">
-                  <span class="task-title"
-                    >Completion of Programming Coursework</span
-                  >
-                  <div class="task-meta">
-                    <span class="task-date">End: 12 May 2023</span>
-                    <span class="task-category">Category: Work</span>
-                  </div>
-                </div>
-
-                <!-- Полное отображение задачи -->
-                <div class="task-expanded">
-                  <span class="task-title"
-                    >Completion of Programming Coursework</span
-                  >
-                  <p class="task-description">
-                    This is a detailed description of the task, explaining what
-                    needs to be done and by when.
-                  </p>
-                  <div class="task-meta">
-                    <span>Created: 01 April 2023</span>
-                    <span>End: 12 May 2023</span>
-                    <span>Category: Work</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Значки -->
-              <span class="task-star">&#9734;</span>
-              <span class="task-delete">&#128465;</span>
-            </div>
-          </div>
-          <div class="task-list">
-            <div class="task low-priority toggle-details">
-              <!-- Индикатор приоритета в виде левой обводки -->
-
-              <!-- Чекбокс выполнения задачи -->
-              <input type="checkbox" id="task-1" class="task-checkbox" />
-
-              <!-- Основное содержимое задачи -->
-              <div class="task-content">
-                <div class="task-collapsed">
-                  <span class="task-title"
-                    >Completion of Programming Coursework</span
-                  >
-                  <div class="task-meta">
-                    <span class="task-date">End: 12 May 2023</span>
-                    <span class="task-category">Category: Work</span>
-                  </div>
-                </div>
-
-                <!-- Полное отображение задачи -->
-                <div class="task-expanded">
-                  <span class="task-title"
-                    >Completion of Programming Coursework</span
-                  >
-                  <p class="task-description">
-                    This is a detailed description of the task, explaining what
-                    needs to be done and by when.
-                  </p>
-                  <div class="task-meta">
-                    <span>Created: 01 April 2023</span>
-                    <span>End: 12 May 2023</span>
-                    <span>Category: Work</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Значки -->
-              <span class="task-star">&#9734;</span>
-              <span class="task-delete">&#128465;</span>
-            </div>
-          </div>
-          <div class="task-list">
-            <div class="task low-priority toggle-details">
-              <!-- Индикатор приоритета в виде левой обводки -->
-
-              <!-- Чекбокс выполнения задачи -->
-              <input type="checkbox" id="task-1" class="task-checkbox" />
-
-              <!-- Основное содержимое задачи -->
-              <div class="task-content">
-                <div class="task-collapsed">
-                  <span class="task-title"
-                    >Completion of Programming Coursework</span
-                  >
-                  <div class="task-meta">
-                    <span class="task-date">End: 12 May 2023</span>
-                    <span class="task-category">Category: Work</span>
-                  </div>
-                </div>
-
-                <!-- Полное отображение задачи -->
-                <div class="task-expanded">
-                  <span class="task-title"
-                    >Completion of Programming Coursework</span
-                  >
-                  <p class="task-description">
-                    This is a detailed description of the task, explaining what
-                    needs to be done and by when.
-                  </p>
-                  <div class="task-meta">
-                    <span>Created: 01 April 2023</span>
-                    <span>End: 12 May 2023</span>
-                    <span>Category: Work</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Значки -->
-              <span class="task-star">&#9734;</span>
-              <span class="task-delete">&#128465;</span>
-            </div>
+            <!-- Tasks -->
           </div>
         </section>
       </main>
@@ -215,7 +95,8 @@
         <span class="close-btn" onclick="closePopup()">&times;</span>
         <h2>Add New Task</h2>
         <form id="addTaskForm">
-          <!-- Название задачи -->
+          <!-- Task Title -->
+
           <div class="form-group">
             <label for="task-title">Task Title</label>
             <div class="input-container">
@@ -223,6 +104,7 @@
               <input
                 type="text"
                 id="task-title"
+                name="title"
                 class="input-field"
                 placeholder="Enter task title"
                 required
@@ -230,67 +112,67 @@
             </div>
           </div>
 
-          <!-- Описание задачи -->
+          <!-- Task Description -->
           <div class="form-group">
             <label for="task-description">Description</label>
             <div class="input-container">
               <span class="icon icon-top">&#128221;</span>
               <textarea
                 id="task-description"
-                class="input-field"
+                name="description"
                 placeholder="Add a description"
-                rows="2"
               ></textarea>
             </div>
           </div>
 
-          <!-- Дата и время окончания -->
+          <!-- Category -->
           <div class="form-group">
-            <label for="task-end-date">End Date and Time</label>
+            <label for="task-category">Category</label>
+            <div class="input-container">
+              <span class="icon">&#128203;</span>
+              <select id="category-task" class="input-field" name="category">
+                <!-- Здесь категории будут динамически добавляться через JavaScript -->
+              </select>
+            </div>
+          </div>
+
+          <!-- End Date and Time -->
+          <div class="form-group">
+            <label for="task-end-date">End Date</label>
             <div class="input-container">
               <span class="icon">&#128197;</span>
               <input
                 type="date"
                 id="task-end-date"
                 class="input-field"
+                name="due_date"
                 required
               />
+              <label for="task-end-time">End Time</label>
               <input
                 type="time"
                 id="task-end-time"
                 class="input-field"
+                name="due_date"
                 required
               />
             </div>
           </div>
 
-          <!-- Поле для выбора категории -->
-          <div class="form-group">
-            <label for="task-category">Category</label>
-            <div class="input-container">
-              <span class="icon">&#128198;</span>
-              <select id="task-category" class="input-field">
-                <option value="work">Work</option>
-                <option value="personal">Personal</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Поле для выбора приоритета -->
+          <!-- Task Priority -->
           <div class="form-group">
             <label for="task-priority">Priority</label>
             <div class="input-container">
               <span class="icon">&#128293;</span>
-              <select id="task-priority" class="input-field">
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
+              <select id="task-priority" class="input-field" name="priority">
+                <option value="L">Low</option>
+                <option value="M">Medium</option>
+                <option value="H">High</option>
               </select>
             </div>
           </div>
 
-          <!-- Кнопки сохранения и отмены -->
+          <!-- Submit Button -->
           <div class="popup-buttons">
             <button type="button" onclick="closePopup()">Cancel</button>
             <button type="submit">Save</button>
@@ -301,11 +183,24 @@
 
     <script src="{% static 'main/js/script.js' %}"></script>
     <script src="{% static 'main/js/calendar.js' %}"></script>
-    <script src="{% static 'main/js/add-category.js' %}"></script>
-    <script src="{% static 'main/js/task-toggle.js' %}"></script>
     <script src="{% static 'main/js/pop-up.js' %}"></script>
+
+    <!-- Controllers -->
     <script
       src="{% static 'main/js/controllers/authStatus.js' %}"
+      defer
+    ></script>
+    <script src="{% static 'main/js/controllers/tasks.js' %}" defer></script>
+    <script
+      src="{% static 'main/js/controllers/taskEvents.js' %}"
+      defer
+    ></script>
+    <script
+      src="{% static 'main/js/controllers/deleteTask.js' %}"
+      defer
+    ></script>
+    <script
+      src="{% static 'main/js/controllers/categories.js' %}"
       defer
     ></script>
   </body>

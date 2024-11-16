@@ -14,6 +14,43 @@ function getCSRFToken() {
   return cookieValue
 }
 
+// Функція для отримання access-токена через /auth/token
+async function fetchAccessToken(email, password) {
+  const csrftoken = getCSRFToken()
+
+  try {
+    const response = await fetch('/auth/token/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken,
+      },
+      body: JSON.stringify({ email, password }),
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      return data.access
+    } else {
+      const errorData = await response.json()
+      showNotification(
+        'Error',
+        errorData.detail || 'Не вдалося отримати токен доступу.',
+        'error'
+      )
+      return null
+    }
+  } catch (error) {
+    console.error('Помилка запиту', error)
+    showNotification(
+      'Error',
+      'Не вдалося підключитися до сервера для отримання токена.',
+      'error'
+    )
+    return null
+  }
+}
+
 // Функція для валідації полів реєстраційної форми
 function validateForm() {
   const emailField = document.getElementById('email')
@@ -66,31 +103,6 @@ function validateForm() {
   return true
 }
 
-// Функція для оновлення інтерфейсу після авторизації
-function updateAuthUI(username) {
-  const userLabel = document.getElementById('userLabel')
-  const usernameDisplay = document.getElementById('usernameDisplay')
-  const inputFields = document.querySelector('.input-fields')
-  const loginButton = document.querySelector('.login-button')
-  const changeAccountBtn = document.getElementById('changeAccountBtn')
-  const welcomeButton = document.getElementById('welcomeButton')
-
-  if (userLabel) {
-    userLabel.style.display = 'block'
-    usernameDisplay.textContent = username
-  }
-
-  if (inputFields) inputFields.style.display = 'none'
-  if (loginButton) loginButton.style.display = 'none'
-  if (welcomeButton) welcomeButton.style.display = 'block'
-  if (changeAccountBtn) changeAccountBtn.style.display = 'block'
-}
-
-// Функція для відображення повідомлень
-function showNotification(type, message, category) {
-  alert(`${type}: ${message}`)
-}
-
 // Подія на кнопку реєстрації для надсилання форми
 document
   .querySelector('.create-account-button')
@@ -115,26 +127,30 @@ document
         if (response.ok) {
           const data = await response.json()
           const username = data.username
-          const accessToken = data.access
 
-          // Зберігаємо токен і ім'я користувача в localStorage
-          localStorage.setItem('access_token', accessToken)
-          localStorage.setItem('username', username)
+          // Автоматичне отримання access-токена після реєстрації
+          const accessToken = await fetchAccessToken(email, password)
 
-          // Оновлюємо інтерфейс після авторизації
-          updateAuthUI(username)
+          if (accessToken) {
+            // Зберігаємо токен і ім'я користувача в localStorage
+            localStorage.setItem('access_token', accessToken)
+            localStorage.setItem('username', username)
 
-          // Показуємо повідомлення про успішну реєстрацію
-          showNotification(
-            'Success',
-            `Реєстрація успішна! Ласкаво просимо, ${username}`,
-            'success'
-          )
+            // Оновлюємо інтерфейс після авторизації
+            updateAuthUI(username)
 
-          // Плавне перенаправлення на головну сторінку через 2 секунди
-          setTimeout(() => {
-            window.location.href = '/'
-          }, 2000)
+            // Показуємо повідомлення про успішну реєстрацію
+            showNotification(
+              'Success',
+              `Реєстрація успішна! Ласкаво просимо, ${username}`,
+              'success'
+            )
+
+            // Плавне перенаправлення на головну сторінку через 2 секунди
+            setTimeout(() => {
+              window.location.href = '/'
+            }, 2000)
+          }
         } else {
           const errorData = await response.json()
           showNotification(
