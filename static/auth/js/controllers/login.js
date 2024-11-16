@@ -98,7 +98,14 @@ document
 document.getElementById('changeAccountBtn').addEventListener('click', () => {
   // Удаляем токен и имя пользователя, но сохраняем email для автозаполнения
   localStorage.removeItem('access_token')
+  localStorage.removeItem('refresh_token')
   localStorage.removeItem('username')
+
+  // Также очищаем данные из cookies, если они сохраняются там
+  document.cookie =
+    'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+  document.cookie =
+    'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
 
   // Показать поля для входа и кнопку LOGIN
   document.getElementById('userLabel').style.display = 'none'
@@ -114,3 +121,35 @@ document.getElementById('changeAccountBtn').addEventListener('click', () => {
 document.getElementById('welcomeButton').addEventListener('click', () => {
   window.location.href = '/'
 })
+
+async function fetchTasks() {
+  const accessToken = localStorage.getItem('access_token')
+
+  if (!accessToken) {
+    console.error('No access token available')
+    return
+  }
+
+  try {
+    const response = await fetch('/tasks/', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      console.log('Tasks:', data)
+      // Render tasks on the UI here
+    } else {
+      console.error('Failed to fetch tasks:', response.status)
+    }
+  } catch (error) {
+    console.error('Error fetching tasks:', error)
+  }
+}
+
+// Call fetchTasks after login or page load if the user is authenticated
+fetchTasks()

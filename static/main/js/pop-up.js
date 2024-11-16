@@ -1,6 +1,7 @@
 // Функция для открытия попапа
 function openPopup() {
   document.getElementById('addTaskPopup').classList.add('show')
+  fetchCategories()
 }
 
 // Функция для закрытия попапа
