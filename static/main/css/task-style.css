@@ -188,7 +188,7 @@
 }
 
 /* Редактирование задачи */
-.task-edit {
+.edit-task-btn {
   font-size: 30px;
   color: #4caf50; /* Зеленый цвет для иконки редактирования */
   cursor: pointer;
@@ -196,7 +196,7 @@
   transition: color 0.3s ease, transform 0.2s ease;
 }
 
-.task-edit:hover {
+.edit-task-btn:hover {
   color: #66bb6a; /* Светло-зеленый цвет при наведении */
   transform: scale(1.1);
 }

@@ -76,7 +76,7 @@
             ></p>
           </div>
           <div class="title-right">
-            <button class="raise" onclick="openPopup()">Add Task</button>
+            <button class="raise" onclick="openAddTaskPopup()">Add Task</button>
           </div>
         </section>
 
@@ -92,7 +92,7 @@
     <!-- Попап для добавления задачи -->
     <div id="addTaskPopup" class="popup-overlay">
       <div class="popup-content wide">
-        <span class="close-btn" onclick="closePopup()">&times;</span>
+        <span class="close-btn" onclick="closeAddTaskPopup()">&times;</span>
         <h2>Add New Task</h2>
         <form id="addTaskForm">
           <!-- Task Title -->
@@ -174,10 +174,111 @@
 
           <!-- Submit Button -->
           <div class="popup-buttons">
-            <button type="button" onclick="closePopup()">Cancel</button>
+            <button type="button" onclick="closeAddTaskPopup()">Cancel</button>
             <button type="submit">Save</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Попап для редактирования задачи -->
+    <div id="specific-section">
+      <div id="editTaskPopup" class="popup-overlay">
+        <div class="popup-content wide">
+          <span class="close-btn" onclick="closeEditPopup()">&times;</span>
+          <h2>Edit Task</h2>
+          <form id="editTaskForm">
+            <!-- Task Title -->
+            <div class="form-group">
+              <label for="edit-task-title">Task Title</label>
+              <div class="input-container">
+                <span class="icon">&#128196;</span>
+                <input
+                  type="text"
+                  id="edit-task-title"
+                  name="title"
+                  class="input-field"
+                  placeholder="Enter task title"
+                  required
+                />
+              </div>
+            </div>
+
+            <!-- Task Description -->
+            <div class="form-group">
+              <label for="edit-task-description">Description</label>
+              <div class="input-container">
+                <span class="icon icon-top">&#128221;</span>
+                <textarea
+                  id="edit-task-description"
+                  name="description"
+                  placeholder="Add a description"
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- Category -->
+            <div class="form-group">
+              <label for="edit-task-category">Category</label>
+              <div class="input-container">
+                <span class="icon">&#128203;</span>
+                <select
+                  id="edit-task-category"
+                  class="input-field"
+                  name="category"
+                >
+                  <!-- Категории будут загружаться через JS -->
+                </select>
+              </div>
+            </div>
+
+            <!-- End Date and Time -->
+            <div class="form-group">
+              <label for="edit-task-end-date">End Date</label>
+              <div class="input-container">
+                <span class="icon">&#128197;</span>
+                <input
+                  type="date"
+                  id="edit-task-end-date"
+                  class="input-field"
+                  name="due_date"
+                  required
+                />
+                <label for="edit-task-end-time">End Time</label>
+                <input
+                  type="time"
+                  id="edit-task-end-time"
+                  class="input-field"
+                  name="due_time"
+                  required
+                />
+              </div>
+            </div>
+
+            <!-- Task Priority -->
+            <div class="form-group">
+              <label for="edit-task-priority">Priority</label>
+              <div class="input-container">
+                <span class="icon">&#128293;</span>
+                <select
+                  id="edit-task-priority"
+                  class="input-field"
+                  name="priority"
+                >
+                  <option value="L">Low</option>
+                  <option value="M">Medium</option>
+                  <option value="H">High</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="popup-buttons">
+              <button type="button" onclick="closeEditPopup()">Cancel</button>
+              <button type="submit">Save Changes</button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
 
