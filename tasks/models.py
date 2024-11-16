@@ -10,12 +10,10 @@ class Task(models.Model):
         ('M', 'Medium'),
         ('H', 'High'),
     ]
-    # STATUS_CHOICES = [('new', 'New'),('in_progress', 'In progress'),('completed', 'Completed'),]
 
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     completed = models.BooleanField(default=False)   
-    # status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new') заменить на "категории"?
     due_date = models.DateTimeField()
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tasks", null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name="tasks")

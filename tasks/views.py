@@ -6,7 +6,7 @@ from .models import Task
 from users.models import Category
 from .serializers import TaskSerializer, CategorySerializer
 
-# Створення задачі
+# Create a task
 class TaskCreateView(generics.CreateAPIView):
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -14,7 +14,7 @@ class TaskCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-# Список задач
+# Task list
 class TaskListView(generics.ListAPIView):
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -24,7 +24,7 @@ class TaskListView(generics.ListAPIView):
     def get_queryset(self):
         return Task.objects.filter(user=self.request.user)
 
-# Деталі задачі, оновлення та видалення
+# Task details, updates, and deletion
 class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
@@ -47,7 +47,7 @@ class CategoryCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        # Привязуємо категорію до поточного користувача
+        # Assign a category to the current user
         serializer.save(user=self.request.user)
 
 class CategoryListView(generics.ListAPIView):
@@ -55,8 +55,8 @@ class CategoryListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Повертаємо категорії тільки поточного користувача
-        return Category.objects.filter(user=self.request.user)
+        # Return categories only for the current user
+        return Category.objects.filter(user=self.request.user).order_by('id')
     
 class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CategorySerializer

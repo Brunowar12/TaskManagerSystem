@@ -18,5 +18,5 @@ class TaskSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ["id", "name", "user"]  # Поля для категорій
-        read_only_fields = ["id", "user"]  # user заповнюється автоматично
+        fields = ["id", "name", "user"]  # Fields for categories
+        read_only_fields = ["user"]  # user is filled automatically
