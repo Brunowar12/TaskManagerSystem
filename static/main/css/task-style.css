@@ -187,6 +187,20 @@
   margin-top: 8px;
 }
 
+/* Редактирование задачи */
+.task-edit {
+  font-size: 30px;
+  color: #4caf50; /* Зеленый цвет для иконки редактирования */
+  cursor: pointer;
+  margin-left: 10px;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.task-edit:hover {
+  color: #66bb6a; /* Светло-зеленый цвет при наведении */
+  transform: scale(1.1);
+}
+
 /* Star Icon */
 .task-star {
   font-size: 35px;

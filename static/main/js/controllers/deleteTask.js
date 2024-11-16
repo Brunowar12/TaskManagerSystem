@@ -17,26 +17,29 @@ function getCSRFToken() {
 // Функция для удаления задачи
 async function deleteTask(taskId) {
   const csrftoken = getCSRFToken()
+  const accessToken = localStorage.getItem('access_token')
 
   try {
     const response = await fetch(`/tasks/${taskId}/`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'X-CSRFToken': getCookie('csrftoken'),
+        'X-CSRFToken': csrftoken,
       },
     })
 
     if (response.ok) {
-      // Удаляем задачу из DOM
       const taskElement = document.querySelector(`.task[data-id="${taskId}"]`)
       if (taskElement) {
         taskElement.remove()
       }
-
-      // Показываем уведомление об успешном удалении
       alert('Task successfully deleted!')
     } else {
+      console.error(
+        'Failed to delete task:',
+        response.status,
+        response.statusText
+      )
       alert('Failed to delete the task. Please try again.')
     }
   } catch (error) {

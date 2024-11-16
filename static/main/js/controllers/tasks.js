@@ -59,7 +59,7 @@ function addTaskToDOM(task) {
   taskElement.className = `task ${getPriorityClass(
     task.priority
   )} toggle-details`
-  taskElement.setAttribute('data-id', task.title) // Используем название вместо ID
+  taskElement.setAttribute('data-id', task.id) // Используем ID вместо title
 
   // Получаем имя категории из categoryMap, если оно существует
   const categoryName = categoryMap[task.category] || 'No category'
