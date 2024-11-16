@@ -1,18 +1,18 @@
 from django.shortcuts import render
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 from .serializers import (
     UserRegistrationSerializer,
     UserLoginSerializer,
-    UserUpdateSerializer,
     UserProfileSerializer
 )
-from django.contrib.auth import authenticate
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [AnonRateThrottle]
 
 class LoginView(generics.GenericAPIView):
     serializer_class = UserLoginSerializer
