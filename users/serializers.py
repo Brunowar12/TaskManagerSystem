@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
@@ -9,13 +11,17 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True, required=True, #validators=[validate_password]
     )
-    username = serializers.CharField(read_only=True)  # username не потрібен як вхідний параметр
+    username = serializers.CharField(read_only=True)  # username isnt required as an input parameter
 
     class Meta:
         model = User
         fields = ["username", "email", "password"]
 
     def validate_email(self, value):
+        try:
+            validate_email(value)
+        except ValidationError:
+            raise serializers.ValidationError("Invalid email address")
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("This email is already in use")
         return value

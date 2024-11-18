@@ -24,18 +24,20 @@ class Task(models.Model):
     completed_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def save(self, *args, **kwargs):
+    def update_completed_at(self):
         if self.completed and not self.completed_at:
             self.completed_at = timezone.now()
             self.user.task_n_completed = self.completed_at
             self.user.save(update_fields=['task_n_completed'])
         elif not self.completed:
             self.completed_at = None
-        
+
+    def save(self, *args, **kwargs):
+        self.update_completed_at()
         super().save(*args, **kwargs)
     
     def __str__(self):
-        return self.title
+        return f"{self.title} - {self.user.username}"
     
 # from django.db.models.signals import post_save
 # from django.dispatch import receiver
