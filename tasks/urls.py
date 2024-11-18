@@ -9,7 +9,7 @@ from .views import (
 )
 
 urlpatterns = [
-    path('tasks/', include([
+    path('', include([
         path('', TaskListView.as_view(), name='task-list'), # List of all tasks
         path('create/', TaskCreateView.as_view(), name='task-create'), # Create a task
         path('<int:pk>/', TaskDetailView.as_view(), name='task-detail'), # Details, updates and deletions
