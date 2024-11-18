@@ -32,18 +32,18 @@ async function fetchCategories() {
 // Заполнение выпадающего списка категорий
 function populateCategorySelect(categories) {
   const categorySelect = document.getElementById('category-task')
-  if (!categorySelect) {
-    console.error('Элемент #task-category не найден!')
-    return
-  }
+  const editCategorySelect = document.getElementById('edit-task-category')
 
-  categorySelect.innerHTML = '<option value="">No category</option>'
+  ;[categorySelect, editCategorySelect].forEach((select) => {
+    if (!select) return
 
-  categories.forEach((category) => {
-    const option = document.createElement('option')
-    option.value = category.id
-    option.textContent = category.name
-    categorySelect.appendChild(option)
+    select.innerHTML = '<option value="">No category</option>'
+    categories.forEach((category) => {
+      const option = document.createElement('option')
+      option.value = category.id
+      option.textContent = category.name
+      select.appendChild(option)
+    })
   })
 }
 
@@ -59,9 +59,8 @@ function addTaskToDOM(task) {
   taskElement.className = `task ${getPriorityClass(
     task.priority
   )} toggle-details`
-  taskElement.setAttribute('data-id', task.title) // Используем название вместо ID
+  taskElement.setAttribute('data-id', task.id)
 
-  // Получаем имя категории из categoryMap, если оно существует
   const categoryName = categoryMap[task.category] || 'No category'
 
   taskElement.innerHTML = `
@@ -88,12 +87,15 @@ function addTaskToDOM(task) {
         </div>
       </div>
     </div>
+    <span class="edit-task-btn">&#9998;</span>
     <span class="task-star">&#9734;</span>
     <span class="task-delete">&#128465;</span>
   `
 
-  // Применяем обработчики событий к новой задаче
-  initTaskEvents(taskElement)
+  // Добавляем обработчик для кнопки "Edit"
+  taskElement.querySelector('.edit-task-btn').addEventListener('click', () => {
+    openEditPopup(task)
+  })
 
   taskListContainer.appendChild(taskElement)
 }
@@ -129,6 +131,70 @@ async function loadTasks() {
   }
 }
 
+// Создание новой задачи через POST
+async function createTask(newTaskData) {
+  const accessToken = localStorage.getItem('access_token') // Получаем токен доступа
+  const csrfToken = getCSRFToken() // Получаем CSRF-токен
+
+  try {
+    const response = await fetch('/tasks/create/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+        'X-CSRFToken': csrfToken,
+      },
+      body: JSON.stringify(newTaskData), // Отправляем данные формы
+    })
+
+    if (response.ok) {
+      const createdTask = await response.json()
+      console.log('Задача успешно создана:', createdTask)
+
+      // Добавляем новую задачу в DOM
+      addTaskToDOM(createdTask)
+
+      // Закрываем попап
+      closeAddTaskPopup()
+    } else {
+      const errorResponse = await response.json()
+      console.error('Ошибка при создании задачи:', errorResponse)
+    }
+  } catch (error) {
+    console.error('Ошибка при запросе создания задачи:', error)
+  }
+}
+
+// Обновление задачи через PUT
+async function updateTask(taskId, updatedTaskData) {
+  const accessToken = localStorage.getItem('access_token')
+  const csrfToken = getCSRFToken()
+
+  try {
+    const response = await fetch(`/tasks/${taskId}/`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+        'X-CSRFToken': csrfToken,
+      },
+      body: JSON.stringify(updatedTaskData),
+    })
+
+    if (response.ok) {
+      const updatedTask = await response.json()
+      console.log('Задача успешно обновлена:', updatedTask)
+      loadTasks() // Перезагружаем список задач
+      closeEditPopup()
+    } else {
+      const errorResponse = await response.json()
+      console.error('Ошибка при обновлении задачи:', errorResponse)
+    }
+  } catch (error) {
+    console.error('Ошибка запроса:', error)
+  }
+}
+
 // Вспомогательные функции
 function getPriorityClass(priority) {
   if (priority === 'high' || priority === 'H') return 'high-priority'
@@ -148,49 +214,8 @@ function getCSRFToken() {
     ?.split('=')[1]
 }
 
-// Создание новой задачи
-document
-  .getElementById('addTaskForm')
-  .addEventListener('submit', async (event) => {
-    event.preventDefault()
-
-    const form = document.getElementById('addTaskForm')
-    const formData = new FormData(form)
-
-    const endDate = formData.get('due_date').split(' ')[0]
-    const endTime = formData.get('due_date').split(' ')[1] || '00:00'
-    formData.set('due_date', `${endDate}T${endTime}:00Z`)
-
-    const accessToken = localStorage.getItem('access_token')
-    const csrfToken = getCSRFToken()
-
-    try {
-      const response = await fetch('/tasks/create/', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'X-CSRFToken': csrfToken,
-        },
-        body: formData,
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        addTaskToDOM(result)
-        alert('Задача успешно создана!')
-      } else {
-        const errorData = await response.json()
-        console.error('Ошибка при создании задачи:', errorData)
-        alert(`Ошибка: ${JSON.stringify(errorData)}`)
-      }
-    } catch (error) {
-      console.error('Ошибка запроса:', error)
-      alert('Произошла ошибка.')
-    }
-  })
-
 // Инициализация
 document.addEventListener('DOMContentLoaded', async () => {
-  await fetchCategories() // Сначала загружаем категории
-  loadTasks() // Затем загружаем задачи
+  await fetchCategories()
+  loadTasks()
 })
