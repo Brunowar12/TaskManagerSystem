@@ -16,7 +16,6 @@ class BaseViewMixin:
     
     def perform_create(self, serializer):
         print(f"Request User: {self.request.user}")
-        print(f"Authorization Header: {self.request.headers.get('Authorization')}")
         serializer.save(user=self.request.user)
 
 # Create a task

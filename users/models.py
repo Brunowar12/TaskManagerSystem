@@ -24,10 +24,13 @@ class User(AbstractUser):
 
     def generate_username(self):
         # Generate a unique username based on the email address
-        username = self.email.split('@')[0]
-        if User.objects.filter(username=username).exists():
-            username += str(User.objects.filter(username__startswith=username).count() + 1)
-        return username
+        base_username = self.email.split('@')[0]
+        new_username = base_username
+        counter = 1
+        while User.objects.filter(username=new_username).exists():
+            new_username = f"{base_username}{counter}"
+            counter += 1
+        return new_username
         
     def __str__(self):
         return self.email

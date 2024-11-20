@@ -8,6 +8,7 @@ from .serializers import (
     UserLoginSerializer,
     UserProfileSerializer
 )
+from .mixins import GetAuthenticatedUserMixin
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
@@ -17,18 +18,25 @@ class RegisterView(generics.CreateAPIView):
 class LoginView(generics.GenericAPIView):
     serializer_class = UserLoginSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [AnonRateThrottle]
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            raise NotAuthenticated(detail=serializer.errors)
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
-class UpdateProfileView(generics.UpdateAPIView):
+class ProfileView(GetAuthenticatedUserMixin, generics.RetrieveAPIView):
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]
+    
+class UpdateProfileView(GetAuthenticatedUserMixin, generics.UpdateAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_object(self):
-        return self.request.user
-
 def auth_page(request):
-    return render(request, "auth/index.html")
+    from django.views.decorators.csrf import csrf_protect
+    @csrf_protect
+    def render_protected():
+        return render(request, "auth/index.html")
+    return render_protected()
