@@ -48,9 +48,9 @@ jobs:
           echo "psycopg2>=2.9.0" >> requirements.in
           echo "django-filter>=23.2,<24.0" >> requirements.in
           echo "python-decouple>=3.8" >> requirements.in
-          pip-compile requirements.in --generate-hashes
+          pip-compile requirements.in
         fi
-        pip install --require-hashes -r requirements.txt
+        pip install -r requirements.txt
 
     - name: Set Environment Variables
       run: |
