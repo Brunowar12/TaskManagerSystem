@@ -5,30 +5,22 @@ from rest_framework import status
 class UserAPITests(APITestSetup):
     def test_user_registration(self):
         url = reverse("register")
-        
-        response = self.client.post(url, self.user_data)
-        
-        if response.status_code == status.HTTP_400_BAD_REQUEST:
-            print("Validation errors:", response.data)
-        
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["email"], self.user_data["email"])
-        
+        user_data = {"email": "newuser@example.com", "password": "newpassword123"}
+        response = self.client.post(url, user_data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, "User registration failed")
+        self.assertEqual(response.data["email"], user_data["email"], "Email mismatch in registration response")
+
     def test_user_login(self):
         url = reverse("login")
-        
-        self.client.post(reverse("register"), self.user_data)
-        response = self.client.post(url, {
-            "email": self.user_data["email"],
-            "password": self.user_data["password"]
-        })
-        
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("access", response.data)
-        
+        response = self.client.post(url, {"email": self.user.email, "password": "testpassword123"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, "User login failed")
+        self.assertIn("access", response.data, "Access token not included in login response")
+
     def test_profile_update(self):
-        self.authenticate_user()
         url = reverse("profile-update")
-        response = self.client.patch(url, {"email": "newemail@example.com"})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["email"], "newemail@example.com")
+        response = self.client.patch(url, {"email": "updatedemail@example.com"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, "Profile update failed")
+        self.assertEqual(response.data["email"], "updatedemail@example.com", "Email not updated in profile")

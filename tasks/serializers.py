@@ -14,11 +14,11 @@ class TaskSerializer(serializers.ModelSerializer):
         if value is None:
             raise serializers.ValidationError("Due date cannot be None")
         if value < timezone.now():
-            raise serializers.ValidationError("The deadline date cannot be in the past")
+            raise serializers.ValidationError("The due date cannot be in the past")
         return value
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ["id", "name", "user"]  # Fields for categories
-        read_only_fields = ["user"]  # user is filled automatically
+        fields = ["id", "name", "user"]
+        read_only_fields = ["user"]
