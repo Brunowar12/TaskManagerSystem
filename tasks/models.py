@@ -1,7 +1,6 @@
 from django.db import models
-from django.contrib.auth import get_user_model
 from django.utils import timezone
-from users.models import User, Category
+from users.models import Category
 from django.conf import settings
 
 class Task(models.Model):
@@ -15,7 +14,7 @@ class Task(models.Model):
     description = models.TextField(blank=True)
     completed = models.BooleanField(default=False)   
     due_date = models.DateTimeField()
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tasks", null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tasks")
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name="tasks")
     priority = models.CharField(max_length=1, choices=PRIORITY_CHOICES, default='M')
     is_favorite = models.BooleanField(default=False, verbose_name="Favorite")
@@ -24,16 +23,11 @@ class Task(models.Model):
     completed_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def update_completed_at(self):
+    def save(self, *args, **kwargs):
         if self.completed and not self.completed_at:
             self.completed_at = timezone.now()
-            self.user.task_n_completed = self.completed_at
-            self.user.save(update_fields=['task_n_completed'])
         elif not self.completed:
             self.completed_at = None
-
-    def save(self, *args, **kwargs):
-        self.update_completed_at()
         super().save(*args, **kwargs)
     
     def __str__(self):
