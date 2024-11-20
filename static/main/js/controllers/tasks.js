@@ -88,10 +88,14 @@ function addTaskToDOM(task) {
       </div>
     </div>
     <span class="edit-task-btn">&#9998;</span>
-    <span class="task-star">&#9734;</span>
+    <span class="task-star ${task.is_favorite ? 'active' : ''}">${
+    task.is_favorite ? '&#9733;' : '&#9734;'
+  }</span>
     <span class="task-delete">&#128465;</span>
   `
 
+  // Добавляем обработчики событий
+  initTaskEvents(taskElement)
   // Добавляем обработчик для кнопки "Edit"
   taskElement.querySelector('.edit-task-btn').addEventListener('click', () => {
     openEditPopup(task)
