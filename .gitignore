@@ -29,6 +29,5 @@ venv/
 *.md
 *.pdf
 *.rar
-*.txt
 run_venv.bat
 .coverage
