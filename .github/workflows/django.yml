@@ -72,22 +72,11 @@ jobs:
     - name: Run migrations
       run: python manage.py migrate
 
-    - name: Run tests with coverage
+    - name: Run tests
       run: |
         pip install coverage
         coverage run --source='.' manage.py test api.tests
         coverage report -m
-        coverage xml
-
-    - name: Verify Coverage Report
-      run: ls -l coverage.xml
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        files: ./coverage.xml
-        flags: unittests
-        fail_ci_if_error: true
 
     - name: Collect static files
       if: github.event_name == 'push'
