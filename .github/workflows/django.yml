@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     strategy:
       matrix:
         python-version: [3.11.7, 3.12.3]
@@ -78,13 +79,16 @@ jobs:
         coverage report -m
         coverage xml
 
-    - name: Collect static files
-      if: github.event_name == 'push'
-      run: python manage.py collectstatic --noinput
+    - name: Verify Coverage Report
+      run: ls -l coverage.xml
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
-        file: coverage.xml
+        files: ./coverage.xml
         flags: unittests
         fail_ci_if_error: true
+
+    - name: Collect static files
+      if: github.event_name == 'push'
+      run: python manage.py collectstatic --noinput
