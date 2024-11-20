@@ -37,12 +37,23 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install Dependencies
+    - name: Install pip-tools
+      run: python -m pip install --upgrade pip pip-tools
+
+    - name: Check for requirements.in
       run: |
-        python -m pip install --upgrade pip
-        pip install pip-tools
-        pip-compile --generate-hashes requirements.in
-        pip install --require-hashes -r requirements.txt
+        if [ ! -f requirements.in ]; then
+          echo "Creating requirements.in..."
+          echo "django>=5.0,<6.0" >> requirements.in
+          echo "djangorestframework>=3.12.0,<4.0" >> requirements.in
+          echo "psycopg2>=2.9.0" >> requirements.in
+        fi
+
+    - name: Generate requirements.txt with hashes
+      run: pip-compile --generate-hashes requirements.in
+
+    - name: Install dependencies
+      run: pip install --require-hashes -r requirements.txt
 
     - name: Wait for PostgreSQL to be ready
       run: |
