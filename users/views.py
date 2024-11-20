@@ -37,6 +37,6 @@ class UpdateProfileView(GetAuthenticatedUserMixin, generics.UpdateAPIView):
 def auth_page(request):
     from django.views.decorators.csrf import csrf_protect
     @csrf_protect
-    def render_protected():
+    def render_protected(request):
         return render(request, "auth/index.html")
-    return render_protected()
+    return render_protected(request)
