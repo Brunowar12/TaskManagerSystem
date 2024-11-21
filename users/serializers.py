@@ -1,3 +1,5 @@
+from django.utils.timezone import now
+from .models import User
 from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
@@ -54,7 +56,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         fields = ["username", "email"]
         read_only_fields = ["username"]
 
-class UserProfileSerializer(serializers.ModelSerializer):    
+class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
@@ -68,3 +70,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "task_n_completed",
         ]
         read_only_fields = ["logged_in", "profile_edited", "task_n_completed"]
+
+    def update(self, instance, validated_data):       
+        instance.profile_edited = now()
+    
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance

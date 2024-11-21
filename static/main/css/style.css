@@ -408,3 +408,54 @@ body {
     #b1b0ac 100%
   ); /* Градиент при наведении */
 }
+
+/* Стиль для выпадающего меню */
+.user-menu {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.username {
+  padding: 10px;
+  font-size: 16px;
+  color: #333;
+}
+
+.dropdown {
+  margin-top: 10px;
+  display: none; /* Скрываем по умолчанию */
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: linear-gradient(180deg, #e9e7e4 0%, #cdccc8 100%);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Мягкая тень */
+  border-radius: 8px; /* Сглаженные углы */
+  z-index: 100;
+  padding: 10px;
+  opacity: 0; /* Для плавного появления */
+  transform: translateY(-10px); /* Сдвигаем вверх перед анимацией */
+  transition: opacity 0.3s ease, transform 0.3s ease; /* Плавные переходы */
+}
+
+.dropdown button {
+  background: none;
+  border: none;
+  color: #333;
+  font-size: 16px;
+  padding: 10px 20px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown button:hover {
+  background-color: rgba(0, 0, 0, 0.05); /* Мягкий фон при наведении */
+}
+
+.user-menu:hover .dropdown {
+  display: block; /* Показываем меню */
+  opacity: 1; /* Убираем прозрачность */
+  transform: translateY(0); /* Возвращаем в исходное положение */
+}

@@ -1,20 +1,22 @@
-// Функція для відображення імені авторизованого користувача
-function displayUserNameInHeader() {
-  const username = localStorage.getItem('username') // Отримуємо ім'я користувача з localStorage
+// Функция для проверки авторизации
+function isAuthenticated() {
+  return !!localStorage.getItem('access_token') // Возвращает true, если токен существует
+}
 
-  if (username) {
-    // Якщо користувач авторизований, оновлюємо ім'я в заголовку
-    const usernameLink = document.querySelector('.header-right a')
-    usernameLink.textContent = username // Замінюємо "Dmytro Gordon" на ім'я користувача
+// Функция для отображения имени пользователя
+function displayUserNameInHeader() {
+  const username = localStorage.getItem('username') // Получаем имя пользователя из localStorage
+  const usernameLink = document.querySelector('.header-right a')
+
+  if (username && usernameLink) {
+    usernameLink.textContent = username // Обновляем имя в заголовке
   } else {
-    // Якщо користувач не авторизований, перенаправляємо його на сторінку входу
+    // Если пользователь не авторизован, перенаправляем его на страницу входа
     window.location.href = '/auth'
   }
 }
 
-// Виконуємо перевірку при завантаженні сторінки
-window.addEventListener('load', displayUserNameInHeader)
-
+// Функция для получения задач
 async function fetchTasks() {
   const accessToken = localStorage.getItem('access_token')
 
@@ -35,7 +37,7 @@ async function fetchTasks() {
     if (response.ok) {
       const data = await response.json()
       console.log('Tasks:', data)
-      // Render tasks on the UI here
+      // Здесь можно вызвать функцию для отображения задач на UI
     } else {
       console.error('Failed to fetch tasks:', response.status)
     }
@@ -44,5 +46,12 @@ async function fetchTasks() {
   }
 }
 
-// Call fetchTasks after login or page load if the user is authenticated
-fetchTasks()
+// Основной блок: выполняем при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+  if (isAuthenticated()) {
+    displayUserNameInHeader()
+    fetchTasks() // Загружаем задачи только если пользователь авторизован
+  } else {
+    window.location.href = '/auth' // Перенаправляем неавторизованных пользователей
+  }
+})

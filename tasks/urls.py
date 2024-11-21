@@ -6,6 +6,7 @@ from .views import (
     CategoryListView,
     CategoryCreateView,
     CategoryDetailView,
+    user_page
 )
 
 urlpatterns = [
@@ -13,6 +14,7 @@ urlpatterns = [
         path('', TaskListView.as_view(), name='task-list'), # List of all tasks
         path('create/', TaskCreateView.as_view(), name='task-create'), # Create a task
         path('<int:pk>/', TaskDetailView.as_view(), name='task-detail'), # Details, updates and deletions
+        path('profile/', user_page, name='user_page'),
     ])),
 
     path('categories/', include([

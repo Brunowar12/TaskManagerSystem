@@ -1,4 +1,5 @@
 import logging
+from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions
 from rest_framework.decorators import action
@@ -42,3 +43,8 @@ class CategoryListView(UserQuerysetMixin, generics.ListAPIView):
 
 class CategoryDetailView(UserQuerysetMixin, generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CategorySerializer
+
+# HTML Page View
+def user_page(request):
+    
+    return render(request, 'main/user.html', {"user": request.user})
