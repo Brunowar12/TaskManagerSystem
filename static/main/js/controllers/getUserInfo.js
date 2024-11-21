@@ -1,11 +1,14 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const profileUrl = '/auth/profile/'
 
-  // Получение токена из localStorage
-  const accessToken = localStorage.getItem('access_token')
+  // Убедимся, что токен валиден, или попытаемся обновить его
+  const accessToken = await ensureTokenIsValid()
 
   if (!accessToken) {
-    console.error('No access token found. Please log in first.')
+    console.error(
+      '[ERROR] No valid access token found. Redirecting to login...'
+    )
+    window.location.href = '/auth' // Перенаправление на страницу авторизации
     return
   }
 
@@ -19,7 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error('Failed to fetch user profile')
+        if (response.status === 401) {
+          console.error('[ERROR] Unauthorized. Redirecting to login...')
+          window.location.href = '/auth' // Перенаправление на авторизацию
+        }
+        throw new Error(`Failed to fetch user profile: ${response.statusText}`)
       }
       return response.json()
     })
@@ -28,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
       updateProfileUI(data)
     })
     .catch((error) => {
-      console.error('Error fetching user profile:', error)
+      console.error('[ERROR] Error fetching user profile:', error)
     })
 })
 

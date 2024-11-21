@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const editForm = section.querySelector('#editTaskForm')
   if (editForm) {
-    editForm.onsubmit = function (event) {
+    editForm.onsubmit = async function (event) {
       event.preventDefault()
 
       const popup = section.querySelector('#editTaskPopup')
@@ -67,6 +67,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       console.log('Отправка формы редактирования для задачи ID:', taskId)
+
+      // Убедимся, что токен валиден
+      const accessToken = await ensureTokenIsValid()
+      if (!accessToken) {
+        console.error('Нет валидного токена. Авторизация требуется.')
+        alert('You are not authenticated. Please log in again.')
+        return
+      }
 
       // Собираем данные формы
       const updatedTaskData = {

@@ -4,23 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const updateError = document.getElementById('update-error')
   const updateUrl = '/auth/profile/update/'
 
-  // Получение токена из localStorage
-  const accessToken = localStorage.getItem('access_token')
-
-  if (!accessToken) {
-    console.error('No access token found. Please log in first.')
-    updateError.textContent = 'You are not authenticated. Please log in.'
-    updateError.style.display = 'block'
-    return
-  }
-
   // Функция валидации номера телефона
   function validatePhoneNumber(phoneNumber) {
     const phoneRegex = /^\+?\d{1,15}$/ // Только + в начале и до 15 цифр
     return phoneRegex.test(phoneNumber)
   }
 
-  updateProfileForm.addEventListener('submit', (e) => {
+  updateProfileForm.addEventListener('submit', async (e) => {
     e.preventDefault() // Останавливаем отправку формы
 
     const formData = new FormData(updateProfileForm)
@@ -48,38 +38,47 @@ document.addEventListener('DOMContentLoaded', () => {
       return // Если валидация не прошла, не отправляем форму
     }
 
-    fetch(updateUrl, {
-      method: 'PATCH', // Используем PATCH вместо PUT
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`, // Токен в заголовке
-      },
-      body: JSON.stringify(data), // Отправляем только изменённые данные
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Failed to update profile')
-        }
-        return response.json()
-      })
-      .then((data) => {
-        console.log('Profile updated successfully:', data)
-        updateStatus.style.display = 'block'
-        updateStatus.textContent = 'Profile updated successfully!'
-        updateError.style.display = 'none'
+    // Убедимся, что токен валиден
+    const accessToken = await ensureTokenIsValid()
+    if (!accessToken) {
+      console.error('No valid access token found. Please log in again.')
+      updateError.textContent = 'You are not authenticated. Please log in.'
+      updateError.style.display = 'block'
+      return
+    }
 
-        // Отладка: сообщение перед перезагрузкой
-        console.log('Preparing to reload the page in 1 seconds...')
-        setTimeout(() => {
-          console.log('Reloading the page now...')
-          window.location.reload() // Перезагружаем страницу
-        }, 1000) // 1000 миллисекунд = 1 секунда
+    try {
+      const response = await fetch(updateUrl, {
+        method: 'PATCH', // Используем PATCH вместо PUT
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`, // Токен в заголовке
+        },
+        body: JSON.stringify(data), // Отправляем только изменённые данные
       })
-      .catch((error) => {
-        console.error('Error updating profile:', error)
-        updateStatus.style.display = 'none'
-        updateError.style.display = 'block'
-        updateError.textContent = 'Failed to update profile.'
-      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile')
+      }
+
+      const responseData = await response.json()
+      console.log('Profile updated successfully:', responseData)
+
+      updateStatus.style.display = 'block'
+      updateStatus.textContent = 'Profile updated successfully!'
+      updateError.style.display = 'none'
+
+      // Отладка: сообщение перед перезагрузкой
+      console.log('Preparing to reload the page in 1 seconds...')
+      setTimeout(() => {
+        console.log('Reloading the page now...')
+        window.location.reload() // Перезагружаем страницу
+      }, 1000) // 1000 миллисекунд = 1 секунда
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      updateStatus.style.display = 'none'
+      updateError.style.display = 'block'
+      updateError.textContent = 'Failed to update profile.'
+    }
   })
 })

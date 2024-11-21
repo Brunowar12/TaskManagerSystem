@@ -1,10 +1,11 @@
 !(function () {
   // Fetch tasks from the server
   async function fetchTasks() {
-    const accessToken = localStorage.getItem('access_token') // Получаем токен из localStorage
+    // Проверяем и обновляем токен перед запросом
+    const accessToken = await ensureTokenIsValid()
 
     if (!accessToken) {
-      console.error('Access token not found in localStorage')
+      console.error('[ERROR] Не удалось получить валидный токен')
       return []
     }
 
@@ -39,6 +40,50 @@
     } catch (error) {
       console.error('Error fetching tasks:', error)
       return []
+    }
+  }
+
+  // Добавляем функцию для проверки и обновления токена
+  async function ensureTokenIsValid() {
+    const accessToken = localStorage.getItem('access_token')
+    const refreshToken = localStorage.getItem('refresh_token')
+
+    if (!accessToken || !refreshToken) {
+      console.error('[ERROR] Токены отсутствуют в localStorage!')
+      return null
+    }
+
+    // Раскодируем payload токена и проверяем срок его действия
+    const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]))
+    const currentTime = Math.floor(Date.now() / 1000)
+
+    if (tokenPayload.exp > currentTime) {
+      return accessToken // Токен ещё действителен
+    }
+
+    console.log('[INFO] Токен истёк. Попытка обновления...')
+
+    try {
+      const response = await fetch('/auth/token/refresh/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refresh: refreshToken }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        localStorage.setItem('access_token', data.access)
+        console.log('[SUCCESS] Токен успешно обновлён!')
+        return data.access
+      } else {
+        console.error('[ERROR] Не удалось обновить токен!')
+        return null
+      }
+    } catch (error) {
+      console.error('[ERROR] Ошибка при обновлении токена:', error)
+      return null
     }
   }
 
