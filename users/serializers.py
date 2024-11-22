@@ -13,20 +13,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True, required=True, validators=[validate_password]
     )
-    username = serializers.CharField(read_only=True)    
 
     class Meta:
         model = User
-        fields = ["username", "email", "password"]
+        fields = ["email", "password"]
 
     def validate_email(self, value):
-        try:
-            validate_email(value)
-        except ValidationError:
-            raise serializers.ValidationError("Invalid email address")
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("This email is already in use")
-        return value
+        if not User.objects.filter(email=value).exists():
+            return value
+        raise serializers.ValidationError("This email is already in use")
 
     def create(self, validated_data):
         user = User(email=validated_data["email"],)
@@ -57,6 +52,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ["username"]
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    profile_edited = serializers.DateTimeField(read_only=True)
+    
     class Meta:
         model = User
         fields = [

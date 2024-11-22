@@ -22,3 +22,8 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ["id", "name", "user"]
         read_only_fields = ["user"]
+        
+    def validate_name(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Category cannot be empty")
+        return value
