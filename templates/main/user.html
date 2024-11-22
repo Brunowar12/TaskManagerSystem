@@ -1,131 +1,86 @@
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Plan My Day</title>
-    <link rel="stylesheet" href="public/css/style.css" />
-    <link rel="stylesheet" href="public/css/calendar.css" />
-    <link rel="stylesheet" href="public/css/user-main.css" />
-    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.5.1/moment.min.js"></script>
-  </head>
-  <body>
-    <div class="container">
-      <!-- Sidebar -->
-      <aside class="sidebar">
-        <div class="sidebar-space">
-          <div class="header-container" id="toggle-sidebar">
-            <img src="public/img/logo.png" alt="Logo" class="logo-image" />
-            <div class="logo-text">Plan My Day</div>
-          </div>
-          <div class="separator"></div>
-          <!-- Calendar -->
-          <div class="sidebar-item">
-            <span class="sidebar-item-icon">&#128197;</span>
-            <!-- Иконка календаря -->
-            <div class="calendar sidebar-item-text">
-              <div id="calendar"></div>
-              <div class="separator-calendar"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="sidebar-space">
-          <div class="categories">
-            <div class="categories-header">
-              <h3>My Calendar Categories</h3>
-              <button class="add-category-btn" onclick="addCategory()">
-                +
-              </button>
-            </div>
-            <div class="category-list">
-              <!-- Здесь будут динамически добавляться категории -->
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <!-- Vertical Separator Line -->
-      <div class="vertical-separator"></div>
-
-      <!-- Main Content -->
-      <main class="main-content">
-        <!-- Header Section -->
-        <header class="header-main">
-          <div class="header-right">
-            <a href="user.html" style="text-decoration: none; color: black"
-              >Logout</a
-            >
-          </div>
-        </header>
-
-        <!-- Личный кабинет -->
-        <section id="profile-section" class="profile-section">
-          <h2>Profile</h2>
-
-          <!-- Контейнер для фото и информации о пользователе -->
-          <div class="profile-content">
-            <!-- Левая часть - фото и кнопка редактирования -->
-            <div class="profile-info">
-              <img
-                src="public/img/gordon.jpeg"
-                alt="Profile Picture"
-                class="profile-picture"
-              />
-              <button class="edit-button" onclick="editProfile()">Home</button>
-              <button
-                class="edit-button"
-                style="margin-top: 10px"
-                onclick="editProfile()"
-              >
-                Edit Profile
-              </button>
-              <button
-                class="edit-button"
-                style="margin-top: 10px"
-                onclick="editProfile()"
-              >
-                Settings
-              </button>
-            </div>
-
-            <!-- Правая часть - имя пользователя и информация о пользователе -->
-            <div class="user-details-container">
-              <h3 class="user-name">Dmytro Gordon</h3>
-              <div class="user-details">
-                <p>Age: <span>Unknown</span></p>
-                <p>Email: <span>Unknown</span></p>
-                <p>Phone Number: <span>Unknown</span></p>
-                <p>Place of Work: <span>Unknown</span></p>
-                <p>About Me: <span>Unknown</span></p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Логи активности -->
-          <div class="activity-log">
-            <h3>Activity Log</h3>
-            <ul>
-              <li>Logged in - November 8, 2024</li>
-              <li>Profile edited - November 5, 2024</li>
-              <li>Task "Programming" completed - November 1, 2024</li>
-            </ul>
-          </div>
-
-          <!-- Социальные ссылки -->
-          <div class="social-links">
-            <button onclick="connectSocial('facebook')">Facebook</button>
-            <button onclick="connectSocial('google')">Google</button>
-            <button onclick="connectSocial('twitter')">Twitter</button>
-          </div>
-        </section>
-      </main>
+{% extends "main/base.html" %} {% load static %} {% block title %}Личный кабинет
+- Plan My Day{% endblock %} {% block extra_styles %}
+<link rel="stylesheet" href="{% static 'main/css/user-main.css' %}" />
+{% endblock %} {% block content %}
+<main class="main-content">
+  <header class="header-main">
+    <div class="header-left">
+      <a href="/" class="back-to-main"> &#x2190; Back to Tasks </a>
     </div>
+    <div class="header-right">
+      <img
+        src="{% static 'main/img/gordon.jpeg' %}"
+        alt="User Avatar"
+        class="user-avatar"
+      />
+      <div class="user-menu">
+        <a class="username" id="username">Your Name &#x25BC;</a>
+        <div class="dropdown" id="userDropdown">
+          <button id="logoutButton">Выйти</button>
+        </div>
+      </div>
+    </div>
+  </header>
 
-    <script src="public/js/script2.js"></script>
-    <script src="public/js/calendar.js"></script>
-    <script src="public/js/add-category.js"></script>
-    <script src="public/js/task-toggle.js"></script>
-    <script src="public/js/pop-up.js"></script>
-  </body>
-</html>
+  <section id="profile-section" class="profile-section">
+    <h2>Profile</h2>
+    <div class="profile-content">
+      <div class="profile-info">
+        <img
+          src="{% static 'main/img/gordon.jpeg' %}"
+          alt="Profile Picture"
+          class="profile-picture"
+        />
+        <button
+          class="edit-button edit-profile-button"
+          style="margin-top: 10px"
+          onclick="editProfile()"
+        >
+          Edit Profile
+        </button>
+        <button
+          class="edit-button profile_setting_button"
+          style="margin-top: 10px"
+          onclick="settingsProfile()"
+        >
+          Settings
+        </button>
+      </div>
+      <div class="user-details-container">
+        <h3 class="user-name">Dmytro Gordon</h3>
+        <div class="user-details">
+          <p>Age: <span>Unknown</span></p>
+          <p>Email: <span>Unknown</span></p>
+          <p>Phone Number: <span>Unknown</span></p>
+          <p>Place of Work: <span>Unknown</span></p>
+          <p>About Me: <span>Unknown</span></p>
+        </div>
+      </div>
+    </div>
+    <div class="activity-log">
+      <h3>Activity Log</h3>
+      <ul>
+        <li>Logged in - November 8, 2024</li>
+        <li>Profile edited - November 5, 2024</li>
+        <li>Task "Programming" completed - November 1, 2024</li>
+      </ul>
+    </div>
+    <div class="social-links">
+      <button onclick="connectSocial('facebook')">Facebook</button>
+      <button onclick="connectSocial('google')">Google</button>
+      <button onclick="connectSocial('twitter')">Twitter</button>
+    </div>
+  </section>
+  {% include "main/pop-up.html" %}
+</main>
+{% endblock %} {% block extra_scripts %}
+<!-- Controllers -->
+<script src="{% static 'main/js/controllers/authStatus.js' %}" defer></script>
+<script src="{% static 'main/js/controllers/getUserInfo.js' %}" defer></script>
+<script
+  src="{% static 'main/js/controllers/updateProfile.js' %}"
+  defer
+></script>
+<script src="{% static 'main/js/controllers/categories.js' %}" defer></script>
+
+{% endblock %}

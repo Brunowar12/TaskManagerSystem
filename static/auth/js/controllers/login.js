@@ -59,6 +59,7 @@ document
     const csrftoken = getCSRFToken()
 
     try {
+      // Первый запрос на авторизацию
       const response = await fetch('/auth/login/', {
         method: 'POST',
         headers: {
@@ -69,14 +70,33 @@ document
       })
 
       if (response.ok) {
-        const data = await response.json()
-        const username = data.username
-        const accessToken = data.access
+        const loginData = await response.json()
+        const username = loginData.username
 
-        // Сохраняем токен, имя пользователя и email в localStorage
-        localStorage.setItem('access_token', accessToken)
+        // Сохраняем имя пользователя и email
         localStorage.setItem('username', username)
         localStorage.setItem('email', email)
+
+        // Запрос на получение токенов
+        const tokenResponse = await fetch('/auth/token/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email: email, password: password }),
+        })
+
+        if (tokenResponse.ok) {
+          const tokenData = await tokenResponse.json()
+          localStorage.setItem('access_token', tokenData.access) // Сохраняем access token
+          localStorage.setItem('refresh_token', tokenData.refresh) // Сохраняем refresh token
+          console.log('[SUCCESS] Токены успешно получены')
+        } else {
+          console.error(
+            '[ERROR] Ошибка получения токенов:',
+            tokenResponse.status
+          )
+        }
 
         updateAuthUI(username)
         showNotification('Success', 'Успешная авторизация!', 'success')

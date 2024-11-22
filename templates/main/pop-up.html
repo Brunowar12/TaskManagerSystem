@@ -1,0 +1,326 @@
+{% load static %}
+
+<!-- Попап для добавления задачи -->
+<div id="addTaskPopup" class="popup-overlay">
+  <div class="popup-content wide">
+    <span class="close-btn" onclick="closeAddTaskPopup()">&times;</span>
+    <h2>Add New Task</h2>
+    <form id="addTaskForm">
+      <!-- Task Title -->
+
+      <div class="form-group">
+        <label for="task-title">Task Title</label>
+        <div class="input-container">
+          <span class="icon">&#128196;</span>
+          <input
+            type="text"
+            id="task-title"
+            name="title"
+            class="input-field"
+            placeholder="Enter task title"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Task Description -->
+      <div class="form-group">
+        <label for="task-description">Description</label>
+        <div class="input-container">
+          <span class="icon icon-top">&#128221;</span>
+          <textarea
+            id="task-description"
+            name="description"
+            placeholder="Add a description"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Category -->
+      <div class="form-group">
+        <label for="task-category">Category</label>
+        <div class="input-container">
+          <span class="icon">&#128203;</span>
+          <select id="category-task" class="input-field" name="category">
+            <!-- Здесь категории будут динамически добавляться через JavaScript -->
+          </select>
+        </div>
+      </div>
+
+      <!-- End Date and Time -->
+      <div class="form-group">
+        <label for="task-end-date">End Date</label>
+        <div class="input-container">
+          <span class="icon">&#128197;</span>
+          <input
+            type="date"
+            id="task-end-date"
+            class="input-field"
+            name="due_date"
+            required
+          />
+          <label for="task-end-time">End Time</label>
+          <input
+            type="time"
+            id="task-end-time"
+            class="input-field"
+            name="due_date"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Task Priority -->
+      <div class="form-group">
+        <label for="task-priority">Priority</label>
+        <div class="input-container">
+          <span class="icon">&#128293;</span>
+          <select id="task-priority" class="input-field" name="priority">
+            <option value="L">Low</option>
+            <option value="M">Medium</option>
+            <option value="H">High</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="popup-buttons">
+        <button type="button" onclick="closeAddTaskPopup()">Cancel</button>
+        <button type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Попап для редактирования задачи -->
+<div id="specific-section">
+  <div id="editTaskPopup" class="popup-overlay">
+    <div class="popup-content wide">
+      <span class="close-btn" onclick="closeEditPopup()">&times;</span>
+      <h2>Edit Task</h2>
+      <form id="editTaskForm">
+        <!-- Task Title -->
+        <div class="form-group">
+          <label for="edit-task-title">Task Title</label>
+          <div class="input-container">
+            <span class="icon">&#128196;</span>
+            <input
+              type="text"
+              id="edit-task-title"
+              name="title"
+              class="input-field"
+              placeholder="Enter task title"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Task Description -->
+        <div class="form-group">
+          <label for="edit-task-description">Description</label>
+          <div class="input-container">
+            <span class="icon icon-top">&#128221;</span>
+            <textarea
+              id="edit-task-description"
+              name="description"
+              placeholder="Add a description"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Category -->
+        <div class="form-group">
+          <label for="edit-task-category">Category</label>
+          <div class="input-container">
+            <span class="icon">&#128203;</span>
+            <select id="edit-task-category" class="input-field" name="category">
+              <!-- Категории будут загружаться через JS -->
+            </select>
+          </div>
+        </div>
+
+        <!-- End Date and Time -->
+        <div class="form-group">
+          <label for="edit-task-end-date">End Date</label>
+          <div class="input-container">
+            <span class="icon">&#128197;</span>
+            <input
+              type="date"
+              id="edit-task-end-date"
+              class="input-field"
+              name="due_date"
+              required
+            />
+            <label for="edit-task-end-time">End Time</label>
+            <input
+              type="time"
+              id="edit-task-end-time"
+              class="input-field"
+              name="due_time"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Task Priority -->
+        <div class="form-group">
+          <label for="edit-task-priority">Priority</label>
+          <div class="input-container">
+            <span class="icon">&#128293;</span>
+            <select id="edit-task-priority" class="input-field" name="priority">
+              <option value="L">Low</option>
+              <option value="M">Medium</option>
+              <option value="H">High</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="popup-buttons">
+          <button type="button" onclick="closeEditPopup()">Cancel</button>
+          <button type="submit">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Попап для обновления профиля -->
+<div id="updateProfilePopup" class="popup-overlay">
+  <div class="popup-content wide">
+    <span class="close-btn" onclick="closeUpdateProfilePopup()">&times;</span>
+    <h2>Update Profile</h2>
+    <form id="updateProfileForm">
+      <!-- Username -->
+      <div class="form-group">
+        <label for="username">Username</label>
+        <div class="input-container">
+          <span class="icon">&#128100;</span>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            class="input-field"
+            placeholder="Enter username"
+          />
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">Email</label>
+        <div class="input-container">
+          <span class="icon">&#9993;</span>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="input-field"
+            placeholder="Enter email"
+          />
+        </div>
+      </div>
+
+      <!-- Age -->
+      <div class="form-group">
+        <label for="age">Age</label>
+        <div class="input-container">
+          <span class="icon">&#128118;</span>
+          <input
+            type="number"
+            id="age"
+            name="age"
+            class="input-field"
+            placeholder="Enter age"
+          />
+        </div>
+      </div>
+
+      <!-- Place of Work -->
+      <div class="form-group">
+        <label for="place_of_work">Place of Work</label>
+        <div class="input-container">
+          <span class="icon">&#127970;</span>
+          <input
+            type="text"
+            id="place_of_work"
+            name="place_of_work"
+            class="input-field"
+            placeholder="Enter place of work"
+          />
+        </div>
+      </div>
+
+      <!-- Phone Number -->
+      <div class="form-group">
+        <label for="phone_number">Phone Number</label>
+        <div class="input-container">
+          <span class="icon">&#128222;</span>
+          <input
+            type="text"
+            id="phone_number"
+            name="phone_number"
+            class="input-field"
+            placeholder="Enter phone number"
+            maxlength="15"
+          />
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="popup-buttons">
+        <button type="button" onclick="closeEditProfilePopup()">Cancel</button>
+        <button type="submit">Update Profile</button>
+      </div>
+    </form>
+    <p id="update-status" style="color: green; display: none">
+      Profile updated successfully!
+    </p>
+    <p id="update-error" style="color: red; display: none">
+      Failed to update profile.
+    </p>
+  </div>
+</div>
+
+<!-- Попап для настроек профиля -->
+<div id="settingsPopup" class="popup-overlay">
+  <div class="popup-content wide">
+    <span class="close-btn" onclick="closeSettingsPopup()">&times;</span>
+    <h2>Profile Settings</h2>
+    <form id="settingsForm">
+      <!-- Hide Activity Log -->
+      <div class="form-group">
+        <label for="hide-activity-log">
+          <input
+            type="checkbox"
+            id="hide-activity-log"
+            name="hide_activity_log"
+          />
+          Hide Activity Log
+        </label>
+      </div>
+
+      <!-- Encrypt Email -->
+      <div class="form-group">
+        <label for="encrypt-email">
+          <input type="checkbox" id="encrypt-email" name="encrypt_email" />
+          Encrypt Email
+        </label>
+      </div>
+
+      <!-- Encrypt Phone -->
+      <div class="form-group">
+        <label for="encrypt-phone">
+          <input type="checkbox" id="encrypt-phone" name="encrypt_phone" />
+          Encrypt Phone Number
+        </label>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="popup-buttons">
+        <button type="button" onclick="closeSettingsPopup()">Cancel</button>
+        <button type="button" onclick="saveSettings()">Save</button>
+      </div>
+    </form>
+  </div>
+</div>

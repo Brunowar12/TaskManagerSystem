@@ -3,12 +3,20 @@ let categoryMap = {}
 
 // Функция для загрузки категорий и их сопоставления
 async function fetchCategories() {
-  const accessToken = localStorage.getItem('access_token')
+  // Проверяем и обновляем токен перед выполнением запроса
+  const accessToken = await ensureTokenIsValid()
+
+  if (!accessToken) {
+    console.error('[ERROR] Невозможно получить категории: нет валидного токена')
+    return
+  }
+
   try {
     const response = await fetch('/tasks/categories/', {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
       },
     })
 
@@ -21,11 +29,17 @@ async function fetchCategories() {
         map[category.id] = category.name
         return map
       }, {})
+
+      console.log('[SUCCESS] Категории загружены:', categories.results)
     } else {
-      console.error('Ошибка при получении категорий:', response.statusText)
+      console.error(
+        '[ERROR] Ошибка при получении категорий:',
+        response.status,
+        response.statusText
+      )
     }
   } catch (error) {
-    console.error('Ошибка запроса категорий:', error)
+    console.error('[ERROR] Ошибка запроса категорий:', error)
   }
 }
 

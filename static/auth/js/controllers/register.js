@@ -14,8 +14,8 @@ function getCSRFToken() {
   return cookieValue
 }
 
-// Функція для отримання access-токена через /auth/token
-async function fetchAccessToken(email, password) {
+// Функція для отримання токенів через /auth/token
+async function fetchTokens(email, password) {
   const csrftoken = getCSRFToken()
 
   try {
@@ -30,21 +30,26 @@ async function fetchAccessToken(email, password) {
 
     if (response.ok) {
       const data = await response.json()
-      return data.access
+      console.log('[DEBUG] Response from /auth/token/:', data) // Логируем ответ
+      return {
+        access: data.access,
+        refresh: data.refresh,
+      }
     } else {
       const errorData = await response.json()
+      console.error('[ERROR] Failed to fetch tokens:', errorData)
       showNotification(
         'Error',
-        errorData.detail || 'Не вдалося отримати токен доступу.',
+        errorData.detail || 'Не вдалося отримати токени доступу.',
         'error'
       )
       return null
     }
   } catch (error) {
-    console.error('Помилка запиту', error)
+    console.error('[ERROR] Request failed:', error)
     showNotification(
       'Error',
-      'Не вдалося підключитися до сервера для отримання токена.',
+      'Не вдалося підключитися до сервера для отримання токенів.',
       'error'
     )
     return null
@@ -128,13 +133,22 @@ document
           const data = await response.json()
           const username = data.username
 
-          // Автоматичне отримання access-токена після реєстрації
-          const accessToken = await fetchAccessToken(email, password)
+          console.log('[DEBUG] Registration successful:', data)
 
-          if (accessToken) {
-            // Зберігаємо токен і ім'я користувача в localStorage
-            localStorage.setItem('access_token', accessToken)
+          // Автоматичне отримання токенів після реєстрації
+          const tokens = await fetchTokens(email, password)
+
+          if (tokens && tokens.access && tokens.refresh) {
+            // Зберігаємо токени і ім'я користувача в localStorage
+            localStorage.setItem('access_token', tokens.access)
+            localStorage.setItem('refresh_token', tokens.refresh)
             localStorage.setItem('username', username)
+
+            console.log('[DEBUG] Tokens saved to localStorage:', {
+              access: tokens.access,
+              refresh: tokens.refresh,
+              username: username,
+            })
 
             // Оновлюємо інтерфейс після авторизації
             updateAuthUI(username)
@@ -150,9 +164,17 @@ document
             setTimeout(() => {
               window.location.href = '/'
             }, 2000)
+          } else {
+            console.error('[ERROR] Tokens are missing from the response.')
+            showNotification(
+              'Error',
+              'Не вдалося отримати токени доступу. Спробуйте ще раз.',
+              'error'
+            )
           }
         } else {
           const errorData = await response.json()
+          console.error('[ERROR] Registration failed:', errorData)
           showNotification(
             'Error',
             errorData.email ||
@@ -162,7 +184,7 @@ document
           )
         }
       } catch (error) {
-        console.error('Помилка запиту', error)
+        console.error('[ERROR] Request failed during registration:', error)
         showNotification(
           'Error',
           'Не вдалося підключитися до сервера.',
@@ -176,6 +198,13 @@ document
 window.addEventListener('load', () => {
   const username = localStorage.getItem('username')
   const accessToken = localStorage.getItem('access_token')
+  const refreshToken = localStorage.getItem('refresh_token')
+
+  console.log('[DEBUG] Current tokens in localStorage:', {
+    username,
+    accessToken,
+    refreshToken,
+  })
 
   if (username && accessToken) {
     // Якщо користувач авторизований, оновлюємо інтерфейс

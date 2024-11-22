@@ -1,308 +1,49 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Plan My Day</title>
-    <link rel="stylesheet" href="{% static 'main/css/style.css' %}" />
-    <link rel="stylesheet" href="{% static 'main/css/calendar.css' %}" />
-    <link rel="stylesheet" href="{% static 'main/css/task-style.css' %}" />
-    <link rel="stylesheet" href="{% static 'main/css/pop-up.css' %}" />
-    <link rel="stylesheet" href="{% static 'main/css/button.css' %}" />
-    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.5.1/moment.min.js"></script>
-  </head>
-  <body>
-    <div class="container">
-      <!-- Sidebar -->
-      <aside class="sidebar">
-        <div class="sidebar-space">
-          <div class="header-container" id="toggle-sidebar">
-            <img
-              src="{% static 'main/img/logo.png' %}"
-              alt="Logo"
-              class="logo-image"
-            />
-            <div class="logo-text">Plan My Day</div>
-          </div>
-          <div class="separator"></div>
-          <!-- Calendar -->
-          <div class="sidebar-item">
-            <span class="sidebar-item-icon">&#128197;</span>
-            <!-- Иконка календаря -->
-            <div class="calendar sidebar-item-text">
-              <div id="calendar"></div>
-              <div class="separator-calendar"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="sidebar-space">
-          <div class="categories">
-            <div class="categories-header">
-              <h3>My Calendar Categories</h3>
-              <button class="add-category-btn" onclick="addCategory()">
-                +
-              </button>
-            </div>
-            <div class="category-list">
-              <!-- Здесь будут динамически добавляться категории -->
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <!-- Main Content -->
-      <main class="main-content">
-        <!-- Header Section -->
-        <header class="header-main">
-          <div class="header-right">
-            <img
-              src="{% static 'main/img/gordon.jpeg' %}"
-              alt="User Avatar"
-              class="user-avatar"
-            />
-            <a href="user.html" style="text-decoration: none; color: black"></a>
-          </div>
-        </header>
-
-        <!-- Title Section -->
-        <section class="title-section">
-          <div class="title-left">
-            <h1>My Day</h1>
-            <p
-              id="date"
-              style="color: #fff; margin-top: 10px; font-weight: 600"
-            ></p>
-          </div>
-          <div class="title-right">
-            <button class="raise" onclick="openAddTaskPopup()">Add Task</button>
-          </div>
-        </section>
-
-        <!-- Task Section -->
-        <section id="task-section" class="task-section">
-          <div class="task-list">
-            <!-- Tasks -->
-          </div>
-        </section>
-      </main>
-    </div>
-
-    <!-- Попап для добавления задачи -->
-    <div id="addTaskPopup" class="popup-overlay">
-      <div class="popup-content wide">
-        <span class="close-btn" onclick="closeAddTaskPopup()">&times;</span>
-        <h2>Add New Task</h2>
-        <form id="addTaskForm">
-          <!-- Task Title -->
-
-          <div class="form-group">
-            <label for="task-title">Task Title</label>
-            <div class="input-container">
-              <span class="icon">&#128196;</span>
-              <input
-                type="text"
-                id="task-title"
-                name="title"
-                class="input-field"
-                placeholder="Enter task title"
-                required
-              />
-            </div>
-          </div>
-
-          <!-- Task Description -->
-          <div class="form-group">
-            <label for="task-description">Description</label>
-            <div class="input-container">
-              <span class="icon icon-top">&#128221;</span>
-              <textarea
-                id="task-description"
-                name="description"
-                placeholder="Add a description"
-              ></textarea>
-            </div>
-          </div>
-
-          <!-- Category -->
-          <div class="form-group">
-            <label for="task-category">Category</label>
-            <div class="input-container">
-              <span class="icon">&#128203;</span>
-              <select id="category-task" class="input-field" name="category">
-                <!-- Здесь категории будут динамически добавляться через JavaScript -->
-              </select>
-            </div>
-          </div>
-
-          <!-- End Date and Time -->
-          <div class="form-group">
-            <label for="task-end-date">End Date</label>
-            <div class="input-container">
-              <span class="icon">&#128197;</span>
-              <input
-                type="date"
-                id="task-end-date"
-                class="input-field"
-                name="due_date"
-                required
-              />
-              <label for="task-end-time">End Time</label>
-              <input
-                type="time"
-                id="task-end-time"
-                class="input-field"
-                name="due_date"
-                required
-              />
-            </div>
-          </div>
-
-          <!-- Task Priority -->
-          <div class="form-group">
-            <label for="task-priority">Priority</label>
-            <div class="input-container">
-              <span class="icon">&#128293;</span>
-              <select id="task-priority" class="input-field" name="priority">
-                <option value="L">Low</option>
-                <option value="M">Medium</option>
-                <option value="H">High</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Submit Button -->
-          <div class="popup-buttons">
-            <button type="button" onclick="closeAddTaskPopup()">Cancel</button>
-            <button type="submit">Save</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Попап для редактирования задачи -->
-    <div id="specific-section">
-      <div id="editTaskPopup" class="popup-overlay">
-        <div class="popup-content wide">
-          <span class="close-btn" onclick="closeEditPopup()">&times;</span>
-          <h2>Edit Task</h2>
-          <form id="editTaskForm">
-            <!-- Task Title -->
-            <div class="form-group">
-              <label for="edit-task-title">Task Title</label>
-              <div class="input-container">
-                <span class="icon">&#128196;</span>
-                <input
-                  type="text"
-                  id="edit-task-title"
-                  name="title"
-                  class="input-field"
-                  placeholder="Enter task title"
-                  required
-                />
-              </div>
-            </div>
-
-            <!-- Task Description -->
-            <div class="form-group">
-              <label for="edit-task-description">Description</label>
-              <div class="input-container">
-                <span class="icon icon-top">&#128221;</span>
-                <textarea
-                  id="edit-task-description"
-                  name="description"
-                  placeholder="Add a description"
-                ></textarea>
-              </div>
-            </div>
-
-            <!-- Category -->
-            <div class="form-group">
-              <label for="edit-task-category">Category</label>
-              <div class="input-container">
-                <span class="icon">&#128203;</span>
-                <select
-                  id="edit-task-category"
-                  class="input-field"
-                  name="category"
-                >
-                  <!-- Категории будут загружаться через JS -->
-                </select>
-              </div>
-            </div>
-
-            <!-- End Date and Time -->
-            <div class="form-group">
-              <label for="edit-task-end-date">End Date</label>
-              <div class="input-container">
-                <span class="icon">&#128197;</span>
-                <input
-                  type="date"
-                  id="edit-task-end-date"
-                  class="input-field"
-                  name="due_date"
-                  required
-                />
-                <label for="edit-task-end-time">End Time</label>
-                <input
-                  type="time"
-                  id="edit-task-end-time"
-                  class="input-field"
-                  name="due_time"
-                  required
-                />
-              </div>
-            </div>
-
-            <!-- Task Priority -->
-            <div class="form-group">
-              <label for="edit-task-priority">Priority</label>
-              <div class="input-container">
-                <span class="icon">&#128293;</span>
-                <select
-                  id="edit-task-priority"
-                  class="input-field"
-                  name="priority"
-                >
-                  <option value="L">Low</option>
-                  <option value="M">Medium</option>
-                  <option value="H">High</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Submit Button -->
-            <div class="popup-buttons">
-              <button type="button" onclick="closeEditPopup()">Cancel</button>
-              <button type="submit">Save Changes</button>
-            </div>
-          </form>
+{% extends "main/base.html" %}{% load static %} {% block title %}Главная - Plan
+My Day{% endblock %}{% block extra_styles %}
+<link rel="stylesheet" href="{% static 'main/css/task-style.css' %}" />
+{% endblock %} {% block content %}
+<main class="main-content">
+  <header class="header-main">
+    <div class="header-right">
+      <img
+        src="{% static 'main/img/gordon.jpeg' %}"
+        alt="User Avatar"
+        class="user-avatar"
+      />
+      <div class="user-menu">
+        <a
+          href="/tasks/profile"
+          class="username"
+          style="text-decoration: none"
+          id="username"
+          >&#x25BC;</a
+        >
+        <div class="dropdown" id="userDropdown">
+          <button id="logoutButton">Выйти</button>
         </div>
       </div>
     </div>
+  </header>
 
-    <script src="{% static 'main/js/script.js' %}"></script>
-    <script src="{% static 'main/js/calendar.js' %}"></script>
-    <script src="{% static 'main/js/pop-up.js' %}"></script>
-
-    <!-- Controllers -->
-    <script
-      src="{% static 'main/js/controllers/authStatus.js' %}"
-      defer
-    ></script>
-    <script src="{% static 'main/js/controllers/tasks.js' %}" defer></script>
-    <script
-      src="{% static 'main/js/controllers/taskEvents.js' %}"
-      defer
-    ></script>
-    <script
-      src="{% static 'main/js/controllers/deleteTask.js' %}"
-      defer
-    ></script>
-    <script
-      src="{% static 'main/js/controllers/categories.js' %}"
-      defer
-    ></script>
-  </body>
-</html>
+  <section class="title-section">
+    <div class="title-left">
+      <h1>My Day</h1>
+      <p id="date" style="color: #fff; margin-top: 10px; font-weight: 600"></p>
+    </div>
+    <div class="title-right">
+      <button class="raise" onclick="openAddTaskPopup()">Add Task</button>
+    </div>
+  </section>
+  <section id="task-section" class="task-section">
+    <div class="task-list"></div>
+  </section>
+  {% include "main/pop-up.html" %}
+</main>
+{% endblock %} {% block extra_scripts %}
+<!-- Controllers -->
+<script src="{% static 'main/js/controllers/authStatus.js' %}" defer></script>
+<script src="{% static 'main/js/controllers/tasks.js' %}" defer></script>
+<script src="{% static 'main/js/controllers/taskEvents.js' %}" defer></script>
+<script src="{% static 'main/js/controllers/deleteTask.js' %}" defer></script>
+<script src="{% static 'main/js/controllers/categories.js' %}" defer></script>
+{% endblock %}

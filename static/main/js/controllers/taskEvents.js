@@ -18,31 +18,37 @@ function initTaskEvents(taskElement) {
   })
 
   // Обработка клика по чекбоксу
-  checkbox.addEventListener('click', (e) => {
+  checkbox.addEventListener('click', async (e) => {
     e.stopPropagation() // Предотвращаем всплытие
     console.log('Чекбокс нажат')
 
-    // Отправляем обновление на сервер
+    // Убедимся, что токен валиден
     const isCompleted = checkbox.checked
-    updateTaskStatus(taskId, { completed: isCompleted })
+    await updateTaskStatus(taskId, { completed: isCompleted })
   })
 
   // Обработка клика по звездочке
-  star.addEventListener('click', (e) => {
+  star.addEventListener('click', async (e) => {
     e.stopPropagation() // Предотвращаем всплытие
     star.classList.toggle('active')
     const isFavorite = star.classList.contains('active')
     star.innerHTML = isFavorite ? '&#9733;' : '&#9734;'
     console.log('Звездочка изменена')
 
-    // Отправляем обновление на сервер
-    updateTaskStatus(taskId, { is_favorite: isFavorite })
+    // Убедимся, что токен валиден
+    await updateTaskStatus(taskId, { is_favorite: isFavorite })
   })
 }
 
 // Отправка обновления задачи на сервер
 async function updateTaskStatus(taskId, updatedFields) {
-  const accessToken = localStorage.getItem('access_token')
+  // Убедимся, что токен валиден
+  const accessToken = await ensureTokenIsValid()
+  if (!accessToken) {
+    console.error('[ERROR] Невозможно обновить задачу: нет валидного токена')
+    return
+  }
+
   const csrfToken = getCSRFToken()
 
   console.log(

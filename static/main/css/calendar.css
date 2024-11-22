@@ -175,8 +175,8 @@ body {
   margin: 0 1px;
 }
 
-.blue {
-  background: rgba(156, 202, 235, 1);
+.red {
+  background: rgba(255, 0, 0, 1);
 }
 .orange {
   background: rgba(247, 167, 0, 1);

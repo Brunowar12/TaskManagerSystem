@@ -12,20 +12,27 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 })
 
-// Отримуємо access token
-const accessToken = localStorage.getItem('access_token')
-
 // Завантаження категорій з сервера
 async function loadCategories() {
   const categoryList = document.querySelector('.category-list')
   categoryList.innerHTML = '' // Очищення контейнера перед додаванням
+
+  // Проверяем токен перед выполнением запроса
+  const accessToken = await ensureTokenIsValid()
+
+  if (!accessToken) {
+    console.error(
+      '[ERROR] Невозможно загрузить категории: нет валидного токена'
+    )
+    return
+  }
 
   try {
     const response = await fetch('/tasks/categories/', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`, // Авторизація через токен
+        Authorization: `Bearer ${accessToken}`, // Актуальный токен
       },
     })
 
@@ -34,13 +41,12 @@ async function loadCategories() {
     }
 
     const data = await response.json()
-    console.log('Loaded categories:', data)
+    console.log('[SUCCESS] Загружены категории:', data)
 
-    // Додавання категорій в DOM
+    // Добавление категорий в DOM
     data.results.forEach(addCategoryToDOM)
   } catch (error) {
-    console.error('Error loading categories:', error)
-    alert('Error loading categories')
+    console.error('[ERROR] Ошибка загрузки категорий:', error)
   }
 }
 
@@ -104,7 +110,7 @@ function addCategory() {
 }
 
 // Збереження категорії
-function saveCategory(input) {
+async function saveCategory(input) {
   if (!input.isConnected) {
     console.warn('Input element is no longer in the DOM.')
     return
@@ -126,34 +132,42 @@ function saveCategory(input) {
   }
 
   // Відправка категорії на сервер
-  sendCategoryToServer(categoryName)
+  await sendCategoryToServer(categoryName)
 }
 
 // Відправка нової категорії на сервер
-function sendCategoryToServer(categoryName) {
-  fetch('/tasks/categories/create/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-      'X-CSRFToken': getCookie('csrftoken'),
-    },
-    body: JSON.stringify({ name: categoryName }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`Server error! Status: ${response.status}`)
-      }
-      return response.json()
+async function sendCategoryToServer(categoryName) {
+  const accessToken = await ensureTokenIsValid()
+
+  if (!accessToken) {
+    console.error('[ERROR] Невозможно создать категорию: нет валидного токена')
+    return
+  }
+
+  try {
+    const response = await fetch('/tasks/categories/create/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify({ name: categoryName }),
     })
-    .then((data) => {
-      console.log('Category created successfully:', data)
-      loadCategories() // Перезавантаження категорій
-    })
-    .catch((error) => {
-      console.error('Error creating category:', error)
-      alert('Error creating category')
-    })
+
+    if (!response.ok) {
+      throw new Error(`Server error! Status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('[SUCCESS] Категория успешно создана:', data)
+
+    // Перезагрузка категорий
+    await loadCategories()
+  } catch (error) {
+    console.error('[ERROR] Ошибка создания категории:', error)
+    alert('Error creating category')
+  }
 }
 
 // Редагування назви категорії
@@ -192,7 +206,7 @@ function editCategoryLabel(label) {
 }
 
 // Оновлення категорії
-function updateCategoryLabel(input, label, categoryId) {
+async function updateCategoryLabel(input, label, categoryId) {
   if (!input.isConnected) {
     console.warn('Input element is no longer in the DOM.')
     return
@@ -208,56 +222,79 @@ function updateCategoryLabel(input, label, categoryId) {
     console.warn('Input element has already been removed from the DOM.')
   }
 
-  updateCategoryOnServer(categoryId, updatedName)
+  await updateCategoryOnServer(categoryId, updatedName)
 }
 
 // Оновлення категорії на сервері
-function updateCategoryOnServer(categoryId, updatedName) {
-  fetch(`/tasks/categories/${categoryId}/`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-      'X-CSRFToken': getCookie('csrftoken'),
-    },
-    body: JSON.stringify({ name: updatedName }),
-  })
-    .then((response) => {
-      if (!response.ok)
-        throw new Error(`Failed to update category. Status: ${response.status}`)
-      return response.json()
+async function updateCategoryOnServer(categoryId, updatedName) {
+  const accessToken = await ensureTokenIsValid()
+
+  if (!accessToken) {
+    console.error('[ERROR] Невозможно обновить категорию: нет валидного токена')
+    return
+  }
+
+  try {
+    const response = await fetch(`/tasks/categories/${categoryId}/`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify({ name: updatedName }),
     })
-    .then((data) => {
-      console.log('Category updated successfully:', data)
-    })
-    .catch((error) => {
-      console.error('Error updating category:', error)
-      alert('Error updating category')
-    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to update category. Status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('[SUCCESS] Категория успешно обновлена:', data)
+  } catch (error) {
+    console.error('[ERROR] Ошибка обновления категории:', error)
+    alert('Error updating category')
+  }
 }
 
 // Видалення категорії
-function deleteCategory(button) {
+async function deleteCategory(button) {
   const categoryElement = button.closest('.category')
   const categoryId = categoryElement.getAttribute('data-id')
 
+  if (!categoryId) {
+    console.error('[ERROR] Категория не найдена.')
+    return
+  }
+
+  // Проверяем токен перед запросом
+  const accessToken = await ensureTokenIsValid()
+
+  if (!accessToken) {
+    console.error('[ERROR] Невозможно удалить категорию: нет валидного токена')
+    return
+  }
+
+  // Удаляем элемент из DOM
   categoryElement.remove()
 
-  fetch(`/tasks/categories/${categoryId}/`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'X-CSRFToken': getCookie('csrftoken'),
-    },
-  })
-    .then((response) => {
-      if (!response.ok)
-        throw new Error(`Failed to delete category. Status: ${response.status}`)
-      console.log('Category deleted successfully')
+  try {
+    const response = await fetch(`/tasks/categories/${categoryId}/`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
     })
-    .catch((error) => {
-      console.error('Error deleting category:', error)
-    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete category. Status: ${response.status}`)
+    }
+
+    console.log('[SUCCESS] Категория успешно удалена')
+  } catch (error) {
+    console.error('[ERROR] Ошибка удаления категории:', error)
+  }
 }
 
 // Отримання CSRF токена
