@@ -70,12 +70,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "task_n_completed",
         ]
         read_only_fields = ["logged_in", "profile_edited", "task_n_completed"]
-
-    def update(self, instance, validated_data):       
-        instance.profile_edited = now()
     
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        instance.save()
-        return instance
+    def update(self, instance, validated_data):
+        instance.profile_edited = now()
+        return super().update(instance, validated_data)

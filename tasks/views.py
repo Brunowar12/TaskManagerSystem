@@ -1,11 +1,10 @@
 import logging
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, permissions
+from rest_framework import generics
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from users.models import Category
 from .serializers import TaskSerializer, CategorySerializer
 from .mixins import UserQuerysetMixin
 
@@ -45,6 +44,5 @@ class CategoryDetailView(UserQuerysetMixin, generics.RetrieveUpdateDestroyAPIVie
     serializer_class = CategorySerializer
 
 # HTML Page View
-def user_page(request):
-    
+def user_page(request):    
     return render(request, 'main/user.html', {"user": request.user})
