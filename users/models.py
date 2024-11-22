@@ -45,7 +45,7 @@ class User(AbstractUser):
     @transaction.atomic
     def generate_username(self):
         # Generate a unique username based on the email address
-        base_username = self.email.split(`@'')[0]
+        base_username = self.email.split('@')[0]
         new_username = base_username
         counter = 1
         while User.objects.filter(username=new_username).exists():
