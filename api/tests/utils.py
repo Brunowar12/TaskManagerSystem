@@ -14,4 +14,5 @@ class TestHelper:
         user = User.objects.get(email=email)
         response = client.post(reverse("login"), user_data)
         token = response.data.get("access", None)
-        return user, token
+        refresh = response.data.get("refresh", None)
+        return user, token, refresh

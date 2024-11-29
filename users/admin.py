@@ -18,6 +18,7 @@ class CustomUserAdmin(UserAdmin):
             },
         ),
     )
+    readonly_fields = ("logged_in", "profile_edited", "task_n_completed")
 
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Category)
