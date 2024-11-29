@@ -41,7 +41,3 @@ class CategoryListView(UserQuerysetMixin, generics.ListAPIView):
 
 class CategoryDetailView(UserQuerysetMixin, generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CategorySerializer
-
-# HTML Page View
-def user_page(request):    
-    return render(request, 'main/user.html', {"user": request.user})

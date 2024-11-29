@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (logoutButton) {
     logoutButton.addEventListener('click', () => {
       try {
+        // /logout url
+
         // Удаляем токен и имя пользователя
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')

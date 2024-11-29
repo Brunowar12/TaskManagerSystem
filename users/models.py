@@ -1,7 +1,8 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.db import models, transaction
-from django.conf import settings
+from django.utils.crypto import get_random_string
 
 class User(AbstractUser):
     username = models.CharField(max_length=80, unique=True, verbose_name="username",
@@ -12,9 +13,9 @@ class User(AbstractUser):
             )],)
     age = models.PositiveIntegerField(
         validators=[MinValueValidator(6), MaxValueValidator(100)],
-        blank=True, null=True, verbose_name="age",)
+        blank=True, null=True, verbose_name="age", help_text="Age must be between 6 and 100 years")
     email = models.EmailField(unique=True, verbose_name="email")
-    place_of_work = models.CharField(max_length=256,blank=True,
+    place_of_work = models.CharField(max_length=256, blank=True,
         validators=[
             RegexValidator(
                 r"^[a-zA-Z0-9_. -]+$",
@@ -29,34 +30,30 @@ class User(AbstractUser):
             )],)
 
     # add logic for these fields
-    logged_in = models.DateTimeField(blank=True, null=True, verbose_name="last login")
-    profile_edited = models.DateTimeField(
-        blank=True, null=True, verbose_name="last profile edit")
-    task_n_completed = models.DateTimeField(
-        blank=True, null=True, verbose_name="last task completed")
+    logged_in = models.DateTimeField(blank=True, null=True, verbose_name="last login") # На даному етапі є складності з реалізацією.
+    profile_edited = models.DateTimeField(blank=True, null=True, verbose_name="last profile edit")
+    task_n_completed = models.DateTimeField(blank=True, null=True, verbose_name="last task completed")
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
     def save(self, *args, **kwargs):
-        if not self.username:
+        if not self.pk and not self.username:
             self.username = self.generate_username()
         super().save(*args, **kwargs)
 
     @transaction.atomic
     def generate_username(self):
-        # Generate a unique username based on the email address
-        base_username = self.email.split('@')[0]
-        new_username = base_username
-        counter = 1
+        base_username = self.email.split('@')[0] 
+        new_username = base_username       
         while User.objects.filter(username=new_username).exists():
-            new_username = f"{base_username}{counter}"
-            counter += 1
+            random_suffix = get_random_string(length=10)
+            new_username = f"{base_username}{random_suffix}"
         return new_username
 
     def __str__(self):
         return self.email
-
+        
 class Category(models.Model):
     name = models.CharField(max_length=20,
         validators=[

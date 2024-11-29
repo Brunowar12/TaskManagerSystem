@@ -33,6 +33,14 @@ class Task(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     completed_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # def mark_as_completed(self): # Зараз працює некоректно
+    #     self.completed = True
+    #     self.completed_at = timezone.now()
+    #     self.save()
+
+    #     self.user.task_n_completed = timezone.now()
+    #     self.user.save()
 
     def update_completed_at(self):
         if self.completed and not self.completed_at:
