@@ -18,7 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let validationError = false
 
     formData.forEach((value, key) => {
-      if (key === 'phone_number') {
+      if (key === 'phone_number' && value) {
+        // Проверяем только, если поле заполнено
         if (!validatePhoneNumber(value)) {
           validationError = true
           updateError.textContent =

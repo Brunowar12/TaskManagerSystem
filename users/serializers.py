@@ -36,6 +36,8 @@ class UserLoginSerializer(serializers.Serializer):
         user = authenticate(email=data["email"], password=data["password"])
         if not user:
             raise serializers.ValidationError("Invalid credentials")
+        user.logged_in = now()
+        user.save(update_fields=["logged_in"])
         token = RefreshToken.for_user(user)
         return {
             "username": user.username,

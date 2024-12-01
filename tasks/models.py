@@ -50,6 +50,11 @@ class Task(models.Model):
 
     def save(self, *args, **kwargs):
         self.update_completed_at()
+
+        if self.completed:
+            self.user.task_n_completed = timezone.now()
+            self.user.save(update_fields=["task_n_completed"])
+
         super().save(*args, **kwargs)
 
     def __str__(self):

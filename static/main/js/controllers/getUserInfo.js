@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  const profileUrl = '/auth/profile/'
+  const profileUrl = '/auth/profile/prf'
 
   // Убедимся, что токен валиден, или попытаемся обновить его
   const accessToken = await ensureTokenIsValid()
