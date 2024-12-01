@@ -1,175 +1,131 @@
-// Функция для получения CSRF-токена из cookies
+// Function to get CSRF token from cookies
 function getCSRFToken() {
-  let cookieValue = null
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';')
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim()
-      if (cookie.startsWith('csrftoken=')) {
-        cookieValue = decodeURIComponent(cookie.substring('csrftoken='.length))
-        break
-      }
+  const cookies = document.cookie.split(';').map((cookie) => cookie.trim())
+  for (const cookie of cookies) {
+    if (cookie.startsWith('csrftoken=')) {
+      return decodeURIComponent(cookie.substring('csrftoken='.length))
     }
   }
-  return cookieValue
+  return null
 }
 
-// Функция для обновления интерфейса после авторизации
+// Function to update the UI after successful authentication
 function updateAuthUI(username) {
-  const userLabel = document.getElementById('userLabel')
-  const usernameDisplay = document.getElementById('usernameDisplay')
-  const inputFields = document.querySelector('.input-fields')
-  const loginButton = document.querySelector('.login-button')
-  const changeAccountBtn = document.getElementById('changeAccountBtn')
-  const welcomeButton = document.getElementById('welcomeButton')
-
-  // Показать лейбл с именем пользователя
-  userLabel.style.display = 'block'
-  usernameDisplay.textContent = username
-
-  // Скрыть поля для входа и кнопку входа
-  inputFields.style.display = 'none'
-  loginButton.style.display = 'none'
-
-  // Показать кнопки "Welcome" и "Change account"
-  welcomeButton.style.display = 'block'
-  changeAccountBtn.style.display = 'block'
+  document.getElementById('userLabel').style.display = 'block'
+  document.getElementById('usernameDisplay').textContent = username
+  document.querySelector('.input-fields').style.display = 'none'
+  document.querySelector('.login-button').style.display = 'none'
+  document.getElementById('changeAccountBtn').style.display = 'block'
+  document.getElementById('welcomeButton').style.display = 'block'
 }
 
-// Проверка состояния авторизации при загрузке страницы
-window.addEventListener('load', () => {
-  const savedUsername = localStorage.getItem('username')
-  const savedEmail = localStorage.getItem('email')
-  if (savedUsername) {
-    updateAuthUI(savedUsername)
-  } else if (savedEmail) {
-    // Если только email сохранен, заполняем его в поле для входа
-    document.getElementById('login-email').value = savedEmail
-  }
-})
-
-// Обработчик для кнопки "LOGIN"
+// Event listener for the "LOGIN" button
 document
   .querySelector('.login-button')
-  .addEventListener('click', async function (event) {
+  .addEventListener('click', async (event) => {
     event.preventDefault()
 
-    const email = document.getElementById('login-email').value
-    const password = document.getElementById('login-password').value
+    const email = document.getElementById('login-email').value.trim()
+    const password = document.getElementById('login-password').value.trim()
+
+    // Validate fields before sending the request
+    if (!email || !password) {
+      showNotification(
+        'Error',
+        'Email and password fields must be filled.',
+        'error'
+      )
+      return // Stop further execution
+    }
+
     const csrftoken = getCSRFToken()
 
     try {
-      // Первый запрос на авторизацию
+      // Send POST request for authentication
       const response = await fetch('/auth/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-CSRFToken': csrftoken,
         },
-        body: JSON.stringify({ email: email, password: password }),
+        body: JSON.stringify({ email, password }),
       })
 
       if (response.ok) {
-        const loginData = await response.json()
-        const username = loginData.username
-
-        // Сохраняем имя пользователя и email
+        // Expecting username, access, and refresh tokens in the response
+        const { username, access, refresh } = await response.json()
         localStorage.setItem('username', username)
-        localStorage.setItem('email', email)
+        localStorage.setItem('access_token', access)
+        localStorage.setItem('refresh_token', refresh)
 
-        // Запрос на получение токенов
-        const tokenResponse = await fetch('/auth/token/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email: email, password: password }),
-        })
-
-        if (tokenResponse.ok) {
-          const tokenData = await tokenResponse.json()
-          localStorage.setItem('access_token', tokenData.access) // Сохраняем access token
-          localStorage.setItem('refresh_token', tokenData.refresh) // Сохраняем refresh token
-          console.log('[SUCCESS] Токены успешно получены')
-        } else {
-          console.error(
-            '[ERROR] Ошибка получения токенов:',
-            tokenResponse.status
-          )
-        }
-
+        console.log(
+          '[SUCCESS] Authentication and tokens retrieved successfully.'
+        )
         updateAuthUI(username)
-        showNotification('Success', 'Успешная авторизация!', 'success')
+
+        // Show success notification
+        showNotification(
+          'Success',
+          'You have successfully logged in.',
+          'success'
+        )
       } else {
         const errorData = await response.json()
+        console.error(
+          '[ERROR] Authentication error:',
+          errorData.detail || response.status
+        )
+
         showNotification(
           'Error',
-          errorData.detail || 'Ошибка входа. Проверьте данные.',
+          errorData.detail ||
+            'Authentication failed. Please check your credentials.',
           'error'
         )
       }
     } catch (error) {
-      console.error('Ошибка запроса:', error)
-      showNotification('Error', 'Не удалось подключиться к серверу.', 'error')
+      console.error('[ERROR] Request error:', error)
+
+      // Notify if there is a server connection issue
+      showNotification(
+        'Error',
+        'Не вдалося підключитися до сервера для отримання токенів.',
+        'error'
+      )
     }
   })
 
-// Обработчик для кнопки "Change account" (logout)
+// Event listener for the "Change account" button
 document.getElementById('changeAccountBtn').addEventListener('click', () => {
-  // Удаляем токен и имя пользователя, но сохраняем email для автозаполнения
-  localStorage.removeItem('access_token')
-  localStorage.removeItem('refresh_token')
-  localStorage.removeItem('username')
-
-  // Также очищаем данные из cookies, если они сохраняются там
+  // Clear all stored data
+  localStorage.clear()
   document.cookie =
     'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
   document.cookie =
     'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
 
-  // Показать поля для входа и кнопку LOGIN
+  // Reset the UI to show login fields
   document.getElementById('userLabel').style.display = 'none'
   document.querySelector('.input-fields').style.display = 'block'
   document.querySelector('.login-button').style.display = 'block'
-  document.getElementById('welcomeButton').style.display = 'none'
   document.getElementById('changeAccountBtn').style.display = 'none'
+  document.getElementById('welcomeButton').style.display = 'none'
 
-  showNotification('Info', 'Вы вышли из аккаунта.', 'info')
+  console.log('Logged out successfully.')
+
+  // Show logout notification
+  showNotification('Info', 'You have logged out successfully.', 'info')
 })
 
-// Обработчик для кнопки "Welcome" для перехода на главную страницу
+// Event listener for the "Welcome" button
 document.getElementById('welcomeButton').addEventListener('click', () => {
-  window.location.href = '/'
+  window.location.href = '/' // Redirect to the home page
 })
 
-async function fetchTasks() {
-  const accessToken = localStorage.getItem('access_token')
-
-  if (!accessToken) {
-    console.error('No access token available')
-    return
+// Check authentication status on page load
+window.addEventListener('load', () => {
+  const savedUsername = localStorage.getItem('username')
+  if (savedUsername) {
+    updateAuthUI(savedUsername)
   }
-
-  try {
-    const response = await fetch('/tasks/', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (response.ok) {
-      const data = await response.json()
-      console.log('Tasks:', data)
-      // Render tasks on the UI here
-    } else {
-      console.error('Failed to fetch tasks:', response.status)
-    }
-  } catch (error) {
-    console.error('Error fetching tasks:', error)
-  }
-}
-
-// Call fetchTasks after login or page load if the user is authenticated
-fetchTasks()
+})

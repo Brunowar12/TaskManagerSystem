@@ -1,70 +1,23 @@
-// Функція для отримання CSRF-токена з cookies
+// Function to get CSRF token from cookies
 function getCSRFToken() {
-  let cookieValue = null
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';')
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim()
-      if (cookie.startsWith('csrftoken=')) {
-        cookieValue = decodeURIComponent(cookie.substring('csrftoken='.length))
-        break
-      }
+  const cookies = document.cookie.split(';').map((cookie) => cookie.trim())
+  for (const cookie of cookies) {
+    if (cookie.startsWith('csrftoken=')) {
+      return decodeURIComponent(cookie.substring('csrftoken='.length))
     }
   }
-  return cookieValue
+  return null
 }
 
-// Функція для отримання токенів через /auth/token
-async function fetchTokens(email, password) {
-  const csrftoken = getCSRFToken()
-
-  try {
-    const response = await fetch('/auth/token/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrftoken,
-      },
-      body: JSON.stringify({ email, password }),
-    })
-
-    if (response.ok) {
-      const data = await response.json()
-      console.log('[DEBUG] Response from /auth/token/:', data) // Логируем ответ
-      return {
-        access: data.access,
-        refresh: data.refresh,
-      }
-    } else {
-      const errorData = await response.json()
-      console.error('[ERROR] Failed to fetch tokens:', errorData)
-      showNotification(
-        'Error',
-        errorData.detail || 'Не вдалося отримати токени доступу.',
-        'error'
-      )
-      return null
-    }
-  } catch (error) {
-    console.error('[ERROR] Request failed:', error)
-    showNotification(
-      'Error',
-      'Не вдалося підключитися до сервера для отримання токенів.',
-      'error'
-    )
-    return null
-  }
-}
-
-// Функція для валідації полів реєстраційної форми
+// Function to validate the registration form fields
 function validateForm() {
   const emailField = document.getElementById('email')
   const passwordField = document.getElementById('password')
   const confirmPasswordField = document.getElementById('confirm_password')
 
-  const email = emailField.value
-  const password = passwordField.value
-  const confirmPassword = confirmPasswordField.value
+  const email = emailField.value.trim()
+  const password = passwordField.value.trim()
+  const confirmPassword = confirmPasswordField.value.trim()
 
   emailField.classList.remove('input-error')
   passwordField.classList.remove('input-error')
@@ -75,7 +28,7 @@ function validateForm() {
   const cyrillicRegex = /[А-Яа-яЁёЇїІіЄєҐґ]/
 
   if (!email || !password || !confirmPassword) {
-    showNotification('Error', 'All fields must be filled out', 'error')
+    showNotification('Error', 'All fields must be filled out.', 'error')
     if (!email) emailField.classList.add('input-error')
     if (!password) passwordField.classList.add('input-error')
     if (!confirmPassword) confirmPasswordField.classList.add('input-error')
@@ -83,7 +36,7 @@ function validateForm() {
   }
 
   if (!emailRegex.test(email)) {
-    showNotification('Error', 'Invalid email format', 'error')
+    showNotification('Error', 'Invalid email format.', 'error')
     emailField.classList.add('input-error')
     return false
   }
@@ -99,7 +52,7 @@ function validateForm() {
   }
 
   if (password !== confirmPassword) {
-    showNotification('Warning', 'Passwords do not match', 'warning')
+    showNotification('Warning', 'Passwords do not match.', 'warning')
     passwordField.classList.add('input-error')
     confirmPasswordField.classList.add('input-error')
     return false
@@ -108,18 +61,80 @@ function validateForm() {
   return true
 }
 
-// Подія на кнопку реєстрації для надсилання форми
+// Function to authenticate the user after registration
+async function authenticateUser(email, password) {
+  const csrftoken = getCSRFToken()
+
+  try {
+    const response = await fetch('/auth/login/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken,
+      },
+      body: JSON.stringify({ email, password }),
+    })
+
+    if (response.ok) {
+      const { username, access, refresh } = await response.json()
+
+      // Save tokens and username to localStorage
+      localStorage.setItem('username', username)
+      localStorage.setItem('access_token', access)
+      localStorage.setItem('refresh_token', refresh)
+
+      console.log('[SUCCESS] Authentication and tokens received:', {
+        username,
+        access,
+        refresh,
+      })
+
+      // Update UI after successful login
+      updateAuthUI(username)
+
+      // Show success notification
+      showNotification(
+        'Success',
+        `Welcome, ${username}! You are now logged in.`,
+        'success'
+      )
+
+      // Redirect to the main page after a short delay
+      setTimeout(() => {
+        window.location.href = '/'
+      }, 2000)
+    } else {
+      const errorData = await response.json()
+      console.error('[ERROR] Authentication failed:', errorData)
+      showNotification(
+        'Error',
+        errorData.detail || 'Login failed. Please check your credentials.',
+        'error'
+      )
+    }
+  } catch (error) {
+    console.error('[ERROR] Authentication request failed:', error)
+    showNotification(
+      'Error',
+      'Failed to connect to the server for authentication.',
+      'error'
+    )
+  }
+}
+
+// Event listener for the registration button
 document
   .querySelector('.create-account-button')
-  .addEventListener('click', async function (event) {
+  .addEventListener('click', async (event) => {
     event.preventDefault()
 
     if (validateForm()) {
-      const email = document.getElementById('email').value
-      const password = document.getElementById('password').value
+      const email = document.getElementById('email').value.trim()
+      const password = document.getElementById('password').value.trim()
       const csrftoken = getCSRFToken()
 
       try {
+        // Sending registration data
         const response = await fetch('/auth/register/', {
           method: 'POST',
           headers: {
@@ -130,48 +145,12 @@ document
         })
 
         if (response.ok) {
-          const data = await response.json()
-          const username = data.username
+          console.log(
+            '[SUCCESS] Registration successful. Now authenticating...'
+          )
 
-          console.log('[DEBUG] Registration successful:', data)
-
-          // Автоматичне отримання токенів після реєстрації
-          const tokens = await fetchTokens(email, password)
-
-          if (tokens && tokens.access && tokens.refresh) {
-            // Зберігаємо токени і ім'я користувача в localStorage
-            localStorage.setItem('access_token', tokens.access)
-            localStorage.setItem('refresh_token', tokens.refresh)
-            localStorage.setItem('username', username)
-
-            console.log('[DEBUG] Tokens saved to localStorage:', {
-              access: tokens.access,
-              refresh: tokens.refresh,
-              username: username,
-            })
-
-            // Оновлюємо інтерфейс після авторизації
-            updateAuthUI(username)
-
-            // Показуємо повідомлення про успішну реєстрацію
-            showNotification(
-              'Success',
-              `Реєстрація успішна! Ласкаво просимо, ${username}`,
-              'success'
-            )
-
-            // Плавне перенаправлення на головну сторінку через 2 секунди
-            setTimeout(() => {
-              window.location.href = '/'
-            }, 2000)
-          } else {
-            console.error('[ERROR] Tokens are missing from the response.')
-            showNotification(
-              'Error',
-              'Не вдалося отримати токени доступу. Спробуйте ще раз.',
-              'error'
-            )
-          }
+          // Authenticate the user after successful registration
+          await authenticateUser(email, password)
         } else {
           const errorData = await response.json()
           console.error('[ERROR] Registration failed:', errorData)
@@ -179,7 +158,7 @@ document
             'Error',
             errorData.email ||
               errorData.password ||
-              'Виникла невідома помилка.',
+              'An unknown error occurred.',
             'error'
           )
         }
@@ -187,27 +166,29 @@ document
         console.error('[ERROR] Request failed during registration:', error)
         showNotification(
           'Error',
-          'Не вдалося підключитися до сервера.',
+          'Failed to connect to the server. Please try again later.',
           'error'
         )
       }
     }
   })
 
-// Перевірка авторизації при завантаженні сторінки
+// Check authentication status on page load
 window.addEventListener('load', () => {
   const username = localStorage.getItem('username')
   const accessToken = localStorage.getItem('access_token')
-  const refreshToken = localStorage.getItem('refresh_token')
-
-  console.log('[DEBUG] Current tokens in localStorage:', {
-    username,
-    accessToken,
-    refreshToken,
-  })
 
   if (username && accessToken) {
-    // Якщо користувач авторизований, оновлюємо інтерфейс
+    // If the user is already authenticated, update the UI
     updateAuthUI(username)
   }
 })
+
+// Function to update the UI after successful authentication or registration
+function updateAuthUI(username) {
+  document.getElementById('userLabel').style.display = 'block'
+  document.getElementById('usernameDisplay').textContent = username
+  document.querySelector('.input-fields').style.display = 'none'
+  document.querySelector('.create-account-button').style.display = 'none'
+  document.getElementById('changeAccountBtn').style.display = 'block'
+}

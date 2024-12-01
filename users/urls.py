@@ -24,7 +24,7 @@ urlpatterns = [
     ])),
     
     path("token/", include([
-        path("", TokenObtainPairView.as_view(), name="token_obtain_pair"), # Під видалення
+        
         path("refresh/", TokenRefreshView.as_view(), name="token_refresh"),
         path('blacklist/', TokenBlacklistView.as_view(), name='token_blacklist'),
     ])),
