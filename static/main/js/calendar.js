@@ -282,8 +282,8 @@
   Calendar.prototype.openDay = function (el) {
     var details, arrow
     var dayNumber =
-      +el.querySelectorAll('.day-number')[0].innerText ||
-      +el.querySelectorAll('.day-number')[0].textContent
+      +el.querySelector('.day-number').innerText ||
+      +el.querySelector('.day-number').textContent
     var day = this.current.clone().date(dayNumber)
 
     var currentOpened = document.querySelector('.details')
@@ -307,17 +307,15 @@
       arrow = createElement('div', 'arrow')
       details.appendChild(arrow)
       el.parentNode.appendChild(details)
+
+      // Додаємо затримку перед появою тексту
+      setTimeout(() => {
+        this.renderEvents(
+          this.events.filter((ev) => ev.date.isSame(day, 'day')),
+          details
+        )
+      }, 300)
     }
-
-    var todaysEvents = this.events.reduce(function (memo, ev) {
-      if (ev.date.isSame(day, 'day')) {
-        memo.push(ev)
-      }
-      return memo
-    }, [])
-
-    this.renderEvents(todaysEvents, details)
-
     arrow.style.left = el.offsetLeft - el.parentNode.offsetLeft + 27 + 'px'
   }
 
@@ -325,7 +323,7 @@
     var currentWrapper = ele.querySelector('.events')
     var wrapper = createElement(
       'div',
-      'events in' + (currentWrapper ? ' new' : '')
+      'events fade-in' + (currentWrapper ? ' new' : '')
     )
 
     events.forEach(function (ev) {
@@ -341,13 +339,12 @@
     if (!events.length) {
       var div = createElement('div', 'event empty')
       var span = createElement('span', '', 'No Events')
-
       div.appendChild(span)
       wrapper.appendChild(div)
     }
 
     if (currentWrapper) {
-      currentWrapper.className = 'events out'
+      currentWrapper.classList.add('fade-out')
       currentWrapper.addEventListener('animationend', function () {
         currentWrapper.parentNode.removeChild(currentWrapper)
         ele.appendChild(wrapper)
