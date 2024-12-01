@@ -96,26 +96,49 @@ document
   })
 
 // Event listener for the "Change account" button
-document.getElementById('changeAccountBtn').addEventListener('click', () => {
-  // Clear all stored data
-  localStorage.clear()
-  document.cookie =
-    'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-  document.cookie =
-    'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+document
+  .getElementById('changeAccountBtn')
+  .addEventListener('click', async () => {
+    try {
+      const refreshToken = localStorage.getItem('refresh_token')
 
-  // Reset the UI to show login fields
-  document.getElementById('userLabel').style.display = 'none'
-  document.querySelector('.input-fields').style.display = 'block'
-  document.querySelector('.login-button').style.display = 'block'
-  document.getElementById('changeAccountBtn').style.display = 'none'
-  document.getElementById('welcomeButton').style.display = 'none'
+      if (refreshToken) {
+        const response = await fetch('http://127.0.0.1:8000/auth/logout/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          },
+          body: JSON.stringify({ refresh: refreshToken }),
+        })
 
-  console.log('Logged out successfully.')
+        if (!response.ok) {
+          throw new Error(`Logout failed: ${response.statusText}`)
+        }
 
-  // Show logout notification
-  showNotification('Info', 'You have logged out successfully.', 'info')
-})
+        console.log('Logout request successful.')
+      }
+
+      // Очистка даних після успішного запиту
+      localStorage.clear()
+      document.cookie =
+        'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+      document.cookie =
+        'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+
+      // Оновлення UI
+      document.getElementById('userLabel').style.display = 'none'
+      document.querySelector('.input-fields').style.display = 'block'
+      document.querySelector('.login-button').style.display = 'block'
+      document.getElementById('changeAccountBtn').style.display = 'none'
+      document.getElementById('welcomeButton').style.display = 'none'
+
+      showNotification('Info', 'You have logged out successfully.', 'info')
+    } catch (error) {
+      console.error('Error during logout:', error)
+      showNotification('Error', 'Logout failed. Please try again.', 'error')
+    }
+  })
 
 // Event listener for the "Welcome" button
 document.getElementById('welcomeButton').addEventListener('click', () => {

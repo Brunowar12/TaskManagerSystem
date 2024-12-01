@@ -186,9 +186,27 @@ window.addEventListener('load', () => {
 
 // Function to update the UI after successful authentication or registration
 function updateAuthUI(username) {
+  console.log('[INFO] Updating UI for authenticated user:', username)
+
+  // Show user information
   document.getElementById('userLabel').style.display = 'block'
   document.getElementById('usernameDisplay').textContent = username
+
+  // Hide registration fields and button
   document.querySelector('.input-fields').style.display = 'none'
   document.querySelector('.create-account-button').style.display = 'none'
+  document.querySelector('.login-button').style.display = 'none'
+  document.querySelector('.create-account-button').style.display = 'block'
+  // Show change account button
+
   document.getElementById('changeAccountBtn').style.display = 'block'
+
+  // Show Welcome button
+  const welcomeButton = document.getElementById('welcomeButton')
+  if (welcomeButton) {
+    welcomeButton.style.display = 'block'
+    console.log('[INFO] Welcome button is now visible')
+  } else {
+    console.error('[ERROR] Welcome button not found in DOM')
+  }
 }
