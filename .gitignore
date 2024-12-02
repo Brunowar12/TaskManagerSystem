@@ -31,3 +31,6 @@ venv/
 *.rar
 run_venv.bat
 .coverage
+/features/
+test_security.py
+test_validators.py
