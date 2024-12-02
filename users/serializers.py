@@ -1,32 +1,26 @@
-from django.utils.timezone import now
-from .models import User
-from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
-from django.core.validators import validate_email
-from django.core.exceptions import ValidationError
+from django.utils.timezone import now
+from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import RefreshToken
+from .models import User
 
 User = get_user_model()
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
-        write_only=True, required=True, validators=[validate_password]
+        write_only=True, required=True, validators=[validate_password],
+        help_text="Password must follow Django's password validation rules"
     )
-    username = serializers.CharField(read_only=True)    
+    email = serializers.EmailField(
+        validators=[UniqueValidator(queryset=User.objects.all())],
+        help_text="Email must be unique"
+    )
 
     class Meta:
         model = User
-        fields = ["username", "email", "password"]
-
-    def validate_email(self, value):
-        try:
-            validate_email(value)
-        except ValidationError:
-            raise serializers.ValidationError("Invalid email address")
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("This email is already in use")
-        return value
+        fields = ["email", "password"]
 
     def create(self, validated_data):
         user = User(email=validated_data["email"],)
@@ -35,8 +29,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 class UserLoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)
+    email = serializers.EmailField(help_text="User email")
+    password = serializers.CharField(write_only=True, help_text="User password")
 
     def validate(self, data):
         user = authenticate(email=data["email"], password=data["password"])
@@ -57,6 +51,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ["username"]
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    profile_edited = serializers.DateTimeField(read_only=True)
+    
     class Meta:
         model = User
         fields = [
