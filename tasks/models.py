@@ -41,6 +41,9 @@ class Task(models.Model):
 
     #     self.user.task_n_completed = timezone.now()
     #     self.user.save()
+    class Meta:
+        ordering = ['due_date', 'priority']  # Sorting by due date and priority
+
 
     def update_completed_at(self):
         if self.completed and not self.completed_at:

@@ -72,7 +72,7 @@ function updateProfileUI(user) {
       <p>Email: <span>${user.email || 'Unknown'}</span></p>
       <p>Phone Number: <span>${user.phone_number || 'Unknown'}</span></p>
       <p>Place of Work: <span>${user.place_of_work || 'Unknown'}</span></p>
-      <p>About Me: <span>${user.about_me || 'Unknown'}</span></p>
+      
     `
   }
 
