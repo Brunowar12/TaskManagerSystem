@@ -1,11 +1,11 @@
 // Глобальный объект для хранения категорий
 let categoryMap = {}
+let nextPageUrl = '/tasks/' // URL первой страницы
+const loadMoreButton = document.getElementById('load-more-btn')
 
 // Функция для загрузки категорий и их сопоставления
 async function fetchCategories() {
-  // Проверяем и обновляем токен перед выполнением запроса
   const accessToken = await ensureTokenIsValid()
-
   if (!accessToken) {
     console.error('[ERROR] Невозможно получить категории: нет валидного токена')
     return
@@ -24,7 +24,6 @@ async function fetchCategories() {
       const categories = await response.json()
       populateCategorySelect(categories.results)
 
-      // Создаем словарь для сопоставления ID -> Название
       categoryMap = categories.results.reduce((map, category) => {
         map[category.id] = category.name
         return map
@@ -108,9 +107,7 @@ function addTaskToDOM(task) {
     <span class="task-delete">&#128465;</span>
   `
 
-  // Добавляем обработчики событий
   initTaskEvents(taskElement)
-  // Добавляем обработчик для кнопки "Edit"
   taskElement.querySelector('.edit-task-btn').addEventListener('click', () => {
     openEditPopup(task)
   })
@@ -118,11 +115,16 @@ function addTaskToDOM(task) {
   taskListContainer.appendChild(taskElement)
 }
 
-// Загрузка задач
-async function loadTasks() {
+// Загрузка задач с использованием пагинации
+async function loadTasksWithPagination() {
+  if (!nextPageUrl) {
+    loadMoreButton.style.display = 'none' // Скрываем кнопку, если нет больше данных
+    return
+  }
+
   const accessToken = localStorage.getItem('access_token')
   try {
-    const response = await fetch('/tasks/', {
+    const response = await fetch(nextPageUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -133,13 +135,14 @@ async function loadTasks() {
     if (response.ok) {
       const data = await response.json()
       const tasks = data.results
-
-      document.querySelector('.task-list').innerHTML = ''
+      nextPageUrl = data.next // Сохраняем URL следующей страницы
 
       if (Array.isArray(tasks)) {
-        tasks.forEach(addTaskToDOM)
-      } else {
-        console.error('Ошибка: задачи не являются массивом.', tasks)
+        tasks.forEach(addTaskToDOM) // Добавляем задачи в DOM
+      }
+
+      if (!nextPageUrl) {
+        loadMoreButton.style.display = 'none' // Скрываем кнопку, если больше страниц нет
       }
     } else {
       console.error('Ошибка при получении задач:', response.statusText)
@@ -151,8 +154,8 @@ async function loadTasks() {
 
 // Создание новой задачи через POST
 async function createTask(newTaskData) {
-  const accessToken = localStorage.getItem('access_token') // Получаем токен доступа
-  const csrfToken = getCSRFToken() // Получаем CSRF-токен
+  const accessToken = localStorage.getItem('access_token')
+  const csrfToken = getCSRFToken()
 
   try {
     const response = await fetch('/tasks/create/', {
@@ -162,17 +165,14 @@ async function createTask(newTaskData) {
         Authorization: `Bearer ${accessToken}`,
         'X-CSRFToken': csrfToken,
       },
-      body: JSON.stringify(newTaskData), // Отправляем данные формы
+      body: JSON.stringify(newTaskData),
     })
 
     if (response.ok) {
       const createdTask = await response.json()
       console.log('Задача успешно создана:', createdTask)
 
-      // Добавляем новую задачу в DOM
       addTaskToDOM(createdTask)
-
-      // Закрываем попап
       closeAddTaskPopup()
     } else {
       const errorResponse = await response.json()
@@ -183,41 +183,11 @@ async function createTask(newTaskData) {
   }
 }
 
-// Обновление задачи через PUT
-async function updateTask(taskId, updatedTaskData) {
-  const accessToken = localStorage.getItem('access_token')
-  const csrfToken = getCSRFToken()
-
-  try {
-    const response = await fetch(`/tasks/${taskId}/`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-        'X-CSRFToken': csrfToken,
-      },
-      body: JSON.stringify(updatedTaskData),
-    })
-
-    if (response.ok) {
-      const updatedTask = await response.json()
-      console.log('Задача успешно обновлена:', updatedTask)
-      loadTasks() // Перезагружаем список задач
-      closeEditPopup()
-    } else {
-      const errorResponse = await response.json()
-      console.error('Ошибка при обновлении задачи:', errorResponse)
-    }
-  } catch (error) {
-    console.error('Ошибка запроса:', error)
-  }
-}
-
 // Вспомогательные функции
 function getPriorityClass(priority) {
   if (priority === 'high' || priority === 'H') return 'high-priority'
   if (priority === 'medium' || priority === 'M') return 'medium-priority'
-  return 'low-priority' // По умолчанию
+  return 'low-priority'
 }
 
 function formatDate(dateString) {
@@ -235,5 +205,8 @@ function getCSRFToken() {
 // Инициализация
 document.addEventListener('DOMContentLoaded', async () => {
   await fetchCategories()
-  loadTasks()
+  loadTasksWithPagination()
 })
+
+// Обработчик для кнопки "Load More"
+loadMoreButton.addEventListener('click', loadTasksWithPagination)

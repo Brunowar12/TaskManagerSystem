@@ -42,7 +42,7 @@ class Task(models.Model):
     #     self.user.task_n_completed = timezone.now()
     #     self.user.save()
     class Meta:
-        ordering = ['due_date', 'priority']  # Sorting by due date and priority
+        ordering = ['id']  # Sorting by id
 
 
     def update_completed_at(self):
