@@ -14,13 +14,13 @@ class Task(models.Model):
     title = models.CharField(max_length=64,
         validators=[
             RegexValidator(
-                r"^[a-zA-Z0-9_. -]+$",
-                "Title can only contain letters, numbers, underscores, dots, dashes, and spaces",
+                r"^[a-zA-Zа-яА-ЯёЁіІїЇєЄґҐ0-9_. -]+$",
+                "Title can contain letters (latin/cyrillic), numbers, underscores, dots, dashes, and spaces",
             )])
     description = models.TextField(blank=True, validators=[
             RegexValidator(
-                r"^[a-zA-Z0-9_. -]+$",
-                "Title can only contain letters, numbers, underscores, dots, dashes, and spaces",
+                r"^[a-zA-Zа-яА-ЯёЁіІїЇєЄґҐ0-9_. -]+$",
+                "Description can contain letters (latin/cyrillic), numbers, underscores, dots, dashes, and spaces",
             )])
     completed = models.BooleanField(default=False)
     due_date = models.DateTimeField()

@@ -18,8 +18,8 @@ class User(AbstractUser):
     place_of_work = models.CharField(max_length=256, blank=True,
         validators=[
             RegexValidator(
-                r"^[a-zA-Z0-9_. -]+$",
-                "Place of work can only contain letters, numbers, underscores, dots, dashes and spaces",
+                r"^[a-zA-Zа-яА-ЯёЁіІїЇєЄґҐ0-9_. -]+$",
+                "Place of work can contain letters (latin/cyrillic), numbers, underscores, dots, dashes, and spaces",
             )],
         verbose_name="place of work",)
     phone_number = models.CharField(max_length=15, blank=True, verbose_name="phone number",
