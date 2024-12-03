@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 500) // Задержка 500мс, чтобы запрос успел завершиться
       } catch (error) {
         console.error('Error during logout:', error)
+        showNotification('Error', 'Error during logout.', 'error')
       }
     })
   }

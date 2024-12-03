@@ -8,6 +8,11 @@ async function fetchCategories() {
   const accessToken = await ensureTokenIsValid()
   if (!accessToken) {
     console.error('[ERROR] Невозможно получить категории: нет валидного токена')
+    showNotification(
+      'Error',
+      'Failed to fetch categories: Invalid token.',
+      'error'
+    )
     return
   }
 
@@ -36,9 +41,19 @@ async function fetchCategories() {
         response.status,
         response.statusText
       )
+      showNotification(
+        'Error',
+        `Failed to fetch categories: ${response.statusText}`,
+        'error'
+      )
     }
   } catch (error) {
     console.error('[ERROR] Ошибка запроса категорий:', error)
+    showNotification(
+      'Error',
+      'An error occurred while fetching categories.',
+      'error'
+    )
   }
 }
 
@@ -65,6 +80,7 @@ function addTaskToDOM(task) {
   const taskListContainer = document.querySelector('.task-list')
   if (!taskListContainer) {
     console.error('Элемент .task-list не найден!')
+    showNotification('Error', 'Task list container not found!', 'error')
     return
   }
 
@@ -146,14 +162,43 @@ async function loadTasksWithPagination() {
       }
     } else {
       console.error('Ошибка при получении задач:', response.statusText)
+      showNotification('Error', 'Failed to fetch tasks.', 'error')
     }
   } catch (error) {
     console.error('Ошибка при запросе задач:', error)
+    showNotification(
+      'Error',
+      'An error occurred while fetching tasks.',
+      'error'
+    )
   }
 }
 
 // Создание новой задачи через POST
+// Создание новой задачи через POST
 async function createTask(newTaskData) {
+  if (!newTaskData.title || !newTaskData.description || !newTaskData.due_date) {
+    showNotification(
+      'Error',
+      'Title, description, and Date fields must be filled.',
+      'error'
+    )
+    return
+  }
+
+  const today = new Date() // Получаем сегодняшнюю дату
+  today.setHours(0, 0, 0, 0) // Обнуляем часы, минуты, секунды и миллисекунды
+  const dueDate = new Date(newTaskData.due_date)
+
+  if (dueDate < today) {
+    showNotification(
+      'Error',
+      'The due date cannot be earlier than today.',
+      'error'
+    )
+    return
+  }
+
   const accessToken = localStorage.getItem('access_token')
   const csrfToken = getCSRFToken()
 
@@ -174,12 +219,23 @@ async function createTask(newTaskData) {
 
       addTaskToDOM(createdTask)
       closeAddTaskPopup()
+      showNotification('Success', 'Task successfully created.', 'success')
     } else {
       const errorResponse = await response.json()
       console.error('Ошибка при создании задачи:', errorResponse)
+      showNotification(
+        'Error',
+        errorResponse.message || 'Failed to create task.',
+        'error'
+      )
     }
   } catch (error) {
     console.error('Ошибка при запросе создания задачи:', error)
+    showNotification(
+      'Error',
+      'An error occurred while creating the task.',
+      'error'
+    )
   }
 }
 

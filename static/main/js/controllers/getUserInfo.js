@@ -8,6 +8,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error(
       '[ERROR] No valid access token found. Redirecting to login...'
     )
+    showNotification(
+      'Error',
+      'No valid access token found. Redirecting to login...',
+      'error'
+    )
     window.location.href = '/auth' // Перенаправление на страницу авторизации
     return
   }
@@ -24,6 +29,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!response.ok) {
         if (response.status === 401) {
           console.error('[ERROR] Unauthorized. Redirecting to login...')
+          showNotification(
+            'Error',
+            'Unauthorized. Redirecting to login...',
+            'error'
+          )
           window.location.href = '/auth' // Перенаправление на авторизацию
         }
         throw new Error(`Failed to fetch user profile: ${response.statusText}`)
@@ -36,6 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     })
     .catch((error) => {
       console.error('[ERROR] Error fetching user profile:', error)
+      showNotification('Error', 'Error fetching user profile.', 'error')
     })
 })
 

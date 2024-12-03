@@ -20,6 +20,7 @@ async function refreshToken() {
   const refreshToken = localStorage.getItem('refresh_token')
   if (!refreshToken) {
     console.error('[ERROR] Missing refresh token')
+    showNotification('Error', 'Missing refresh token.', 'error')
     window.location.href = '/auth' // Redirect to login
     return null
   }
@@ -37,15 +38,22 @@ async function refreshToken() {
       const data = await response.json()
       localStorage.setItem('access_token', data.access) // Update access token in localStorage
       console.log('[SUCCESS] Access token successfully refreshed')
+      showNotification(
+        'Success',
+        'Access token successfully refreshed.',
+        'Success'
+      )
       return data.access
     } else {
       console.error(
         `[ERROR] Failed to refresh token: ${response.status} ${response.statusText}`
       )
+      showNotification('Success', 'Failed to refresh token.', 'error')
       window.location.href = '/auth'
     }
   } catch (error) {
     console.error('[ERROR] Network error while refreshing token:', error)
+    showNotification('Error', 'Network error while refreshing token.', 'error')
     window.location.href = '/auth'
   }
 
@@ -57,6 +65,11 @@ async function ensureTokenIsValid() {
   const accessToken = localStorage.getItem('access_token')
   if (!accessToken) {
     console.warn('[WARNING] Access token is missing. Attempting to refresh...')
+    showNotification(
+      'Warning',
+      'Access token is missing. Attempting to refresh....',
+      'warning'
+    )
     return await refreshToken() // Refresh token if access token is missing
   }
 
@@ -66,6 +79,11 @@ async function ensureTokenIsValid() {
 
     if (tokenPayload.exp < currentTime) {
       console.log('[INFO] Access token has expired. Attempting to refresh...')
+      showNotification(
+        'Info',
+        'Access token has expired. Attempting to refresh...',
+        'info'
+      )
       return await refreshToken() // Refresh token if expired
     }
 
@@ -73,6 +91,7 @@ async function ensureTokenIsValid() {
     return accessToken
   } catch (error) {
     console.error('[ERROR] Error while validating token:', error)
+    showNotification('Error', 'Error while validating token.', 'error')
     return await refreshToken() // Refresh token if decoding fails
   }
 }
@@ -83,6 +102,7 @@ async function fetchWithAuth(url, options = {}) {
 
   if (!accessToken) {
     console.error('[ERROR] Unable to proceed: No valid token')
+    showNotification('Error', 'Unable to proceed: No valid token.', 'error')
     return null
   }
 
@@ -127,6 +147,7 @@ async function fetchTasks() {
     }
   } catch (error) {
     console.error('[ERROR] Error while fetching tasks:', error)
+    showNotification('Error', 'Error while fetching tasks.', 'error')
   }
 }
 
@@ -141,6 +162,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     await fetchTasks() // Fetch tasks if authenticated
   } else {
     console.warn('[WARNING] User is not authenticated. Redirecting to login.')
+    showNotification(
+      'Warning',
+      'User is not authenticated. Redirecting to login.',
+      'warning'
+    )
     window.location.href = '/auth' // Redirect unauthenticated users
   }
 })
