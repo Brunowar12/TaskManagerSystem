@@ -58,8 +58,8 @@ class Category(models.Model):
     name = models.CharField(max_length=20,
         validators=[
             RegexValidator(
-                r"^[a-zA-Z0-9_.-]+$",
-                "The category name can contain only letters, numbers, underscores periods and hyphens",
+                r"^[a-zA-Zа-яА-ЯёЁіІїЇєЄґҐ0-9_. -]+$",
+                "Category name can contain letters (latin/cyrillic), numbers, underscores, dots, dashes, and spaces",
             )],)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="categories")
