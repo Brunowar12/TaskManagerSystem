@@ -35,6 +35,46 @@ My Day{% endblock %}{% block extra_styles %}
     </div>
   </section>
   <section id="task-section" class="task-section">
+    <!-- SEARCH AND FILTERS -->
+    <section class="filters-and-search">
+      <form class="custom-form">
+        <h4 class="form-title">Filters and Search</h4>
+        <div class="form-content">
+          <div class="form-group">
+            <label for="search" class="form-label">Search</label>
+            <input id="search" type="text" name="search" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label for="status" class="form-label">Status</label>
+            <select name="status" id="status" class="form-select">
+              <option value="all">All</option>
+              <option value="Completed">Completed</option>
+              <option value="Not Completed">Not Completed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="priority" class="form-label">Priority</label>
+            <select name="priority " id="priority " class="form-select">
+              <option value="all">All</option>
+              <option value="low-priority">Low-priority</option>
+              <option value="medium-priority">Medium-priority</option>
+              <option value="high-priority">High-priority</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="sort" class="form-label">Sort</label>
+            <select name="sort" id="sort" class="form-select">
+              <option value="latest">Latest</option>
+              <option value="oldest">Oldest</option>
+              <option value="a-z">A-Z</option>
+              <option value="z-a">Z-A</option>
+            </select>
+          </div>
+          <button class="btn clear-btn">Clear Filters</button>
+        </div>
+      </form>
+    </section>
+
     <div class="task-list"></div>
     <button id="load-more-btn" class="load-more-btn">Load More</button>
   </section>
