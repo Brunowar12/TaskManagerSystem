@@ -175,7 +175,6 @@ async function loadTasksWithPagination() {
 }
 
 // Создание новой задачи через POST
-// Создание новой задачи через POST
 async function createTask(newTaskData) {
   if (!newTaskData.title || !newTaskData.description || !newTaskData.due_date) {
     showNotification(
@@ -237,6 +236,96 @@ async function createTask(newTaskData) {
       'error'
     )
   }
+}
+
+// Обновление задачи через PUT
+async function updateTask(taskId, updatedTaskData) {
+  const accessToken = localStorage.getItem('access_token')
+  const csrfToken = getCSRFToken()
+
+  try {
+    const response = await fetch(`/tasks/${taskId}/`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+        'X-CSRFToken': csrfToken,
+      },
+      body: JSON.stringify(updatedTaskData),
+    })
+
+    if (response.ok) {
+      const updatedTask = await response.json()
+      console.log('Задача успешно обновлена:', updatedTask)
+      updateTaskInDOM(updatedTask) // Обновляем только изменённую задачу в DOM
+      closeEditPopup()
+      showNotification('Success', 'Task updated successfully.', 'success')
+    } else {
+      const errorResponse = await response.json()
+      console.error('Ошибка при обновлении задачи:', errorResponse)
+      showNotification('Error', 'Failed to update task.', 'error')
+    }
+  } catch (error) {
+    console.error('Ошибка запроса:', error)
+    showNotification(
+      'Error',
+      'An error occurred while updating the task.',
+      'error'
+    )
+  }
+}
+
+// update task in DOM
+
+function updateTaskInDOM(updatedTask) {
+  const taskElement = document.querySelector(
+    `.task[data-id="${updatedTask.id}"]`
+  )
+
+  if (!taskElement) {
+    console.error(`Task with ID ${updatedTask.id} not found in DOM!`)
+    return
+  }
+
+  const categoryName = categoryMap[updatedTask.category] || 'No category'
+
+  taskElement.innerHTML = `
+    <input type="checkbox" id="task-${updatedTask.id}" class="task-checkbox" ${
+    updatedTask.completed ? 'checked' : ''
+  } />
+    <div class="task-content">
+      <div class="task-collapsed">
+        <span class="task-title">${updatedTask.title}</span>
+        <div class="task-meta">
+          <span class="task-date">End: ${formatDate(
+            updatedTask.due_date
+          )}</span>
+          <span class="task-category">Category: ${categoryName}</span>
+        </div>
+      </div>
+      <div class="task-expanded">
+        <span class="task-title">${updatedTask.title}</span>
+        <p class="task-description">${
+          updatedTask.description || 'No description available'
+        }</p>
+        <div class="task-meta">
+          <span>Created: ${formatDate(updatedTask.created_at)}</span>
+          <span>End: ${formatDate(updatedTask.due_date)}</span>
+          <span>Category: ${categoryName}</span>
+        </div>
+      </div>
+    </div>
+    <span class="edit-task-btn">&#9998;</span>
+    <span class="task-star ${updatedTask.is_favorite ? 'active' : ''}">${
+    updatedTask.is_favorite ? '&#9733;' : '&#9734;'
+  }</span>
+    <span class="task-delete">&#128465;</span>
+  `
+
+  initTaskEvents(taskElement)
+  taskElement.querySelector('.edit-task-btn').addEventListener('click', () => {
+    openEditPopup(updatedTask)
+  })
 }
 
 // Вспомогательные функции
