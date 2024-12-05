@@ -4,9 +4,7 @@ from .views import (
     UpdateProfileView, ProfileView,
     auth_page, user_page
 )
-from rest_framework_simplejwt.views import (
-    TokenRefreshView, TokenBlacklistView
-)
+from rest_framework_simplejwt.views import TokenRefreshView, TokenBlacklistView
 
 urlpatterns = [
     path("", include([
