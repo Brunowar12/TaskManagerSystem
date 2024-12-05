@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  const profileUrl = '/auth/profile/'
+  const profileUrl = '/auth/profile/prf'
 
   // Убедимся, что токен валиден, или попытаемся обновить его
   const accessToken = await ensureTokenIsValid()
@@ -7,6 +7,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!accessToken) {
     console.error(
       '[ERROR] No valid access token found. Redirecting to login...'
+    )
+    showNotification(
+      'Error',
+      'No valid access token found. Redirecting to login...',
+      'error'
     )
     window.location.href = '/auth' // Перенаправление на страницу авторизации
     return
@@ -24,6 +29,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!response.ok) {
         if (response.status === 401) {
           console.error('[ERROR] Unauthorized. Redirecting to login...')
+          showNotification(
+            'Error',
+            'Unauthorized. Redirecting to login...',
+            'error'
+          )
           window.location.href = '/auth' // Перенаправление на авторизацию
         }
         throw new Error(`Failed to fetch user profile: ${response.statusText}`)
@@ -36,6 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     })
     .catch((error) => {
       console.error('[ERROR] Error fetching user profile:', error)
+      showNotification('Error', 'Error fetching user profile.', 'error')
     })
 })
 
@@ -72,7 +83,7 @@ function updateProfileUI(user) {
       <p>Email: <span>${user.email || 'Unknown'}</span></p>
       <p>Phone Number: <span>${user.phone_number || 'Unknown'}</span></p>
       <p>Place of Work: <span>${user.place_of_work || 'Unknown'}</span></p>
-      <p>About Me: <span>${user.about_me || 'Unknown'}</span></p>
+      
     `
   }
 

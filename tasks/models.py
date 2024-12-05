@@ -14,13 +14,13 @@ class Task(models.Model):
     title = models.CharField(max_length=64,
         validators=[
             RegexValidator(
-                r"^[a-zA-Z0-9_. -]+$",
-                "Title can only contain letters, numbers, underscores, dots, dashes, and spaces",
+                r"^[a-zA-Zа-яА-ЯёЁіІїЇєЄґҐ0-9_. -]+$",
+                "Title can contain letters (latin/cyrillic), numbers, underscores, dots, dashes, and spaces",
             )])
     description = models.TextField(blank=True, validators=[
             RegexValidator(
-                r"^[a-zA-Z0-9_. -]+$",
-                "Title can only contain letters, numbers, underscores, dots, dashes, and spaces",
+                r"^[a-zA-Zа-яА-ЯёЁіІїЇєЄґҐ0-9_. -]+$",
+                "Description can contain letters (latin/cyrillic), numbers, underscores, dots, dashes, and spaces",
             )])
     completed = models.BooleanField(default=False)
     due_date = models.DateTimeField()
@@ -41,6 +41,9 @@ class Task(models.Model):
 
     #     self.user.task_n_completed = timezone.now()
     #     self.user.save()
+    class Meta:
+        ordering = ['id']  # Sorting by id
+
 
     def update_completed_at(self):
         if self.completed and not self.completed_at:
@@ -50,6 +53,11 @@ class Task(models.Model):
 
     def save(self, *args, **kwargs):
         self.update_completed_at()
+
+        if self.completed:
+            self.user.task_n_completed = timezone.now()
+            self.user.save(update_fields=["task_n_completed"])
+
         super().save(*args, **kwargs)
 
     def __str__(self):

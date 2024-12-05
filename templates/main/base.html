@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{% static 'main/css/calendar.css' %}" />
     <link rel="stylesheet" href="{% static 'main/css/pop-up.css' %}" />
     <link rel="stylesheet" href="{% static 'main/css/button.css' %}" />
+    <link rel="stylesheet" href="{% static 'auth/css/notifications.css' %}" />
     {% block extra_styles %}{% endblock %}
     <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.5.1/moment.min.js"></script>
   </head>
@@ -54,6 +55,7 @@
     <script src="{% static 'main/js/calendar.js' %}"></script>
     <script src="{% static 'main/js/pop-up.js' %}"></script>
     <script src="{% static 'main/js/controllers/logout.js' %}" defer></script>
+    <script src="{% static 'auth/js/notifications.js' %}" defer></script>
     {% block extra_scripts %}{% endblock %}
   </body>
 </html>

@@ -2,59 +2,62 @@ document.addEventListener('DOMContentLoaded', () => {
   const updateProfileForm = document.getElementById('updateProfileForm')
   const updateStatus = document.getElementById('update-status')
   const updateError = document.getElementById('update-error')
+  const usernameElement = document.getElementById('username') // Елемент для оновлення імені в <a>
+  const userNameHeader = document.querySelector('.user-name') // Елемент <h3> для оновлення імені
   const updateUrl = '/auth/profile/update/'
 
-  // Функция валидации номера телефона
   function validatePhoneNumber(phoneNumber) {
-    const phoneRegex = /^\+?\d{1,15}$/ // Только + в начале и до 15 цифр
+    const phoneRegex = /^\+?\d{1,15}$/
     return phoneRegex.test(phoneNumber)
   }
 
   updateProfileForm.addEventListener('submit', async (e) => {
-    e.preventDefault() // Останавливаем отправку формы
+    e.preventDefault()
 
     const formData = new FormData(updateProfileForm)
     const data = {}
     let validationError = false
 
     formData.forEach((value, key) => {
-      if (key === 'phone_number') {
+      if (key === 'phone_number' && value) {
         if (!validatePhoneNumber(value)) {
           validationError = true
-          updateError.textContent =
-            'Invalid phone number. Ensure it starts with + and contains only up to 15 digits.'
-          updateError.style.display = 'block'
-        } else {
-          updateError.style.display = 'none'
+          showNotification(
+            'Error',
+            'Invalid phone number. Ensure it starts with + and contains only up to 15 digits.',
+            'error'
+          )
         }
       }
 
       if (value) {
-        data[key] = value // Добавляем только заполненные значения
+        data[key] = value
       }
     })
 
     if (validationError) {
-      return // Если валидация не прошла, не отправляем форму
+      return
     }
 
-    // Убедимся, что токен валиден
     const accessToken = await ensureTokenIsValid()
     if (!accessToken) {
-      console.error('No valid access token found. Please log in again.')
-      updateError.textContent = 'You are not authenticated. Please log in.'
-      updateError.style.display = 'block'
+      showNotification(
+        'Error',
+        'You are not authenticated. Please log in.',
+        'error'
+      )
+
       return
     }
 
     try {
       const response = await fetch(updateUrl, {
-        method: 'PATCH', // Используем PATCH вместо PUT
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`, // Токен в заголовке
+          Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify(data), // Отправляем только изменённые данные
+        body: JSON.stringify(data),
       })
 
       if (!response.ok) {
@@ -62,23 +65,29 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const responseData = await response.json()
+
+      // Оновлюємо username у локальному сховищі та на сторінці
+      if (data.username) {
+        localStorage.setItem('username', data.username)
+        usernameElement.textContent = data.username // Оновлення <a class="username">
+        userNameHeader.textContent = data.username // Оновлення <h3 class="user-name">
+      }
+
+      // Закриваємо попап після успішного оновлення
+      closeEditProfilePopup()
+
       console.log('Profile updated successfully:', responseData)
-
-      updateStatus.style.display = 'block'
-      updateStatus.textContent = 'Profile updated successfully!'
-      updateError.style.display = 'none'
-
-      // Отладка: сообщение перед перезагрузкой
-      console.log('Preparing to reload the page in 1 seconds...')
-      setTimeout(() => {
-        console.log('Reloading the page now...')
-        window.location.reload() // Перезагружаем страницу
-      }, 1000) // 1000 миллисекунд = 1 секунда
+      showNotification('Success', 'Profile updated successfully.', 'success')
     } catch (error) {
       console.error('Error updating profile:', error)
-      updateStatus.style.display = 'none'
-      updateError.style.display = 'block'
-      updateError.textContent = 'Failed to update profile.'
+      showNotification('Error', 'Error updating profile.', 'error')
     }
   })
+
+  // Ініціалізація значення username з localStorage (при завантаженні сторінки)
+  const storedUsername = localStorage.getItem('username')
+  if (storedUsername) {
+    usernameElement.textContent = storedUsername
+    userNameHeader.textContent = storedUsername
+  }
 })
