@@ -21,8 +21,11 @@ async function loadCategories() {
   const accessToken = await ensureTokenIsValid()
 
   if (!accessToken) {
-    console.error(
-      '[ERROR] Невозможно загрузить категории: нет валидного токена'
+    console.error('[ERROR] Unable to load categories: no valid token')
+    showNotification(
+      'Error',
+      'Unable to load categories: no valid token.',
+      'error'
     )
     return
   }
@@ -47,6 +50,7 @@ async function loadCategories() {
     data.results.forEach(addCategoryToDOM)
   } catch (error) {
     console.error('[ERROR] Ошибка загрузки категорий:', error)
+    showNotification('Error', 'Error loading categories.', 'error')
   }
 }
 
@@ -141,6 +145,11 @@ async function sendCategoryToServer(categoryName) {
 
   if (!accessToken) {
     console.error('[ERROR] Невозможно создать категорию: нет валидного токена')
+    showNotification(
+      'Error',
+      'Unable to create category: no valid token.',
+      'error'
+    )
     return
   }
 
@@ -161,12 +170,13 @@ async function sendCategoryToServer(categoryName) {
 
     const data = await response.json()
     console.log('[SUCCESS] Категория успешно создана:', data)
+    showNotification('Success', 'Category successfully created.', 'success')
 
     // Перезагрузка категорий
     await loadCategories()
   } catch (error) {
     console.error('[ERROR] Ошибка создания категории:', error)
-    alert('Error creating category')
+    showNotification('Error', 'Error creating category.', 'error')
   }
 }
 
@@ -231,6 +241,11 @@ async function updateCategoryOnServer(categoryId, updatedName) {
 
   if (!accessToken) {
     console.error('[ERROR] Невозможно обновить категорию: нет валидного токена')
+    showNotification(
+      'Error',
+      'Unable to update category: no valid token.',
+      'error'
+    )
     return
   }
 
@@ -253,7 +268,7 @@ async function updateCategoryOnServer(categoryId, updatedName) {
     console.log('[SUCCESS] Категория успешно обновлена:', data)
   } catch (error) {
     console.error('[ERROR] Ошибка обновления категории:', error)
-    alert('Error updating category')
+    showNotification('Error', 'Error updating category.', 'error')
   }
 }
 
@@ -264,6 +279,7 @@ async function deleteCategory(button) {
 
   if (!categoryId) {
     console.error('[ERROR] Категория не найдена.')
+    showNotification('Error', 'Category not found.', 'error')
     return
   }
 
@@ -272,6 +288,11 @@ async function deleteCategory(button) {
 
   if (!accessToken) {
     console.error('[ERROR] Невозможно удалить категорию: нет валидного токена')
+    showNotification(
+      'Error',
+      'Cannot delete category: no valid token.',
+      'error'
+    )
     return
   }
 
@@ -292,8 +313,10 @@ async function deleteCategory(button) {
     }
 
     console.log('[SUCCESS] Категория успешно удалена')
+    showNotification('Success', 'Category successfully deleted.', 'success')
   } catch (error) {
     console.error('[ERROR] Ошибка удаления категории:', error)
+    showNotification('Error', 'Error deleting category.', 'error')
   }
 }
 

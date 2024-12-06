@@ -295,7 +295,32 @@ body {
   background: rgba(249, 233, 0, 1);
 }
 
+.details.out {
+  animation: hideDetails 0.3s ease-out forwards;
+}
+
+@keyframes fadeOutText {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes hideDetails {
+  from {
+    opacity: 1;
+    height: 70px;
+  }
+  to {
+    opacity: 0;
+    height: 0;
+  }
+}
+
 /* Animations are cool!  */
+
 @-webkit-keyframes moveFromTopFade {
   from {
     opacity: 0.3;

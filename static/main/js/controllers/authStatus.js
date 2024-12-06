@@ -1,29 +1,27 @@
-// Функция для проверки авторизации
+// Function to check if the user is authenticated
 function isAuthenticated() {
-  return !!localStorage.getItem('access_token') // Возвращает true, если токен существует
+  return !!localStorage.getItem('access_token') // Returns true if access token exists
 }
 
-// Функция для отображения имени пользователя
+// Function to display the username in the header
 function displayUserNameInHeader() {
-  const username = localStorage.getItem('username') // Получаем имя пользователя из localStorage
+  const username = localStorage.getItem('username')
   const usernameLink = document.querySelector('.header-right a')
 
   if (username && usernameLink) {
-    usernameLink.textContent = username // Обновляем имя в заголовке
+    usernameLink.textContent = username // Update username in the header
   } else {
-    // Если пользователь не авторизован, перенаправляем его на страницу входа
-    window.location.href = '/auth'
+    window.location.href = '/auth' // Redirect to login if not authenticated
   }
 }
 
-// Функция для обновления токена
+// Function to refresh the token
 async function refreshToken() {
   const refreshToken = localStorage.getItem('refresh_token')
-  console.log('[INFO] Попытка обновить токен...')
-
   if (!refreshToken) {
-    console.error('[ERROR] Отсутствует refresh_token')
-    window.location.href = '/auth' // Перенаправляем на страницу входа
+    console.error('[ERROR] Missing refresh token')
+    showNotification('Error', 'Missing refresh token.', 'error')
+    window.location.href = '/auth' // Redirect to login
     return null
   }
 
@@ -38,66 +36,79 @@ async function refreshToken() {
 
     if (response.ok) {
       const data = await response.json()
-      localStorage.setItem('access_token', data.access) // Обновляем access token в localStorage
-      console.log('[SUCCESS] Access token успешно обновлен')
+      localStorage.setItem('access_token', data.access) // Update access token in localStorage
+      console.log('[SUCCESS] Access token successfully refreshed')
+      showNotification(
+        'Success',
+        'Access token successfully refreshed.',
+        'Success'
+      )
       return data.access
     } else {
       console.error(
-        '[ERROR] Ошибка при обновлении токена:',
-        response.status,
-        response.statusText
+        `[ERROR] Failed to refresh token: ${response.status} ${response.statusText}`
       )
-      window.location.href = '/auth' // Перенаправляем на страницу входа при ошибке
+      showNotification('Success', 'Failed to refresh token.', 'error')
+      window.location.href = '/auth'
     }
   } catch (error) {
-    console.error('[ERROR] Ошибка сети при обновлении токена:', error)
+    console.error('[ERROR] Network error while refreshing token:', error)
+    showNotification('Error', 'Network error while refreshing token.', 'error')
     window.location.href = '/auth'
   }
 
   return null
 }
 
-// Функция для проверки и обновления токена перед запросами
+// Function to validate and refresh token if necessary
 async function ensureTokenIsValid() {
   const accessToken = localStorage.getItem('access_token')
-
   if (!accessToken) {
-    console.warn('[WARNING] Access token отсутствует, пробуем обновить...')
-    return await refreshToken() // Если access token отсутствует, пытаемся обновить его
+    console.warn('[WARNING] Access token is missing. Attempting to refresh...')
+    showNotification(
+      'Warning',
+      'Access token is missing. Attempting to refresh....',
+      'warning'
+    )
+    return await refreshToken() // Refresh token if access token is missing
   }
 
   try {
-    // Проверка срока действия токена
-    const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]))
+    const tokenPayload = JSON.parse(atob(accessToken.split('.')[1])) // Decode token
     const currentTime = Math.floor(Date.now() / 1000)
 
     if (tokenPayload.exp < currentTime) {
-      console.log('[INFO] Access token истек. Попытка обновления...')
-      return await refreshToken() // Если токен истек, обновляем его
+      console.log('[INFO] Access token has expired. Attempting to refresh...')
+      showNotification(
+        'Info',
+        'Access token has expired. Attempting to refresh...',
+        'info'
+      )
+      return await refreshToken() // Refresh token if expired
     }
 
-    console.log('[INFO] Access token действителен')
+    console.log('[INFO] Access token is valid')
     return accessToken
   } catch (error) {
-    console.error('[ERROR] Ошибка при проверке токена:', error)
-    return await refreshToken() // Обновляем токен, если произошла ошибка
+    console.error('[ERROR] Error while validating token:', error)
+    showNotification('Error', 'Error while validating token.', 'error')
+    return await refreshToken() // Refresh token if decoding fails
   }
 }
 
-// Универсальная функция для выполнения запросов с проверкой токена
+// Universal function to make requests with token validation
 async function fetchWithAuth(url, options = {}) {
-  // Гарантируем, что токен актуален
   const accessToken = await ensureTokenIsValid()
 
   if (!accessToken) {
-    console.error('[ERROR] Невозможно выполнить запрос: нет валидного токена')
+    console.error('[ERROR] Unable to proceed: No valid token')
+    showNotification('Error', 'Unable to proceed: No valid token.', 'error')
     return null
   }
 
-  // Добавляем актуальный токен в заголовок запроса
   const headers = {
     ...options.headers,
-    Authorization: `Bearer ${accessToken}`,
+    Authorization: `Bearer ${accessToken}`, // Add authorization header
   }
 
   try {
@@ -108,18 +119,18 @@ async function fetchWithAuth(url, options = {}) {
 
     if (!response.ok) {
       console.error(
-        `[ERROR] Ошибка запроса: ${response.status} ${response.statusText}`
+        `[ERROR] Request failed: ${response.status} ${response.statusText}`
       )
     }
 
     return response
   } catch (error) {
-    console.error('[ERROR] Ошибка сети при выполнении запроса:', error)
+    console.error('[ERROR] Network error during request:', error)
     return null
   }
 }
 
-// Функция для получения задач
+// Function to fetch tasks
 async function fetchTasks() {
   try {
     const response = await fetchWithAuth('/tasks/', {
@@ -131,30 +142,31 @@ async function fetchTasks() {
 
     if (response && response.ok) {
       const data = await response.json()
-      console.log('[SUCCESS] Задачи получены:', data)
-      // Здесь можно обновить интерфейс задач
+      console.log('[SUCCESS] Tasks retrieved:', data)
+      // Update the task interface here
     }
   } catch (error) {
-    console.error('[ERROR] Ошибка при получении задач:', error)
+    console.error('[ERROR] Error while fetching tasks:', error)
+    showNotification('Error', 'Error while fetching tasks.', 'error')
   }
 }
 
-// Основной блок: выполняем при загрузке страницы
+// Main block: Execute when the page is loaded
 document.addEventListener('DOMContentLoaded', async () => {
   if (isAuthenticated()) {
-    console.log('[INFO] Пользователь авторизован')
+    console.log('[INFO] User is authenticated')
     displayUserNameInHeader()
 
-    // Проверяем токен и выполняем запросы после успешного обновления токена
+    // Validate token and fetch tasks after refreshing if needed
     await ensureTokenIsValid()
-    await fetchTasks() // Загружаем задачи только если пользователь авторизован
+    await fetchTasks() // Fetch tasks if authenticated
   } else {
-    console.warn(
-      '[WARNING] Пользователь не авторизован. Перенаправляем на страницу входа.'
+    console.warn('[WARNING] User is not authenticated. Redirecting to login.')
+    showNotification(
+      'Warning',
+      'User is not authenticated. Redirecting to login.',
+      'warning'
     )
-    window.location.href = '/auth' // Перенаправляем неавторизованных пользователей
+    window.location.href = '/auth' // Redirect unauthenticated users
   }
 })
-
-console.log('Access Token:', localStorage.getItem('access_token'))
-console.log('Refresh Token:', localStorage.getItem('refresh_token'))

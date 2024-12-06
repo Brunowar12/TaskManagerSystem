@@ -10,6 +10,7 @@
   flex-direction: column;
   gap: var(--gap);
   align-items: center;
+  z-index: 9999;
 }
 
 .notification {

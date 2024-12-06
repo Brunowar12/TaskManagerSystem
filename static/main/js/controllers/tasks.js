@@ -1,13 +1,18 @@
 // Глобальный объект для хранения категорий
 let categoryMap = {}
+let nextPageUrl = '/tasks/' // URL первой страницы
+const loadMoreButton = document.getElementById('load-more-btn')
 
 // Функция для загрузки категорий и их сопоставления
 async function fetchCategories() {
-  // Проверяем и обновляем токен перед выполнением запроса
   const accessToken = await ensureTokenIsValid()
-
   if (!accessToken) {
     console.error('[ERROR] Невозможно получить категории: нет валидного токена')
+    showNotification(
+      'Error',
+      'Failed to fetch categories: Invalid token.',
+      'error'
+    )
     return
   }
 
@@ -24,7 +29,6 @@ async function fetchCategories() {
       const categories = await response.json()
       populateCategorySelect(categories.results)
 
-      // Создаем словарь для сопоставления ID -> Название
       categoryMap = categories.results.reduce((map, category) => {
         map[category.id] = category.name
         return map
@@ -37,9 +41,19 @@ async function fetchCategories() {
         response.status,
         response.statusText
       )
+      showNotification(
+        'Error',
+        `Failed to fetch categories: ${response.statusText}`,
+        'error'
+      )
     }
   } catch (error) {
     console.error('[ERROR] Ошибка запроса категорий:', error)
+    showNotification(
+      'Error',
+      'An error occurred while fetching categories.',
+      'error'
+    )
   }
 }
 
@@ -66,6 +80,7 @@ function addTaskToDOM(task) {
   const taskListContainer = document.querySelector('.task-list')
   if (!taskListContainer) {
     console.error('Элемент .task-list не найден!')
+    showNotification('Error', 'Task list container not found!', 'error')
     return
   }
 
@@ -108,9 +123,7 @@ function addTaskToDOM(task) {
     <span class="task-delete">&#128465;</span>
   `
 
-  // Добавляем обработчики событий
   initTaskEvents(taskElement)
-  // Добавляем обработчик для кнопки "Edit"
   taskElement.querySelector('.edit-task-btn').addEventListener('click', () => {
     openEditPopup(task)
   })
@@ -118,11 +131,16 @@ function addTaskToDOM(task) {
   taskListContainer.appendChild(taskElement)
 }
 
-// Загрузка задач
-async function loadTasks() {
+// Загрузка задач с использованием пагинации
+async function loadTasksWithPagination() {
+  if (!nextPageUrl) {
+    loadMoreButton.style.display = 'none' // Скрываем кнопку, если нет больше данных
+    return
+  }
+
   const accessToken = localStorage.getItem('access_token')
   try {
-    const response = await fetch('/tasks/', {
+    const response = await fetch(nextPageUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -133,26 +151,55 @@ async function loadTasks() {
     if (response.ok) {
       const data = await response.json()
       const tasks = data.results
-
-      document.querySelector('.task-list').innerHTML = ''
+      nextPageUrl = data.next // Сохраняем URL следующей страницы
 
       if (Array.isArray(tasks)) {
-        tasks.forEach(addTaskToDOM)
-      } else {
-        console.error('Ошибка: задачи не являются массивом.', tasks)
+        tasks.forEach(addTaskToDOM) // Добавляем задачи в DOM
+      }
+
+      if (!nextPageUrl) {
+        loadMoreButton.style.display = 'none' // Скрываем кнопку, если больше страниц нет
       }
     } else {
       console.error('Ошибка при получении задач:', response.statusText)
+      showNotification('Error', 'Failed to fetch tasks.', 'error')
     }
   } catch (error) {
     console.error('Ошибка при запросе задач:', error)
+    showNotification(
+      'Error',
+      'An error occurred while fetching tasks.',
+      'error'
+    )
   }
 }
 
 // Создание новой задачи через POST
 async function createTask(newTaskData) {
-  const accessToken = localStorage.getItem('access_token') // Получаем токен доступа
-  const csrfToken = getCSRFToken() // Получаем CSRF-токен
+  if (!newTaskData.title || !newTaskData.description || !newTaskData.due_date) {
+    showNotification(
+      'Error',
+      'Title, description, and Date fields must be filled.',
+      'error'
+    )
+    return
+  }
+
+  const today = new Date() // Получаем сегодняшнюю дату
+  today.setHours(0, 0, 0, 0) // Обнуляем часы, минуты, секунды и миллисекунды
+  const dueDate = new Date(newTaskData.due_date)
+
+  if (dueDate < today) {
+    showNotification(
+      'Error',
+      'The due date cannot be earlier than today.',
+      'error'
+    )
+    return
+  }
+
+  const accessToken = localStorage.getItem('access_token')
+  const csrfToken = getCSRFToken()
 
   try {
     const response = await fetch('/tasks/create/', {
@@ -162,24 +209,32 @@ async function createTask(newTaskData) {
         Authorization: `Bearer ${accessToken}`,
         'X-CSRFToken': csrfToken,
       },
-      body: JSON.stringify(newTaskData), // Отправляем данные формы
+      body: JSON.stringify(newTaskData),
     })
 
     if (response.ok) {
       const createdTask = await response.json()
       console.log('Задача успешно создана:', createdTask)
 
-      // Добавляем новую задачу в DOM
       addTaskToDOM(createdTask)
-
-      // Закрываем попап
       closeAddTaskPopup()
+      showNotification('Success', 'Task successfully created.', 'success')
     } else {
       const errorResponse = await response.json()
       console.error('Ошибка при создании задачи:', errorResponse)
+      showNotification(
+        'Error',
+        errorResponse.message || 'Failed to create task.',
+        'error'
+      )
     }
   } catch (error) {
     console.error('Ошибка при запросе создания задачи:', error)
+    showNotification(
+      'Error',
+      'An error occurred while creating the task.',
+      'error'
+    )
   }
 }
 
@@ -202,22 +257,82 @@ async function updateTask(taskId, updatedTaskData) {
     if (response.ok) {
       const updatedTask = await response.json()
       console.log('Задача успешно обновлена:', updatedTask)
-      loadTasks() // Перезагружаем список задач
+      updateTaskInDOM(updatedTask) // Обновляем только изменённую задачу в DOM
       closeEditPopup()
+      showNotification('Success', 'Task updated successfully.', 'success')
     } else {
       const errorResponse = await response.json()
       console.error('Ошибка при обновлении задачи:', errorResponse)
+      showNotification('Error', 'Failed to update task.', 'error')
     }
   } catch (error) {
     console.error('Ошибка запроса:', error)
+    showNotification(
+      'Error',
+      'An error occurred while updating the task.',
+      'error'
+    )
   }
+}
+
+// update task in DOM
+
+function updateTaskInDOM(updatedTask) {
+  const taskElement = document.querySelector(
+    `.task[data-id="${updatedTask.id}"]`
+  )
+
+  if (!taskElement) {
+    console.error(`Task with ID ${updatedTask.id} not found in DOM!`)
+    return
+  }
+
+  const categoryName = categoryMap[updatedTask.category] || 'No category'
+
+  taskElement.innerHTML = `
+    <input type="checkbox" id="task-${updatedTask.id}" class="task-checkbox" ${
+    updatedTask.completed ? 'checked' : ''
+  } />
+    <div class="task-content">
+      <div class="task-collapsed">
+        <span class="task-title">${updatedTask.title}</span>
+        <div class="task-meta">
+          <span class="task-date">End: ${formatDate(
+            updatedTask.due_date
+          )}</span>
+          <span class="task-category">Category: ${categoryName}</span>
+        </div>
+      </div>
+      <div class="task-expanded">
+        <span class="task-title">${updatedTask.title}</span>
+        <p class="task-description">${
+          updatedTask.description || 'No description available'
+        }</p>
+        <div class="task-meta">
+          <span>Created: ${formatDate(updatedTask.created_at)}</span>
+          <span>End: ${formatDate(updatedTask.due_date)}</span>
+          <span>Category: ${categoryName}</span>
+        </div>
+      </div>
+    </div>
+    <span class="edit-task-btn">&#9998;</span>
+    <span class="task-star ${updatedTask.is_favorite ? 'active' : ''}">${
+    updatedTask.is_favorite ? '&#9733;' : '&#9734;'
+  }</span>
+    <span class="task-delete">&#128465;</span>
+  `
+
+  initTaskEvents(taskElement)
+  taskElement.querySelector('.edit-task-btn').addEventListener('click', () => {
+    openEditPopup(updatedTask)
+  })
 }
 
 // Вспомогательные функции
 function getPriorityClass(priority) {
   if (priority === 'high' || priority === 'H') return 'high-priority'
   if (priority === 'medium' || priority === 'M') return 'medium-priority'
-  return 'low-priority' // По умолчанию
+  return 'low-priority'
 }
 
 function formatDate(dateString) {
@@ -235,5 +350,8 @@ function getCSRFToken() {
 // Инициализация
 document.addEventListener('DOMContentLoaded', async () => {
   await fetchCategories()
-  loadTasks()
+  loadTasksWithPagination()
 })
+
+// Обработчик для кнопки "Load More"
+loadMoreButton.addEventListener('click', loadTasksWithPagination)

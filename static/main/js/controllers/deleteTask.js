@@ -69,7 +69,11 @@ async function deleteTask(taskId) {
 
   if (!accessToken) {
     console.error('[ERROR] Невозможно удалить задачу: нет валидного токена')
-    alert('Failed to delete the task. Authorization issue.')
+    showNotification(
+      'Error',
+      'Failed to delete the task. Authorization issue!',
+      'error'
+    )
     return
   }
 
@@ -88,31 +92,58 @@ async function deleteTask(taskId) {
         taskElement.remove()
       }
       console.log('[SUCCESS] Задача успешно удалена')
-      alert('Task successfully deleted!')
+      showNotification('Success', 'Task successfully deleted!', 'success')
     } else {
       console.error(
         '[ERROR] Ошибка при удалении задачи:',
         response.status,
         response.statusText
       )
-      alert('Failed to delete the task. Please try again.')
+      showNotification(
+        'Error',
+        'Failed to delete the task. Please try again.',
+        'error'
+      )
     }
   } catch (error) {
     console.error('[ERROR] Сетевая ошибка при удалении задачи:', error)
-    alert('An error occurred while trying to delete the task.')
+    showNotification(
+      'Error',
+      'An error occurred while trying to delete the task.',
+      'error'
+    )
   }
 }
 
 // Добавляем обработчик события для кнопки удаления
 document.addEventListener('click', (event) => {
-  if (event.target.classList.contains('task-delete')) {
-    const taskElement = event.target.closest('.task')
-    const taskId = taskElement.getAttribute('data-id')
+  const taskElement = event.target.closest('.task')
 
-    if (taskId) {
-      if (confirm('Are you sure you want to delete this task?')) {
-        deleteTask(taskId)
+  if (!taskElement) return
+
+  if (event.target.classList.contains('task-delete')) {
+    const deleteButton = event.target
+
+    // Если кнопка уже находится в состоянии подтверждения
+    if (deleteButton.dataset.confirmation === 'true') {
+      const taskId = taskElement.getAttribute('data-id')
+      if (taskId) {
+        deleteTask(taskId) // Удаляем задачу
       }
+    } else {
+      // Заменяем корзину на галочку
+      deleteButton.innerHTML = '&#10004;' // HTML-код для галочки
+      deleteButton.dataset.confirmation = 'true' // Добавляем атрибут подтверждения
+      deleteButton.title = 'Confirm deletion'
+
+      // Таймер для возврата кнопки
+      setTimeout(() => {
+        if (deleteButton.dataset.confirmation === 'true') {
+          deleteButton.innerHTML = '&#128465;' // Корзина
+          deleteButton.dataset.confirmation = 'false'
+          deleteButton.title = 'Delete task'
+        }
+      }, 5000) // 5 секунд
     }
   }
 })

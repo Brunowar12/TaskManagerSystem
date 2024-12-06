@@ -5,7 +5,7 @@
   <div class="popup-content wide">
     <span class="close-btn" onclick="closeAddTaskPopup()">&times;</span>
     <h2>Add New Task</h2>
-    <form id="addTaskForm">
+    <form id="addTaskForm" novalidate>
       <!-- Task Title -->
 
       <div class="form-group">
@@ -65,6 +65,7 @@
             id="task-end-time"
             class="input-field"
             name="due_date"
+            value="23:59"
             required
           />
         </div>

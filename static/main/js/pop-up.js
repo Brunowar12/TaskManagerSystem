@@ -105,7 +105,7 @@ function editProfile() {
   const popup = document.getElementById('updateProfilePopup') // Ищем попап по ID
   if (popup) {
     popup.classList.add('show') // Показываем попап
-    fetch('/auth/profile/', {
+    fetch('/auth/profile/prf', {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -119,6 +119,7 @@ function editProfile() {
         return response.json()
       })
       .then((data) => {
+        console.log('Полученные данные профиля:', data)
         document.getElementById('username').value = data.username || ''
         document.getElementById('email').value = data.email || ''
         document.getElementById('age').value = data.age || ''
