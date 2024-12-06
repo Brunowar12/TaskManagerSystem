@@ -52,11 +52,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'users',
-    'tasks'
+    'tasks',
+    'corsheaders',
 ]
 
 # List of middleware classes to use
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',            # security-related middleware
     'django.contrib.sessions.middleware.SessionMiddleware',     # session management middleware
     'django.middleware.common.CommonMiddleware',                # common middleware
@@ -64,7 +66,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',  # authentication middleware
     'django.contrib.messages.middleware.MessageMiddleware',     # messaging middleware
     'django.middleware.clickjacking.XFrameOptionsMiddleware',   # clickjacking protection middleware
+     
+    
 ]
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',  # Next.js
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 # REST Framework settings
 REST_FRAMEWORK = {
