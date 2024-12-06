@@ -1,7 +1,7 @@
-from rest_framework import serializers
 from django.utils import timezone
-from .models import Task
+from rest_framework import serializers
 from users.models import Category
+from .models import Task
 
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:
