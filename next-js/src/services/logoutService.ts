@@ -3,6 +3,7 @@ import Cookies from 'js-cookie'
 // Очистка данных при выходе
 export async function logout() {
   const accessToken = Cookies.get('accessToken')
+  const refreshToken = Cookies.get('refreshToken')
 
   if (accessToken) {
     try {
@@ -13,6 +14,7 @@ export async function logout() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
+        body: JSON.stringify({ refresh: refreshToken }),
       })
 
       if (!response.ok) {
