@@ -25,6 +25,8 @@ export async function login(
     // Сохраняем токены в куки
     Cookies.set('accessToken', access, { expires: 1 / 24 })
     Cookies.set('refreshToken', refresh, { expires: 7 })
+    Cookies.set('username', username, { expires: 7 })
+    Cookies.set('email', userEmail, { expires: 7 })
 
     return { username, email: userEmail }
   } catch (error: any) {
@@ -51,4 +53,18 @@ export async function register(
       error.response?.data?.detail || 'An error occurred during registration.'
     )
   }
+}
+// Получение информации о текущем пользователе из Cookies
+export function getCurrentUser() {
+  const username = Cookies.get('username') || ''
+  const email = Cookies.get('email') || ''
+  return { username, email }
+}
+
+// Очистка данных при выходе
+export function logout() {
+  Cookies.remove('accessToken')
+  Cookies.remove('refreshToken')
+  Cookies.remove('username')
+  Cookies.remove('email')
 }
