@@ -28,7 +28,7 @@ class TaskListView(UserQuerysetMixin, generics.ListAPIView):
                 return queryset.filter(due_date__date=now().date())
             except Exception as e:
                 logging.error(f"Error filtering today's tasks: {e}")
-                raise ValidationError("Error filtering today's tasks")
+                raise ValidationError("Error filtering today's tasks") from e
         return queryset
 
 # Task details, updates, and deletion

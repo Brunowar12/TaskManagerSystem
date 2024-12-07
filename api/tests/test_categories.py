@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework import status
-from .test_setup import APITestSetup
 from users.models import Category
+from .test_setup import APITestSetup
 
 class CategoryAPITests(APITestSetup):
     def test_create_category_success(self):
