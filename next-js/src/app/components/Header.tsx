@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { UserCircle, LogOut, Menu, ChevronDown, User2 } from 'lucide-react'
-import { getCurrentUser, logout } from '@/services/authService'
+import { getCurrentUser } from '@/services/authService'
+import { logout } from '@/services/logoutService'
 
 interface HeaderProps {
   toggleSidebar: () => void

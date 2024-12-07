@@ -96,10 +96,11 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),     # lifetime access token
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),        # lifetime refresh token
-    'ROTATE_REFRESH_TOKENS': True,                      # rotate refresh tokens on each request
+    'ROTATE_REFRESH_TOKENS': False,                     # rotate refresh tokens on each request
     'BLACKLIST_AFTER_ROTATION': True,                   # blacklist old refresh tokens after rotation
     'UPDATE_LAST_LOGIN': False,                         # dont update last login on token refresh
     'ALGORITHM': 'HS256',                               # algorithm used for signing tokens
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 # Root URL configuration

@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation' // Используем `next/navigation` вместо `next/router`
+import { checkUserAuthorization } from '@/services/authChecker'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
 import MainContent from './components/MainContent'
@@ -17,6 +19,18 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false)
   const [currentView, setCurrentView] = useState<View>('tasks')
   const { addNotification } = useNotification()
+  const router = useRouter()
+
+  // Проверка авторизации
+  useEffect(() => {
+    const checkAuth = async () => {
+      const isAuthorized = await checkUserAuthorization()
+      if (!isAuthorized) {
+        router.push('/auth') // Перенаправляем на страницу авторизации
+      }
+    }
+    checkAuth()
+  }, [router])
 
   useEffect(() => {
     const checkMobile = () => {
@@ -51,22 +65,22 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gradient-to-b from-[#8f31f2] to-[#e0dee1]">
-      <Sidebar 
-        isVisible={isSidebarVisible} 
-        isCollapsed={isSidebarCollapsed} 
+    <div className='flex h-screen overflow-hidden bg-gradient-to-b from-[#8f31f2] to-[#e0dee1]'>
+      <Sidebar
+        isVisible={isSidebarVisible}
+        isCollapsed={isSidebarCollapsed}
         currentView={currentView}
         onChangeView={changeView}
       />
-      
-      <div className="flex flex-1 flex-col">
-        <Header 
+
+      <div className='flex flex-1 flex-col'>
+        <Header
           toggleSidebar={toggleSidebar}
           toggleCollapse={toggleSidebarCollapse}
           isCollapsed={isSidebarCollapsed}
           onProfileClick={() => changeView('profile')}
         />
-        <main className="flex-1 overflow-hidden transition-all duration-300 ease-in-out p-6">
+        <main className='flex-1 overflow-hidden transition-all duration-300 ease-in-out p-6'>
           {currentView === 'tasks' && <MainContent />}
           {currentView === 'calendar' && <CalendarView />}
           {currentView === 'stats' && <StatsView />}
@@ -74,17 +88,17 @@ export default function Home() {
             <Profile
               onBackToTasks={() => changeView('tasks')}
               user={{
-                name: "John Doe",
-                email: "john@example.com",
-                phone: "+1 234 567 8900",
-                workplace: "Acme Inc.",
+                name: 'John Doe',
+                email: 'john@example.com',
+                phone: '+1 234 567 8900',
+                workplace: 'Acme Inc.',
                 age: 30,
-                avatarUrl: "/profile-image.jpg?height=128&width=128"
+                avatarUrl: '/profile-image.jpg?height=128&width=128',
               }}
               stats={{
                 completedTasks: 42,
                 ongoingTasks: 15,
-                totalTasks: 57
+                totalTasks: 57,
               }}
             />
           )}
@@ -93,12 +107,11 @@ export default function Home() {
 
       {/* Mobile overlay */}
       {isSidebarVisible && isMobile && (
-        <div 
-          className="fixed inset-0 bg-black/50 md:hidden"
+        <div
+          className='fixed inset-0 bg-black/50 md:hidden'
           onClick={toggleSidebar}
         />
       )}
     </div>
   )
 }
-
