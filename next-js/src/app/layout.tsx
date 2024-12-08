@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { NotificationProvider } from '@/contexts/notification-context'
+import { CategoryProvider } from '@/contexts/CategoryManagement' // Импорт CategoryProvider
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -16,13 +17,16 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang='en'>
       <body className={inter.className}>
         <NotificationProvider>
-          {children}
+          <CategoryProvider>
+            {' '}
+            {/* Оборачиваем детей в CategoryProvider */}
+            {children}
+          </CategoryProvider>
         </NotificationProvider>
       </body>
     </html>
   )
 }
-
