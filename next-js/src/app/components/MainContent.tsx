@@ -171,10 +171,17 @@ export default function MainContent() {
         <TaskEditPopup
           isOpen={isEditPopupOpen}
           onClose={() => setEditPopupOpen(false)}
-          onSave={(title, description) =>
-            handleEditTask(taskToEdit.id, title, description)
+          onSave={(title, description, categoryId, due_date, priority) =>
+            handleEditTask(taskToEdit.id, {
+              title,
+              description,
+              category: categoryId, // Теперь передаем ID категории
+              due_date,
+              priority,
+            })
           }
-          categories={['Work', 'Shopping', 'Personal']}
+          categories={categories} // Передача категорий в формате [{ id: 1, name: 'Work' }, ...]
+          task={taskToEdit} // Передача данных текущей задачи
         />
       )}
 
