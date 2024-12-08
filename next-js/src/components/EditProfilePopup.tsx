@@ -13,7 +13,7 @@ import {
   Upload,
 } from 'lucide-react'
 import { useNotification } from '@/contexts/notification-context'
-import { updateUserProfile } from '@/services/userService' // Импорт функции обновления
+import { useUserContext } from '@/contexts/UserManagement'
 
 interface EditProfilePopupProps {
   isOpen: boolean
@@ -45,6 +45,7 @@ export default function EditProfilePopup({
   const [image, setImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { addNotification } = useNotification()
+  const { updateUserProfile } = useUserContext() // Используем контекст
 
   useEffect(() => {
     setFormData({
@@ -142,16 +143,17 @@ export default function EditProfilePopup({
     console.log('Form data to be sent:', formData)
     try {
       addNotification('info', 'Updating profile...')
-      const updatedProfile = await updateUserProfile({
+      await updateUserProfile({
         username: formData.username,
         email: formData.email,
-        age: formData.age,
-        placeOfWork: formData.placeOfWork,
-        phoneNumber: formData.phoneNumber,
+        age: formData.age ? Number(formData.age) : undefined,
+        place_of_work: formData.placeOfWork,
+        phone_number: formData.phoneNumber,
       })
       addNotification('success', 'Profile updated successfully!')
       onClose()
-    } catch {
+    } catch (error) {
+      console.error('Failed to update profile:', error)
       addNotification('error', 'Failed to update profile. Please try again.')
     }
   }
@@ -301,7 +303,7 @@ export default function EditProfilePopup({
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => fileInputRef.current?.click()}
-                      className='px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500'
+                      className='px-3 py-1.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-2 focus:ring-offset-2 focus:ring-purple-500'
                     >
                       <Upload className='h-4 w-4 inline-block mr-2' />
                       Upload

@@ -61,8 +61,19 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     task_n_completed?: string
   }) => {
     try {
-      const updatedUser = await updateUserProfile(data)
-      setUser(updatedUser)
+      await updateUserProfile(data)
+      await fetchUserProfile() // Рефетч после успешного обновления
+
+      if (data.username) {
+        document.cookie = `username=${encodeURIComponent(
+          data.username
+        )}; path=/; max-age=${60 * 60 * 24 * 365}` // 1 год
+      }
+      if (data.email) {
+        document.cookie = `email=${encodeURIComponent(
+          data.email
+        )}; path=/; max-age=${60 * 60 * 24 * 365}` // 1 год
+      }
     } catch (error) {
       console.error('Error updating user profile:', error)
     }

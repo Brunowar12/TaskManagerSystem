@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { UserCircle, LogOut, Menu, ChevronDown, User2 } from 'lucide-react'
-import { getCurrentUser } from '@/services/authService'
 import { logout } from '@/services/logoutService'
+import { useUserContext } from '@/contexts/UserManagement' // Импорт контекста пользователя
 
 interface HeaderProps {
   toggleSidebar: () => void
@@ -20,13 +20,11 @@ export default function Header({
 }: HeaderProps) {
   const [showDropdown, setShowDropdown] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
-  const [user, setUser] = useState({ username: '', email: '' })
+  const { user } = useUserContext() // Данные пользователя из контекста
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const userData = getCurrentUser()
-    setUser(userData)
-    // Update state to detect if the window width meets desktop criteria
+    // Обновляем состояние для определения, является ли устройство десктопным
     const updateIsDesktop = () => {
       if (typeof window !== 'undefined') {
         setIsDesktop(window.innerWidth >= 768)
@@ -52,9 +50,9 @@ export default function Header({
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
   const handleLogout = () => {
     logout()
-    setUser({ username: '', email: '' })
     console.log('Logged out')
   }
 
@@ -82,7 +80,7 @@ export default function Header({
           className='flex items-center gap-2 rounded-full bg-white px-3 py-2 shadow-sm transition-colors hover:bg-gray-50'
         >
           <UserCircle className='h-6 w-6 text-purple-600' />
-          <span className='font-medium'>{user.username}</span>
+          <span className='font-medium'>{user?.username || 'Guest'}</span>
           <ChevronDown
             className={`h-4 w-4 transition-transform ${
               showDropdown ? 'rotate-180' : ''
@@ -94,7 +92,9 @@ export default function Header({
           <div className='absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5'>
             <div className='px-4 py-2'>
               <p className='text-sm'>Signed in as</p>
-              <p className='truncate text-sm font-medium'>{user.email}</p>
+              <p className='truncate text-sm font-medium'>
+                {user?.email || '—'}
+              </p>
             </div>
             <div className='border-t border-gray-100'>
               <button
