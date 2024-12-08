@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNotification } from '@/contexts/notification-context'
+import * as taskService from '@/services/taskService'
 
 interface TaskCreationPopupProps {
   isOpen: boolean
@@ -28,10 +29,10 @@ export default function TaskCreationPopup({
 }: TaskCreationPopupProps) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [category, setCategory] = useState()
+  const [category, setCategory] = useState(categories[0] || '') // Устанавливаем первую категорию по умолчанию
   const [dueDate, setDueDate] = useState('')
   const [dueTime, setDueTime] = useState('23:59')
-  const [priority, setPriority] = useState('medium')
+  const [priority, setPriority] = useState('M') // По умолчанию 'M'
   const [errors, setErrors] = useState<Record<string, string>>({})
   const { addNotification } = useNotification()
 
@@ -82,23 +83,29 @@ export default function TaskCreationPopup({
       addNotification('error', 'Please fix the errors in the form.')
       return
     }
-
-    onSave({
+    const onSave = (task: any) => {
+      console.log('Data received in onSave:', task) // Проверка
+      taskService.createTask(task)
+    }
+    const formattedTask = {
       title,
       description,
       category,
-      dueDate: `${dueDate}T${dueTime}`,
-      priority,
-    })
+      due_date: `${dueDate}T${dueTime}`,
+      priority: priority.charAt(0).toUpperCase(),
+    }
+    console.log('Task being sent to server:', formattedTask) // Лог данных перед передачей
+    onSave(formattedTask)
 
     addNotification('success', 'Task created successfully!')
 
+    // Сброс значений формы
     setTitle('')
     setDescription('')
-    setCategory(categories[0])
+    setCategory(categories[0] || '')
     setDueDate('')
     setDueTime('23:59')
-    setPriority('medium')
+    setPriority('M')
     setErrors({})
     onClose()
   }
