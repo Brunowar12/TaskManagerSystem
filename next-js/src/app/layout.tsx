@@ -4,6 +4,7 @@ import './globals.css'
 import { NotificationProvider } from '@/contexts/notification-context'
 import { CategoryProvider } from '@/contexts/CategoryManagement'
 import { UserProvider } from '@/contexts/UserManagement'
+import { TaskProvider } from '@/contexts/TaskManagementContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -23,9 +24,11 @@ export default function RootLayout({
         <NotificationProvider>
           <UserProvider>
             <CategoryProvider>
-              {' '}
-              {/* Оборачиваем детей в CategoryProvider */}
-              {children}
+              <TaskProvider>
+                {' '}
+                {/* Оборачиваем детей в CategoryProvider */}
+                {children}
+              </TaskProvider>
             </CategoryProvider>
           </UserProvider>
         </NotificationProvider>
