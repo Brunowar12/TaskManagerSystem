@@ -32,6 +32,14 @@ export default function Home() {
     checkAuth()
   }, [router])
 
+  // Следим за изменениями хеша в URL
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '') as View
+    if (hash && ['tasks', 'calendar', 'stats', 'profile'].includes(hash)) {
+      setCurrentView(hash)
+    }
+  }, [window.location.hash])
+
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
@@ -62,6 +70,7 @@ export default function Home() {
 
   const changeView = (view: View) => {
     setCurrentView(view)
+    window.location.hash = `#${view}` // Обновляем хеш в URL
   }
 
   return (
