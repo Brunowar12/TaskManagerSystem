@@ -14,11 +14,16 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNotification } from '@/contexts/notification-context'
 import * as taskService from '@/services/taskService'
 
+interface Category {
+  id: string
+  name: string
+}
+
 interface TaskCreationPopupProps {
   isOpen: boolean
   onClose: () => void
   onSave: (task: any) => void
-  categories: string[]
+  categories: Category[]
 }
 
 export default function TaskCreationPopup({
@@ -219,10 +224,10 @@ export default function TaskCreationPopup({
                       onChange={(e) => setCategory(e.target.value)}
                       className='flex-grow rounded-lg border border-gray-300 px-3 py-2 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors duration-200'
                     >
-                      <option value='Select Category'>Select Category</option>
+                      <option value=''>Select Category</option>
                       {categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
+                        <option key={cat.id} value={cat.id}>
+                          {cat.name}
                         </option>
                       ))}
                     </select>

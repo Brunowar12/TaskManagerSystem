@@ -56,7 +56,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
   const addTask = async (
     title: string,
     description = '',
-    category: string,
+    category_id: number, // изменили на category_id
     due_date: string,
     priority: 'L' | 'M' | 'H'
   ) => {
@@ -64,7 +64,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       const newTask = await createTask({
         title,
         description,
-        category,
+        category_id, // передаем category_id
         due_date,
         priority,
       })

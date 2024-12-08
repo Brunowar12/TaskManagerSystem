@@ -153,7 +153,7 @@ export default function MainContent() {
         isOpen={isCreationPopupOpen}
         onClose={() => setCreationPopupOpen(false)}
         onSave={handleCreateTask}
-        categories={categories.map((cat) => cat.name)}
+        categories={categories}
       />
       {taskToEdit && (
         <TaskEditPopup

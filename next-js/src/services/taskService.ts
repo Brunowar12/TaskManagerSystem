@@ -35,7 +35,7 @@ export const getTasks = async (url: string = BASE_URL) => {
 export const createTask = async (task: {
   title: string
   description?: string
-  category: string
+  category_id: number // изменили category на category_id
   due_date: string
   priority: 'L' | 'M' | 'H'
 }) => {
