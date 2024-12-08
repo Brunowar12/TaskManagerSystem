@@ -12,7 +12,6 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNotification } from '@/contexts/notification-context'
-import * as taskService from '@/services/taskService'
 
 interface Category {
   id: string
