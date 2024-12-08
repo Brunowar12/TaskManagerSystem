@@ -99,15 +99,15 @@ export default function Profile({
             <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
               <div className='flex items-center space-x-2 text-gray-600'>
                 <Mail className='w-5 h-5 text-purple-500' />
-                <span>{user?.email ?? 'N/A'}</span>
+                <span>Email: {user?.email ?? 'N/A'}</span>
               </div>
               <div className='flex items-center space-x-2 text-gray-600'>
                 <Phone className='w-5 h-5 text-purple-500' />
-                <span>{user?.phone_number ?? 'N/A'}</span>
+                <span>Phone number: {user?.phone_number ?? 'N/A'}</span>
               </div>
               <div className='flex items-center space-x-2 text-gray-600'>
                 <Building2 className='w-5 h-5 text-purple-500' />
-                <span>{user?.place_of_work ?? 'N/A'}</span>
+                <span>Place of work: {user?.place_of_work ?? 'N/A'}</span>
               </div>
               <div className='flex items-center space-x-2 text-gray-600'>
                 <User2 className='w-5 h-5 text-purple-500' />
