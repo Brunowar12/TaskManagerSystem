@@ -13,12 +13,12 @@ import {
   Upload,
 } from 'lucide-react'
 import { useNotification } from '@/contexts/notification-context'
+import { updateUserProfile } from '@/services/userService' // Импорт функции обновления
 
 interface EditProfilePopupProps {
   isOpen: boolean
   onClose: () => void
   user: {
-    // тип данных user, который приходит в компонент
     username?: string
     email?: string
     age?: string
@@ -47,7 +47,6 @@ export default function EditProfilePopup({
   const { addNotification } = useNotification()
 
   useEffect(() => {
-    // Если форма открыта, подставляем данные пользователя
     setFormData({
       username: user?.username || '',
       email: user?.email || '',
@@ -57,30 +56,33 @@ export default function EditProfilePopup({
     })
   }, [user])
 
-  const validateField = (name: string, value: string) => {
+  const validateField = (name: string, value: string | number) => {
     let error = ''
-    const containsCyrillic = /[а-яА-ЯёЁ]/.test(value)
+    const containsCyrillic = /[а-яА-ЯёЁ]/.test(String(value))
 
     if (containsCyrillic) {
       error = 'Only Latin characters are allowed.'
     } else {
+      const valueStr = String(value).trim()
+
       switch (name) {
         case 'username':
-          if (!value.trim()) error = 'Username is required.'
+          if (!valueStr) error = 'Username is required.'
           break
         case 'email':
-          if (!value.trim()) error = 'Email is required.'
-          else if (!/\S+@\S+\.\S+/.test(value)) error = 'Invalid email format.'
+          if (!valueStr) error = 'Email is required.'
+          else if (!/\S+@\S+\.\S+/.test(valueStr))
+            error = 'Invalid email format.'
           break
         case 'age':
-          if (value.trim() && (isNaN(Number(value)) || Number(value) <= 0)) {
+          if (valueStr && (isNaN(Number(valueStr)) || Number(valueStr) <= 0)) {
             error = 'Age must be a positive number.'
           }
           break
         case 'phoneNumber':
-          if (value.trim() && !/^\+?[0-9\s-]{0,15}$/.test(value)) {
+          if (valueStr && !/^\+?[0-9\s-]{0,15}$/.test(valueStr)) {
             error = 'Phone number must contain only digits, spaces, "+" or "-".'
-          } else if (value.trim() && value.replace(/[^0-9]/g, '').length > 15) {
+          } else if (valueStr && valueStr.replace(/[^0-9]/g, '').length > 15) {
             error = 'Invalid phone number (max 15 digits).'
           }
           break
@@ -116,7 +118,7 @@ export default function EditProfilePopup({
       addNotification('error', error)
       setNotificationShown(true)
     } else if (!error) {
-      setNotificationShown(false) // Сброс флага при устранении ошибки
+      setNotificationShown(false)
     }
   }
 
@@ -137,10 +139,16 @@ export default function EditProfilePopup({
       addNotification('error', 'Please fix validation errors.')
       return
     }
-
+    console.log('Form data to be sent:', formData)
     try {
       addNotification('info', 'Updating profile...')
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const updatedProfile = await updateUserProfile({
+        username: formData.username,
+        email: formData.email,
+        age: formData.age,
+        placeOfWork: formData.placeOfWork,
+        phoneNumber: formData.phoneNumber,
+      })
       addNotification('success', 'Profile updated successfully!')
       onClose()
     } catch {
@@ -262,6 +270,7 @@ export default function EditProfilePopup({
                   </div>
                 ))}
 
+                {/* Профильная картинка */}
                 <div className='relative'>
                   <label className='text-sm font-medium text-gray-700 mb-1 block'>
                     Profile Picture (Optional)
@@ -307,21 +316,12 @@ export default function EditProfilePopup({
                   </div>
                 </div>
 
-                <div className='flex flex-col sm:flex-row sm:justify-end gap-3 mt-6'>
-                  <motion.button
-                    type='button'
-                    onClick={onClose}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className='px-4 py-1.5 text-sm rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors duration-300 w-full sm:w-auto'
-                  >
-                    Cancel
-                  </motion.button>
+                <div className='flex flex-col sm:flex-row sm:gap-4'>
                   <motion.button
                     type='submit'
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className='px-4 py-1.5 text-sm rounded-lg text-white bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 transition-all duration-300 w-full sm:w-auto'
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className='w-full sm:w-auto px-4 py-2 bg-purple-600 text-white font-semibold rounded-md shadow-md hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:outline-none'
                   >
                     Update Profile
                   </motion.button>

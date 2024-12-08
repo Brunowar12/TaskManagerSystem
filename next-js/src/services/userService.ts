@@ -36,12 +36,14 @@ export const getUserProfile = async () => {
 
 // Обновление данных профиля
 export const updateUserProfile = async (data: {
-  name?: string
+  username?: string
   email?: string
-  description?: string
+  age?: string
+  placeOfWork?: string
+  phoneNumber?: string
 }) => {
   const response = await fetch(`${BASE_URL}update/`, {
-    method: 'PUT',
+    method: 'PATCH',
     headers: headersWithAuth(),
     body: JSON.stringify(data),
   })
