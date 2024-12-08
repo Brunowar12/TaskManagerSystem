@@ -99,12 +99,12 @@ export default function Sidebar({
             isCollapsed ? 'justify-center' : 'justify-start w-full'
           }`}
         >
-          <div className='h-15 w-20 overflow-hidden rounded-full'>
+          <div className='h-15 w-15 overflow-hidden rounded-full'>
             <Image
               src='/logo.png?height=100&width=100'
               alt='Logo'
-              width={80}
-              height={80}
+              width={50}
+              height={50}
             />
           </div>
           {!isCollapsed && (
