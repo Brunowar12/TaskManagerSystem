@@ -110,21 +110,25 @@ export default function TaskEditPopup({
       return
     }
 
-    // Преобразуем category к числу для проверки
-    const categoryId = parseInt(category, 10)
+    let categoryId: number | null = null
 
-    const categoryObj = categories.find((cat) => cat.id === categoryId)
-    if (!categoryObj) {
-      console.error('Category not found!')
-      addNotification('error', 'Invalid category selection.')
-      return
+    if (category) {
+      // Преобразуем category к числу, если оно выбрано
+      const parsedCategoryId = parseInt(category, 10)
+      const categoryObj = categories.find((cat) => cat.id === parsedCategoryId)
+      if (!categoryObj) {
+        console.error('Category not found!')
+        addNotification('error', 'Invalid category selection.')
+        return
+      }
+      categoryId = categoryObj.id
     }
 
     // Логируем данные перед отправкой на сервер
     console.log('Данные, которые будут отправлены на сервер:', {
       title,
       description,
-      categoryId: categoryObj.id, // Используем ID категории
+      categoryId: categoryId, // Может быть null, если категория не выбрана
       dueDate: `${dueDate}T${dueTime}`,
       priority,
     })
@@ -132,7 +136,7 @@ export default function TaskEditPopup({
     onSave(
       title,
       description,
-      categoryObj.id, // Отправляем ID категории
+      categoryId, // Отправляем null, если категория не выбрана
       `${dueDate}T${dueTime}`,
       priority
     )

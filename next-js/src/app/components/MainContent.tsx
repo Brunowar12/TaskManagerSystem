@@ -131,7 +131,7 @@ export default function MainContent() {
       case 'L':
         return 'bg-green-500'
       default:
-        return 'bg-gray-500'
+        return 'bg-orange-500'
     }
   }
 
