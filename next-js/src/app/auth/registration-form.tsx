@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useNotification } from '@/contexts/notification-context'
 import { register, login } from '@/services/authService'
+import { useCategoryContext } from '@/contexts/CategoryManagement'
+import { useUserContext } from '@/contexts/UserManagement'
 
 export default function RegistrationForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -17,6 +19,8 @@ export default function RegistrationForm() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const router = useRouter()
   const { addNotification, setPendingNotification } = useNotification()
+  const { fetchCategories } = useCategoryContext()
+  const { fetchUserProfile } = useUserContext()
 
   const validateField = (name: string, value: string): string => {
     let error = ''
@@ -99,6 +103,7 @@ export default function RegistrationForm() {
           `Welcome, ${userData.username}!`,
           5000
         )
+        await Promise.all([fetchCategories(), fetchUserProfile()])
         router.push('/')
       } catch (err: any) {
         addNotification('error', err.message)
