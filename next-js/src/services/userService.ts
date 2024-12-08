@@ -22,7 +22,7 @@ const headersWithAuth = () => {
 
 // Получение данных профиля
 export const getUserProfile = async () => {
-  const response = await fetch(`${BASE_URL}prf`, {
+  const response = await fetch(`${BASE_URL}prf/`, {
     method: 'GET',
     headers: headersWithAuth(),
   })
