@@ -109,22 +109,7 @@ export default function Home() {
           {currentView === 'calendar' && <CalendarView />}
           {currentView === 'stats' && <StatsView />}
           {currentView === 'profile' && (
-            <Profile
-              onBackToTasks={() => changeView('tasks')}
-              user={{
-                name: 'John Doe',
-                email: 'john@example.com',
-                phone: '+1 234 567 8900',
-                workplace: 'Acme Inc.',
-                age: 30,
-                avatarUrl: '/profile-image.jpg?height=128&width=128',
-              }}
-              stats={{
-                completedTasks: 42,
-                ongoingTasks: 15,
-                totalTasks: 57,
-              }}
-            />
+            <Profile onBackToTasks={() => changeView('tasks')} />
           )}
         </main>
       </div>
