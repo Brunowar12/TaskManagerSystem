@@ -16,6 +16,7 @@ import TaskCreationPopup from './TaskCreationPopup'
 import TaskEditPopup from './TaskEditPopup'
 import { useNotification } from '@/contexts/notification-context'
 import { useTaskContext } from '@/contexts/TaskManagementContext'
+import { useCategoryContext } from '@/contexts/CategoryManagement'
 
 export default function MainContent() {
   const {
@@ -31,6 +32,12 @@ export default function MainContent() {
   const [isEditPopupOpen, setEditPopupOpen] = useState(false)
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null)
   const { addNotification } = useNotification()
+  const { categories } = useCategoryContext()
+
+  const getCategoryNameById = (id: number): string => {
+    const category = categories.find((cat) => cat.id === id)
+    return category ? category.name : 'Unknown'
+  }
 
   const toggleTaskCompletion = async (id: number, completed: boolean) => {
     try {
@@ -309,10 +316,12 @@ export default function MainContent() {
                       <Clock size={16} className='mr-1' />
                       <span>Due: {formatDate(task.due_date)}</span>
                     </div>
-                    <div className='flex items-center'>
-                      <div className='mr-1 h-3 w-3 rounded-full bg-[#9d75b5]' />
-                      <span>{task.category}</span>
-                    </div>
+                    {task.category && (
+                      <div className='flex items-center'>
+                        <div className='mr-1 h-3 w-3 rounded-full bg-[#9d75b5]' />
+                        <span>{getCategoryNameById(task.category)}</span>
+                      </div>
+                    )}
                     <div
                       className={`flex items-center rounded-full px-2 py-1 text-white ${getPriorityColor(
                         task.priority
