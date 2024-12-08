@@ -70,13 +70,28 @@ export default function MainContent() {
   const handleCreateTask = async (task: {
     title: string
     description?: string
+    category_id: number
+    due_date: string
+    priority: 'L' | 'M' | 'H'
   }) => {
     try {
-      await addTask(task.title, task.description)
-      setCreationPopupOpen(false)
+      console.log('Task being sent to server:', task)
+      await addTask(
+        task.title,
+        task.description,
+        task.category_id,
+        task.due_date,
+        task.priority
+      )
+
+      // Принудительно загружаем задачи
+      await fetchTasks()
+
+      setCreationPopupOpen(false) // Закрываем попап
       addNotification('success', 'Task created successfully!')
     } catch (error) {
       console.error('Error creating task:', error)
+      addNotification('error', 'Failed to create task. Please try again.')
     }
   }
 

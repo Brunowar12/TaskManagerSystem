@@ -9,6 +9,7 @@ import { useNotification } from '@/contexts/notification-context'
 import { register, login } from '@/services/authService'
 import { useCategoryContext } from '@/contexts/CategoryManagement'
 import { useUserContext } from '@/contexts/UserManagement'
+import { useTaskContext } from '@/contexts/TaskManagementContext'
 
 export default function RegistrationForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -21,6 +22,7 @@ export default function RegistrationForm() {
   const { addNotification, setPendingNotification } = useNotification()
   const { fetchCategories } = useCategoryContext()
   const { fetchUserProfile } = useUserContext()
+  const { fetchTasks } = useTaskContext()
 
   const validateField = (name: string, value: string): string => {
     let error = ''
@@ -103,7 +105,7 @@ export default function RegistrationForm() {
           `Welcome, ${userData.username}!`,
           5000
         )
-        await Promise.all([fetchCategories(), fetchUserProfile()])
+        await Promise.all([fetchCategories(), fetchUserProfile(), fetchTasks()])
         router.push('/')
       } catch (err: any) {
         addNotification('error', err.message)

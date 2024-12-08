@@ -9,6 +9,7 @@ import { useNotification } from '@/contexts/notification-context'
 import { login } from '@/services/authService'
 import { useCategoryContext } from '@/contexts/CategoryManagement'
 import { useUserContext } from '@/contexts/UserManagement'
+import { useTaskContext } from '@/contexts/TaskManagementContext'
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -18,7 +19,8 @@ export default function LoginForm() {
   const router = useRouter()
   const { addNotification, setPendingNotification } = useNotification()
   const { fetchCategories } = useCategoryContext()
-  const { fetchUserProfile } = useUserContext() // Импорт функции загрузки профиля
+  const { fetchUserProfile } = useUserContext()
+  const { fetchTasks } = useTaskContext()
 
   const validateField = (name: string, value: string): string => {
     let error = ''
@@ -70,7 +72,7 @@ export default function LoginForm() {
       const userData = await login(email, password)
       setPendingNotification('success', `Welcome, ${userData.username}!`, 5000)
 
-      await Promise.all([fetchCategories(), fetchUserProfile()])
+      await Promise.all([fetchCategories(), fetchUserProfile(), fetchTasks()])
 
       router.push('/')
     } catch (err: any) {

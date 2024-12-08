@@ -37,7 +37,7 @@ export default function TaskCreationPopup({
   const [category, setCategory] = useState('Select Category') // Устанавливаем первую категорию по умолчанию
   const [dueDate, setDueDate] = useState('')
   const [dueTime, setDueTime] = useState('23:59')
-  const [priority, setPriority] = useState('M') // По умолчанию 'M'
+  const [priority, setPriority] = useState('L') // По умолчанию 'L'
   const [errors, setErrors] = useState<Record<string, string>>({})
   const { addNotification } = useNotification()
 
@@ -88,10 +88,7 @@ export default function TaskCreationPopup({
       addNotification('error', 'Please fix the errors in the form.')
       return
     }
-    const onSave = (task: any) => {
-      console.log('Data received in onSave:', task) // Проверка
-      taskService.createTask(task)
-    }
+
     const formattedTask = {
       title,
       description,
@@ -99,10 +96,9 @@ export default function TaskCreationPopup({
       due_date: `${dueDate}T${dueTime}`,
       priority: priority.charAt(0).toUpperCase(),
     }
-    console.log('Task being sent to server:', formattedTask) // Лог данных перед передачей
-    onSave(formattedTask)
 
-    addNotification('success', 'Task created successfully!')
+    console.log('Task being sent to server:', formattedTask)
+    onSave(formattedTask) // Используем onSave из пропсов
 
     // Сброс значений формы
     setTitle('')
