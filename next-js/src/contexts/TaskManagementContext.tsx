@@ -7,6 +7,7 @@ import {
   updateTask,
   deleteTask,
 } from '@/services/taskService'
+import Cookies from 'js-cookie'
 
 interface Task {
   id: number
@@ -76,11 +77,18 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const updateTaskById = async (
     id: number,
-    title: string,
-    description = ''
+    data: Partial<{
+      title: string
+      description: string
+      category: string
+      due_date: string
+      priority: 'L' | 'M' | 'H'
+      completed: boolean
+      is_favorite: boolean
+    }>
   ) => {
     try {
-      const updatedTask = await updateTask(id, { title, description })
+      const updatedTask = await updateTask(id, data)
       setTasks((prev) =>
         prev.map((task) =>
           task.id === id ? { ...task, ...updatedTask } : task
@@ -93,10 +101,28 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const deleteTaskById = async (id: number) => {
     try {
-      await deleteTask(id)
-      setTasks((prev) => prev.filter((task) => task.id !== id))
+      const token = Cookies.get('accessToken') // Получение токена из cookie
+
+      if (!token) {
+        throw new Error('Access token is missing')
+      }
+
+      const response = await fetch(`http://127.0.0.1:8000/tasks/${id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // Установка токена в заголовок
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete task with status ${response.status}`)
+      }
+
+      return null // Сервер может не возвращать тело
     } catch (error) {
-      console.error('Error deleting task:', error)
+      console.error('Error in deleteTaskById:', error)
+      throw error
     }
   }
 

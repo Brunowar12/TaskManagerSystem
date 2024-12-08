@@ -55,7 +55,15 @@ export const createTask = async (task: {
 
 export const updateTask = async (
   id: number,
-  data: { title?: string; description?: string }
+  data: Partial<{
+    title: string
+    description: string
+    category: string
+    due_date: string
+    priority: 'L' | 'M' | 'H'
+    completed: boolean
+    is_favorite: boolean
+  }>
 ) => {
   const response = await fetch(`${BASE_URL}${id}/`, {
     method: 'PATCH',

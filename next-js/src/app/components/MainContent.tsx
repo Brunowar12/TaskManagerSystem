@@ -41,25 +41,29 @@ export default function MainContent() {
 
   const toggleTaskCompletion = async (id: number, completed: boolean) => {
     try {
-      await updateTaskById(id, '', undefined)
+      await updateTaskById(id, { completed: !completed })
       addNotification(
         'info',
-        completed ? 'Task marked as incomplete.' : 'Task completed!'
+        !completed ? 'Task marked as completed!' : 'Task marked as incomplete.'
       )
     } catch (error) {
       console.error('Error toggling task completion:', error)
+      addNotification('error', 'Failed to update task completion status.')
     }
   }
 
-  const toggleTaskStarred = async (id: number, starred: boolean) => {
+  const toggleTaskStarred = async (id: number, is_favorite: boolean) => {
     try {
-      await updateTaskById(id, '', undefined)
+      await updateTaskById(id, { is_favorite: !is_favorite })
       addNotification(
         'success',
-        starred ? 'Task removed from favorites.' : 'Task added to favorites!'
+        !is_favorite
+          ? 'Task added to favorites!'
+          : 'Task removed from favorites.'
       )
     } catch (error) {
-      console.error('Error toggling task starred:', error)
+      console.error('Error toggling task favorite status:', error)
+      addNotification('error', 'Failed to update favorite status.')
     }
   }
 
@@ -78,15 +82,21 @@ export default function MainContent() {
 
   const handleEditTask = async (
     id: number,
-    title: string,
-    description?: string
+    data: Partial<{
+      title: string
+      description: string
+      category: string
+      due_date: string
+      priority: 'L' | 'M' | 'H'
+    }>
   ) => {
     try {
-      await updateTaskById(id, title, description)
+      await updateTaskById(id, data)
       setEditPopupOpen(false)
       addNotification('info', 'Task updated successfully!')
     } catch (error) {
       console.error('Error updating task:', error)
+      addNotification('error', 'Failed to update task.')
     }
   }
 
@@ -97,10 +107,12 @@ export default function MainContent() {
 
   const handleDeleteTask = async (id: number) => {
     try {
-      await deleteTaskById(id)
+      await deleteTaskById(id) // Удаляем задачу
+      await fetchTasks() // Обновляем список задач после удаления
       addNotification('success', 'Task deleted successfully!')
     } catch (error) {
       console.error('Error deleting task:', error)
+      addNotification('error', 'Failed to delete task.')
     }
   }
 
@@ -287,14 +299,16 @@ export default function MainContent() {
                       <Edit size={20} />
                     </button>
                     <button
-                      onClick={() => toggleTaskStarred(task.id, task.starred)}
+                      onClick={() =>
+                        toggleTaskStarred(task.id, task.is_favorite)
+                      }
                       className={`text-gray-400 hover:text-yellow-500 ${
-                        task.starred ? 'text-yellow-500' : ''
+                        task.is_favorite ? 'text-yellow-500' : ''
                       }`}
                     >
                       <Star
                         size={20}
-                        fill={task.starred ? 'currentColor' : 'none'}
+                        fill={task.is_favorite ? 'currentColor' : 'none'}
                       />
                     </button>
                     <button
