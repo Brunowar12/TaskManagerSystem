@@ -83,6 +83,7 @@ export default function Profile({
                 <EditProfilePopup
                   isOpen={isEditing} // Pass the state to control popup visibility
                   onClose={() => setIsEditing(false)} // Close the popup on click
+                  user={user}
                 />
                 <button className='w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200 hover:scale-105'>
                   <Settings className='w-4 h-4 mr-2' />
