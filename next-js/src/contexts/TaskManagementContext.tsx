@@ -47,7 +47,14 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const data = await getTasks(url)
       console.log('Fetched tasks:', data)
-      setTasks((prev) => [...prev, ...data.results])
+
+      // Убедимся, что задачи с одинаковым id не добавляются повторно
+      setTasks((prev) => {
+        const newTasks = data.results.filter(
+          (newTask) => !prev.some((task) => task.id === newTask.id)
+        )
+        return [...prev, ...newTasks]
+      })
       setNextPageUrl(data.next)
     } catch (error) {
       console.error('Error fetching tasks:', error)
@@ -111,7 +118,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, // Установка токена в заголовок
+          Authorization: `Bearer ${token}`,
         },
       })
 
@@ -119,7 +126,8 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error(`Failed to delete task with status ${response.status}`)
       }
 
-      return null // Сервер может не возвращать тело
+      // Удаляем задачу из состояния
+      setTasks((prev) => prev.filter((task) => task.id !== id))
     } catch (error) {
       console.error('Error in deleteTaskById:', error)
       throw error
