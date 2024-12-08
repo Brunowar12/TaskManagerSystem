@@ -29,7 +29,7 @@ export default function TaskCreationPopup({
 }: TaskCreationPopupProps) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [category, setCategory] = useState(categories[0] || '') // Устанавливаем первую категорию по умолчанию
+  const [category, setCategory] = useState('Select Category') // Устанавливаем первую категорию по умолчанию
   const [dueDate, setDueDate] = useState('')
   const [dueTime, setDueTime] = useState('23:59')
   const [priority, setPriority] = useState('M') // По умолчанию 'M'
@@ -90,7 +90,7 @@ export default function TaskCreationPopup({
     const formattedTask = {
       title,
       description,
-      category,
+      category: category === 'Select Category' ? '' : category,
       due_date: `${dueDate}T${dueTime}`,
       priority: priority.charAt(0).toUpperCase(),
     }
@@ -102,7 +102,7 @@ export default function TaskCreationPopup({
     // Сброс значений формы
     setTitle('')
     setDescription('')
-    setCategory(categories[0] || '')
+    setCategory('Select Category')
     setDueDate('')
     setDueTime('23:59')
     setPriority('M')
@@ -219,7 +219,7 @@ export default function TaskCreationPopup({
                       onChange={(e) => setCategory(e.target.value)}
                       className='flex-grow rounded-lg border border-gray-300 px-3 py-2 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors duration-200'
                     >
-                      <option value={null}>Select Category</option>
+                      <option value='Select Category'>Select Category</option>
                       {categories.map((cat) => (
                         <option key={cat} value={cat}>
                           {cat}
