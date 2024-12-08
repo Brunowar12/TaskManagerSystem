@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useNotification } from '@/contexts/notification-context'
 import { login } from '@/services/authService'
+import { useCategoryContext } from '@/contexts/CategoryManagement'
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -15,6 +16,7 @@ export default function LoginForm() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const router = useRouter()
   const { addNotification, setPendingNotification } = useNotification()
+  const { fetchCategories } = useCategoryContext()
 
   const validateField = (name: string, value: string): string => {
     let error = ''
@@ -65,6 +67,8 @@ export default function LoginForm() {
     try {
       const userData = await login(email, password)
       setPendingNotification('success', `Welcome, ${userData.username}!`, 5000)
+      await fetchCategories()
+
       router.push('/')
     } catch (err: any) {
       addNotification('error', err.message)

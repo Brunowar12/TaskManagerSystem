@@ -34,15 +34,27 @@ export default function Home() {
 
   // Следим за изменениями хеша в URL
   useEffect(() => {
-    const hash = window.location.hash.replace('#', '') as View
-    if (hash && ['tasks', 'calendar', 'stats', 'profile'].includes(hash)) {
-      setCurrentView(hash)
+    const handleHashChange = () => {
+      if (typeof window !== 'undefined') {
+        const hash = window.location.hash.replace('#', '') as View
+        if (hash && ['tasks', 'calendar', 'stats', 'profile'].includes(hash)) {
+          setCurrentView(hash)
+        }
+      }
     }
-  }, [window.location.hash])
 
+    handleHashChange() // Установить начальное состояние на основе хеша
+    window.addEventListener('hashchange', handleHashChange)
+
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
+
+  // Проверка на мобильное устройство
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
+      if (typeof window !== 'undefined') {
+        setIsMobile(window.innerWidth < 768)
+      }
     }
 
     checkMobile()
@@ -51,6 +63,7 @@ export default function Home() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  // Обработка уведомлений из localStorage
   useEffect(() => {
     const storedNotification = localStorage.getItem('pendingNotification')
     if (storedNotification) {
@@ -70,7 +83,9 @@ export default function Home() {
 
   const changeView = (view: View) => {
     setCurrentView(view)
-    window.location.hash = `#${view}` // Обновляем хеш в URL
+    if (typeof window !== 'undefined') {
+      window.location.hash = `#${view}` // Обновляем хеш в URL
+    }
   }
 
   return (
