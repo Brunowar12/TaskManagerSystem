@@ -86,18 +86,18 @@ export default function MainContent() {
     fetchTasks('http://127.0.0.1:8000/tasks/', {
       title: searchQuery,
       ordering: value,
-      priority: priority || undefined, // Учитываем текущий приоритет
-      completionFilter: completionFilter || undefined, // Учитываем текущий статус
+      priority: priority || undefined,
+      completionFilter: completionFilter || undefined,
     })
   }
 
   const clearFilters = () => {
-    // Сбрасываем значения состояний фильтров
+    // Resetting filter state values
     setSearchQuery('')
     setOrdering(null)
     setPriority(null)
     setCompletionFilter(null)
-    // Выполняем запрос на обновление задач без фильтров
+    // We execute a request to update tasks without filters
     fetchTasks('http://127.0.0.1:8000/tasks/')
   }
 
@@ -151,10 +151,9 @@ export default function MainContent() {
         task.priority
       )
 
-      // Принудительно загружаем задачи
       await fetchTasks()
 
-      setCreationPopupOpen(false) // Закрываем попап
+      setCreationPopupOpen(false)
       addNotification('success', 'Task created successfully!')
     } catch (error) {
       console.error('Error creating task:', error)
@@ -189,8 +188,8 @@ export default function MainContent() {
 
   const handleDeleteTask = async (id: number) => {
     try {
-      await deleteTaskById(id) // Удаляем задачу
-      await fetchTasks() // Обновляем список задач после удаления
+      await deleteTaskById(id)
+      await fetchTasks()
       addNotification('success', 'Task deleted successfully!')
     } catch (error) {
       console.error('Error deleting task:', error)
@@ -257,13 +256,13 @@ export default function MainContent() {
             handleEditTask(taskToEdit.id, {
               title,
               description,
-              category: categoryId, // Теперь передаем ID категории
+              category: categoryId,
               due_date,
               priority,
             })
           }
-          categories={categories} // Передача категорий в формате [{ id: 1, name: 'Work' }, ...]
-          task={taskToEdit} // Передача данных текущей задачи
+          categories={categories} // Transfer categories in the format [{ id: 1, name: 'Work' }, ...]
+          task={taskToEdit} // Transferring data of the current task
         />
       )}
 
@@ -298,7 +297,7 @@ export default function MainContent() {
             </button>
           </div>
 
-          {isFiltersVisible && ( // Условное отображение фильтров
+          {isFiltersVisible && (
             <div className='mb-4 flex flex-wrap gap-4'>
               <div className='flex-1 min-w-[200px]'>
                 <div className='relative'>

@@ -5,14 +5,14 @@ import { useTaskContext } from '@/contexts/TaskManagementContext'
 export default function CalendarView() {
   const { tasks } = useTaskContext()
 
-  // Подготовка задач для календаря
+  // Preparing tasks for the calendar
   const calendarTasks = useMemo(
     () =>
       tasks.map((task) => ({
         id: task.id,
         title: task.title,
         dueDate: task.due_date,
-        completed: task.completed, // Используем поле из базы
+        completed: task.completed,
       })),
     [tasks]
   )

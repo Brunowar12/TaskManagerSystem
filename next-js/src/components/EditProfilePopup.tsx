@@ -45,7 +45,7 @@ export default function EditProfilePopup({
   const [image, setImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { addNotification } = useNotification()
-  const { updateUserProfile } = useUserContext() // Используем контекс
+  const { updateUserProfile } = useUserContext()
 
   useEffect(() => {
     setFormData({
@@ -205,7 +205,7 @@ export default function EditProfilePopup({
 
               <form onSubmit={handleSubmit} className='space-y-3' noValidate>
                 {[
-                  // Форма с данными, уже подставленными
+                  // Form with data already filled in
                   {
                     icon: User,
                     label: 'Username',
@@ -272,7 +272,7 @@ export default function EditProfilePopup({
                   </div>
                 ))}
 
-                {/* Профильная картинка */}
+                {/* Profile picture */}
                 <div className='relative'>
                   <label className='text-sm font-medium text-gray-700 mb-1 block'>
                     Profile Picture (Optional)

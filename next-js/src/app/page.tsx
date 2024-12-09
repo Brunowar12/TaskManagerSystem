@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation' // Используем `next/navigation` вместо `next/router`
+import { useRouter } from 'next/navigation'
 import { checkUserAuthorization } from '@/services/authChecker'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
@@ -21,18 +21,18 @@ export default function Home() {
   const { addNotification } = useNotification()
   const router = useRouter()
 
-  // Проверка авторизации
+  // Checking authorization
   useEffect(() => {
     const checkAuth = async () => {
       const isAuthorized = await checkUserAuthorization()
       if (!isAuthorized) {
-        router.push('/auth') // Перенаправляем на страницу авторизации
+        router.push('/auth')
       }
     }
     checkAuth()
   }, [router])
 
-  // Следим за изменениями хеша в URL
+  // Monitor URL hash changes
   useEffect(() => {
     const handleHashChange = () => {
       if (typeof window !== 'undefined') {
@@ -43,13 +43,13 @@ export default function Home() {
       }
     }
 
-    handleHashChange() // Установить начальное состояние на основе хеша
+    handleHashChange() // Set initial state based on hash
     window.addEventListener('hashchange', handleHashChange)
 
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
 
-  // Проверка на мобильное устройство
+  // Check on mobile device
   useEffect(() => {
     const checkMobile = () => {
       if (typeof window !== 'undefined') {
@@ -63,7 +63,6 @@ export default function Home() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Обработка уведомлений из localStorage
   useEffect(() => {
     const storedNotification = localStorage.getItem('pendingNotification')
     if (storedNotification) {
@@ -84,7 +83,7 @@ export default function Home() {
   const changeView = (view: View) => {
     setCurrentView(view)
     if (typeof window !== 'undefined') {
-      window.location.hash = `#${view}` // Обновляем хеш в URL
+      window.location.hash = `#${view}` // Update the hash in the URL
     }
   }
 

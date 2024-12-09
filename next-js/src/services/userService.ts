@@ -1,13 +1,13 @@
 const BASE_URL = 'http://127.0.0.1:8000/auth/profile/'
 
-// Извлекаем токен из куки
+// Extract the token from the cookie
 const getAccessToken = (): string | null => {
   const cookies = document.cookie.split('; ')
   const tokenCookie = cookies.find((row) => row.startsWith('accessToken='))
   return tokenCookie ? tokenCookie.split('=')[1] : null
 }
 
-// Формируем заголовки с авторизацией
+// Generate headers with authorization
 const headersWithAuth = () => {
   const token = getAccessToken()
   if (!token) {
@@ -20,7 +20,7 @@ const headersWithAuth = () => {
   }
 }
 
-// Получение данных профиля
+// Get profile data
 export const getUserProfile = async () => {
   const response = await fetch(`${BASE_URL}prf/`, {
     method: 'GET',
@@ -34,7 +34,7 @@ export const getUserProfile = async () => {
   return response.json()
 }
 
-// Обновление данных профиля
+// Update profile data
 export const updateUserProfile = async (data: {
   username?: string
   email?: string

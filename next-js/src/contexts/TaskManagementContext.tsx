@@ -61,7 +61,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       if (params.page) searchParams.append('page', params.page.toString())
       if (params.title) searchParams.append('title', params.title)
       if (params.ordering) searchParams.append('ordering', params.ordering)
-      if (params.priority) searchParams.append('priority', params.priority) // Новый параметр
+      if (params.priority) searchParams.append('priority', params.priority)
       if (params.completed !== undefined)
         searchParams.append('completed', params.completed.toString())
 
@@ -93,7 +93,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
   const addTask = async (
     title: string,
     description = '',
-    category_id: number, // изменили на category_id
+    category_id: number,
     due_date: string,
     priority: 'L' | 'M' | 'H'
   ) => {
@@ -101,7 +101,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       const newTask = await createTask({
         title,
         description,
-        category_id, // передаем category_id
+        category_id,
         due_date,
         priority,
       })
@@ -137,7 +137,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const deleteTaskById = async (id: number) => {
     try {
-      const token = Cookies.get('accessToken') // Получение токена из cookie
+      const token = Cookies.get('accessToken')
 
       if (!token) {
         throw new Error('Access token is missing')
@@ -155,7 +155,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error(`Failed to delete task with status ${response.status}`)
       }
 
-      // Удаляем задачу из состояния
+      // Remove the task from the state
       setTasks((prev) => prev.filter((task) => task.id !== id))
     } catch (error) {
       console.error('Error in deleteTaskById:', error)

@@ -53,8 +53,7 @@ export default function Sidebar({
   const handleDeleteCategory = async (id: number) => {
     const category = categories.find((cat) => cat.id === id)
     try {
-      await deleteCategoryById(id) // Ждем завершения запроса
-      // Уведомление только при успешном завершении
+      await deleteCategoryById(id)
       addNotification('info', `Category "${category?.name}" deleted.`)
     } catch (error: any) {
       console.error('Error deleting category:', error)

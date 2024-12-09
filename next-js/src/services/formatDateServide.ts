@@ -5,7 +5,7 @@ export function formatDate(date: Date | string): string {
 
   const parsedDate = new Date(date)
 
-  // Проверка на корректность даты
+  // Checking the date for correctness
   if (isNaN(parsedDate.getTime())) {
     return 'Invalid date'
   }

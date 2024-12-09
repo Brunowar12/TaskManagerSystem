@@ -22,7 +22,7 @@ export async function login(
     })
     const { access, refresh, username, email: userEmail } = response.data
 
-    // Сохраняем токены в куки
+    // Save tokens in cookies
     Cookies.set('accessToken', access, { expires: 1 / 24 })
     Cookies.set('refreshToken', refresh, { expires: 7 })
     Cookies.set('username', username, { expires: 7 })
@@ -67,7 +67,7 @@ export async function register(
   }
 }
 
-// Получение информации о текущем пользователе из Cookies
+// Getting information about the current user from Cookies
 export function getCurrentUser() {
   const username = Cookies.get('username') || ''
   const email = Cookies.get('email') || ''

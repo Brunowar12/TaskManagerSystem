@@ -1,6 +1,6 @@
 const BASE_URL = 'http://127.0.0.1:8000/tasks/'
 
-// Извлекаем токен из куки
+// Extract the token from the cookie
 const getAccessToken = (): string | null => {
   const cookies = document.cookie.split('; ')
   const tokenCookie = cookies.find((row) => row.startsWith('accessToken='))
@@ -35,7 +35,7 @@ export const getTasks = async (url: string) => {
 export const createTask = async (task: {
   title: string
   description?: string
-  category_id: number // изменили category на category_id
+  category_id: number
   due_date: string
   priority: 'L' | 'M' | 'H'
 }) => {

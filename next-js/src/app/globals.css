@@ -45,32 +45,24 @@ body {
   }
 }
 
-/* Очень тонкий скролл с градиентом */
+/* Very thin scroll with gradient */
 ::-webkit-scrollbar {
-  width: 4px; /* Тонкий скролл */
+  width: 4px;
 }
 
-/* Стиль фона для дорожки скролла */
+/* Scroll Track Background Style */
 ::-webkit-scrollbar-track {
-  background: rgba(200, 200, 200, 0.3); /* Лёгкий серый фон для дорожки */
-  border-radius: 10px; /* Скругление углов дорожки */
+  background: rgba(200, 200, 200, 0.3);
+  border-radius: 10px;
 }
 
-/* Стиль бегунка скролла с градиентом */
+/* Scroll thumb style with gradient */
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    45deg,
-    #d1d1d1,
-    #b0b0b0
-  ); /* Светлый серый градиент */
-  border-radius: 10px; /* Скругление углов бегунка */
+  background: linear-gradient(45deg, #d1d1d1, #b0b0b0);
+  border-radius: 10px;
 }
 
-/* Цвет бегунка при наведении */
+/* Slider color on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(
-    45deg,
-    #a0a0a0,
-    #909090
-  ); /* Более тёмный серый градиент при наведении */
+  background: linear-gradient(45deg, #a0a0a0, #909090);
 }

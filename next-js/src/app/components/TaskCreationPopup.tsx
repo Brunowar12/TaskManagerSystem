@@ -33,10 +33,10 @@ export default function TaskCreationPopup({
 }: TaskCreationPopupProps) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [category, setCategory] = useState('Select Category') // Устанавливаем первую категорию по умолчанию
+  const [category, setCategory] = useState('Select Category')
   const [dueDate, setDueDate] = useState('')
   const [dueTime, setDueTime] = useState('23:59')
-  const [priority, setPriority] = useState('L') // По умолчанию 'L'
+  const [priority, setPriority] = useState('L')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const { addNotification } = useNotification()
 
@@ -94,9 +94,9 @@ export default function TaskCreationPopup({
     }
 
     console.log('Task being sent to server:', formattedTask)
-    onSave(formattedTask) // Используем onSave из пропсов
+    onSave(formattedTask)
 
-    // Сброс значений формы
+    // Resetting form values
     setTitle('')
     setDescription('')
     setCategory('Select Category')

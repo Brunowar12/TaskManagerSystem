@@ -98,7 +98,7 @@ export default function RegistrationForm() {
           5000
         )
 
-        // Выполняем логин после регистрации
+        // Perform login after registration
         const userData = await login(email, password)
         setPendingNotification(
           'success',

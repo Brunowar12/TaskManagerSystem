@@ -37,18 +37,18 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const fetchCategories = async () => {
     try {
-      const data = await getCategories() // Получаем ответ от сервиса
+      const data = await getCategories() // Receive response from service
 
-      console.log('Server response:', data) // Лог ответа сервера
+      console.log('Server response:', data) // Server response log
 
       if (!data.results || !Array.isArray(data.results)) {
         throw new Error('Invalid data format: results is not an array')
       }
 
-      setCategories(data.results) // Используем массив из ключа "results"
+      setCategories(data.results) // Use the array from the "results" key
     } catch (error) {
       console.error('Error fetching categories:', error)
-      setCategories([]) // Устанавливаем пустой массив в случае ошибки
+      setCategories([]) // Set an empty array in case of error
     }
   }
 
@@ -80,11 +80,11 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const deleteCategoryById = async (id: number) => {
     try {
-      await deleteCategory(id) // Ожидаем успешного удаления
-      setCategories((prev) => prev.filter((cat) => cat.id !== id)) // Обновляем список категорий
+      await deleteCategory(id)
+      setCategories((prev) => prev.filter((cat) => cat.id !== id)) // Update the list of categories
     } catch (error) {
       console.error('Error deleting category:', error)
-      throw error // Прокидываем ошибку дальше
+      throw error // Pass the error forward
     }
   }
 

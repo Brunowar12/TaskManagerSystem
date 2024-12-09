@@ -62,17 +62,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   }) => {
     try {
       await updateUserProfile(data)
-      await fetchUserProfile() // Рефетч после успешного обновления
+      await fetchUserProfile() // Refetch after successful update
 
       if (data.username) {
         document.cookie = `username=${encodeURIComponent(
           data.username
-        )}; path=/; max-age=${60 * 60 * 24 * 365}` // 1 год
+        )}; path=/; max-age=${60 * 60 * 24 * 365}`
       }
       if (data.email) {
         document.cookie = `email=${encodeURIComponent(
           data.email
-        )}; path=/; max-age=${60 * 60 * 24 * 365}` // 1 год
+        )}; path=/; max-age=${60 * 60 * 24 * 365}`
       }
     } catch (error) {
       console.error('Error updating user profile:', error)

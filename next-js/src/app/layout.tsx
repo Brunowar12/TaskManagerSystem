@@ -26,11 +26,7 @@ export default function RootLayout({
           <UserProvider>
             <CategoryProvider>
               <TaskProvider>
-                <StatsProvider>
-                  {' '}
-                  {/* Оборачиваем детей в CategoryProvider */}
-                  {children}
-                </StatsProvider>
+                <StatsProvider> {children}</StatsProvider>
               </TaskProvider>
             </CategoryProvider>
           </UserProvider>

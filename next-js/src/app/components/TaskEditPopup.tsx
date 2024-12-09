@@ -9,8 +9,8 @@ interface Task {
   id: number
   title: string
   description: string
-  category: string | number // Имя или ID категории
-  due_date: string // Формат: "2024-12-08T22:24:00Z"
+  category: string | number
+  due_date: string // Format: "2024-12-08T22:24:00Z"
   due_time: string
   priority: 'L' | 'M' | 'H'
 }
@@ -62,7 +62,7 @@ export default function TaskEditPopup({
       setDescription(task.description || '')
       setCategory(task.category ? task.category.toString() : '')
 
-      // Преобразование даты и времени
+      // Date and Time Conversion
       if (task.due_date) {
         const date = new Date(task.due_date)
         setDueDate(date.toISOString().split('T')[0]) // yyyy-MM-dd

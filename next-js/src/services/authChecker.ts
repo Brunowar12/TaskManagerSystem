@@ -2,12 +2,12 @@ import Cookies from 'js-cookie'
 
 const API_URL = 'http://127.0.0.1:8000/auth'
 
-// Функция для проверки авторизации пользователя
+// Function to check user authorization
 export async function checkUserAuthorization(): Promise<boolean> {
   const accessToken = Cookies.get('accessToken')
   const refreshToken = Cookies.get('refreshToken')
 
-  // Если нет токенов, пользователь не авторизован
+  // If there are no tokens, the user is not authorized
   if (!accessToken && !refreshToken) {
     Cookies.remove('username')
     Cookies.remove('email')
@@ -15,7 +15,7 @@ export async function checkUserAuthorization(): Promise<boolean> {
     return false
   }
 
-  // Если нет accessToken, но есть refreshToken, обновляем токен
+  // If there is no accessToken, but there is a refreshToken, refresh the token
   if (!accessToken && refreshToken) {
     try {
       const newAccessToken = await refreshAccessToken(refreshToken)
@@ -28,11 +28,11 @@ export async function checkUserAuthorization(): Promise<boolean> {
     }
   }
 
-  // Пользователь авторизован
+  // User is authorized
   return true
 }
 
-// Функция для обновления accessToken
+// Function to update accessToken
 async function refreshAccessToken(refreshToken: string): Promise<string> {
   const response = await fetch(`${API_URL}/token/refresh/`, {
     method: 'POST',
@@ -50,7 +50,7 @@ async function refreshAccessToken(refreshToken: string): Promise<string> {
   return data.access
 }
 
-// Перенаправление на страницу авторизации
+// Redirect to the authorization page
 function redirectToAuthPage() {
   window.location.href = '/auth'
 }

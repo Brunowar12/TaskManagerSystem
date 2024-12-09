@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { UserCircle, LogOut, Menu, ChevronDown, User2 } from 'lucide-react'
 import { logout } from '@/services/logoutService'
-import { useUserContext } from '@/contexts/UserManagement' // Импорт контекста пользователя
+import { useUserContext } from '@/contexts/UserManagement'
 
 interface HeaderProps {
   toggleSidebar: () => void
@@ -20,11 +20,11 @@ export default function Header({
 }: HeaderProps) {
   const [showDropdown, setShowDropdown] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
-  const { user } = useUserContext() // Данные пользователя из контекста
+  const { user } = useUserContext()
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // Обновляем состояние для определения, является ли устройство десктопным
+    // Update the state to determine if the device is a desktop
     const updateIsDesktop = () => {
       if (typeof window !== 'undefined') {
         setIsDesktop(window.innerWidth >= 768)

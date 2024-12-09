@@ -1,6 +1,5 @@
 import Cookies from 'js-cookie'
 
-// Очистка данных при выходе
 export async function logout() {
   const accessToken = Cookies.get('accessToken')
   const refreshToken = Cookies.get('refreshToken')
@@ -28,12 +27,11 @@ export async function logout() {
     }
   }
 
-  // Очищаем куки
+  // Clear cookies
   Cookies.remove('accessToken')
   Cookies.remove('refreshToken')
   Cookies.remove('username')
   Cookies.remove('email')
 
-  // Перенаправляем на страницу авторизации
   window.location.href = '/auth'
 }
