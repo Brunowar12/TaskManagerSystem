@@ -19,8 +19,9 @@ class TaskCreateView(UserQuerysetMixin, generics.CreateAPIView):
 class TaskListView(UserQuerysetMixin, generics.ListAPIView):
     serializer_class = TaskSerializer
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_fields = ["is_favorite", "title", "due_date"]
-    ordering_fields = ["is_favorite", "title", "due_date"]
+    filterset_fields = ["is_favorite", "title", "due_date", "completed", "priority"]
+    ordering_fields = ["is_favorite", "title", "due_date", "completed", "priority"]
+
     
     def get_queryset(self):
         queryset = super().get_queryset()

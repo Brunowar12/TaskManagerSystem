@@ -45,9 +45,14 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const fetchTasks = async (
     url: string = 'http://127.0.0.1:8000/tasks/',
-    params: { title?: string; ordering?: string; page?: number } = {}
+    params: {
+      title?: string
+      ordering?: string
+      page?: number
+      priority?: string
+    } = {}
   ) => {
-    if (!url) return // Предотвращаем запросы, если URL не задан
+    if (!url) return
 
     try {
       const searchParams = new URLSearchParams()
@@ -55,6 +60,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       if (params.page) searchParams.append('page', params.page.toString())
       if (params.title) searchParams.append('title', params.title)
       if (params.ordering) searchParams.append('ordering', params.ordering)
+      if (params.priority) searchParams.append('priority', params.priority) // Новый параметр
 
       const separator = url.includes('?') ? '&' : '?'
       const fullUrl = `${url}${separator}${searchParams.toString()}`
@@ -62,14 +68,11 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       const data = await getTasks(fullUrl)
       console.log('Fetched tasks:', data)
 
-      // Добавляем задачи к текущему списку, если это не первый запрос
       setTasks((prevTasks) => {
         if (url === 'http://127.0.0.1:8000/tasks/' && !params.page) {
-          // Если это основной запрос (без пагинации), заменяем весь список
           return data.results
         }
 
-        // Добавляем только новые задачи, избегая дубликатов
         const uniqueTasks = [...prevTasks, ...data.results].filter(
           (task, index, self) =>
             self.findIndex((t) => t.id === task.id) === index
@@ -78,7 +81,6 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
         return uniqueTasks
       })
 
-      // Обновляем `nextPageUrl`, если есть данные для следующей страницы
       setNextPageUrl(data.next)
     } catch (error) {
       console.error('Error fetching tasks:', error)
