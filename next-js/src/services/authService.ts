@@ -30,6 +30,12 @@ export async function login(
 
     return { username, email: userEmail }
   } catch (error: any) {
+    if (
+      error.response?.status === 400 &&
+      error.response?.data?.non_field_errors?.[0] === 'Invalid credentials'
+    ) {
+      throw new Error('Invalid email or password.')
+    }
     throw new Error(
       error.response?.data?.detail || 'An error occurred during login.'
     )
@@ -49,6 +55,12 @@ export async function register(
     })
     return response.data
   } catch (error: any) {
+    if (
+      error.response?.status === 400 &&
+      error.response?.data?.email?.[0] === 'This field must be unique.'
+    ) {
+      throw new Error('This email is already registered.')
+    }
     throw new Error(
       error.response?.data?.detail || 'An error occurred during registration.'
     )
