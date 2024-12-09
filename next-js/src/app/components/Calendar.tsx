@@ -61,9 +61,9 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
   }
 
   const renderMonthView = () => (
-    <div className='grid grid-cols-7 gap-2'>
+    <div className='grid grid-cols-7 gap-1 sm:gap-2'>
       {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-        <div key={day} className='text-center font-bold'>
+        <div key={day} className='text-center font-bold text-xs sm:text-sm'>
           {day}
         </div>
       ))}
@@ -76,22 +76,29 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
         return (
           <div
             key={day}
-            className={`border p-2 h-24 overflow-y-auto ${
+            className={`border p-1 sm:p-2 h-16 sm:h-24 overflow-hidden ${
               isToday(day) ? 'bg-purple-200' : 'hover:bg-gray-100'
             } transition-colors duration-200`}
           >
-            <div className='font-semibold'>{day}</div>
-            {dayTasks.map((task) => (
-              <div
-                key={task.id}
-                className={`text-xs mt-1 p-1 rounded ${
-                  task.completed ? 'bg-green-500' : 'bg-red-500'
-                } text-white`}
-                title={task.title}
-              >
-                {task.title}
-              </div>
-            ))}
+            <div className='font-semibold text-xs sm:text-sm'>{day}</div>
+            {/* Для маленьких экранов показываем только количество задач */}
+            <div className='block sm:hidden text-[10px] text-gray-500'>
+              {dayTasks.length > 0 ? `${dayTasks.length} task(s)` : 'No tasks'}
+            </div>
+            {/* Для больших экранов показываем задачи */}
+            <div className='hidden sm:block'>
+              {dayTasks.map((task) => (
+                <div
+                  key={task.id}
+                  className={`text-[8px] sm:text-[10px] mt-1 p-[2px] rounded-sm ${
+                    task.completed ? 'bg-green-500' : 'bg-red-500'
+                  } text-white`}
+                  title={task.title}
+                >
+                  {task.title}
+                </div>
+              ))}
+            </div>
           </div>
         )
       })}
@@ -103,7 +110,7 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
     startOfWeek.setDate(currentDate.getDate() - currentDate.getDay())
 
     return (
-      <div className='grid grid-cols-7 gap-2'>
+      <div className='grid grid-cols-7 gap-1 sm:gap-2'>
         {Array.from({ length: 7 }).map((_, index) => {
           const day = new Date(startOfWeek)
           day.setDate(startOfWeek.getDate() + index)
@@ -112,27 +119,34 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
           return (
             <div
               key={index}
-              className={`border p-2 min-h-[200px] overflow-y-auto ${
+              className={`border p-1 sm:p-2 min-h-[80px] sm:min-h-[100px] overflow-hidden ${
                 isToday(day.getDate()) ? 'bg-purple-200' : 'hover:bg-gray-100'
               } transition-colors duration-200`}
             >
-              <div className='font-semibold'>
+              <div className='font-semibold text-xs sm:text-sm'>
                 {day.toLocaleDateString('en-US', {
                   weekday: 'short',
                   day: 'numeric',
                 })}
               </div>
-              {dayTasks.map((task) => (
-                <div
-                  key={task.id}
-                  className={`text-xs mt-1 p-1 rounded ${
-                    task.completed ? 'bg-green-500' : 'bg-red-500'
-                  } text-white`}
-                  title={task.title}
-                >
-                  {task.title}
-                </div>
-              ))}
+              <div className='block sm:hidden text-[10px] text-gray-500'>
+                {dayTasks.length > 0
+                  ? `${dayTasks.length} task(s)`
+                  : 'No tasks'}
+              </div>
+              <div className='hidden sm:block'>
+                {dayTasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className={`text-[8px] sm:text-[10px] mt-1 p-[2px] rounded-sm ${
+                      task.completed ? 'bg-green-500' : 'bg-red-500'
+                    } text-white`}
+                    title={task.title}
+                  >
+                    {task.title}
+                  </div>
+                ))}
+              </div>
             </div>
           )
         })}
@@ -141,19 +155,19 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
   }
 
   return (
-    <div className='bg-white p-4 rounded-lg shadow-md'>
-      <div className='flex justify-between items-center mb-4'>
-        <h2 className='text-xl font-bold'>
+    <div className='bg-white p-3 sm:p-4 rounded-lg shadow-md'>
+      <div className='flex flex-wrap justify-between items-center mb-2 sm:mb-4'>
+        <h2 className='text-lg sm:text-xl font-bold'>
           {currentDate.toLocaleDateString('en-US', {
             month: 'long',
             year: 'numeric',
           })}
         </h2>
-        <div className='flex items-center space-x-4'>
+        <div className='flex flex-wrap items-center space-x-1 sm:space-x-2'>
           <select
             value={view}
             onChange={(e) => setView(e.target.value as 'month' | 'week')}
-            className='border rounded p-1'
+            className='border rounded p-1 text-xs sm:text-sm'
           >
             <option value='month'>Month</option>
             <option value='week'>Week</option>
@@ -163,17 +177,23 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
             onChange={(e) =>
               setFilter(e.target.value as 'all' | 'completed' | 'not_completed')
             }
-            className='border rounded p-1'
+            className='border rounded p-1 text-xs sm:text-sm'
           >
             <option value='all'>All Tasks</option>
             <option value='completed'>Completed</option>
             <option value='not_completed'>Not Completed</option>
           </select>
-          <button onClick={prevMonth} className='p-1 rounded hover:bg-gray-200'>
-            <ChevronLeft size={20} />
+          <button
+            onClick={prevMonth}
+            className='p-1 rounded hover:bg-gray-200 text-xs sm:text-sm'
+          >
+            <ChevronLeft size={16} />
           </button>
-          <button onClick={nextMonth} className='p-1 rounded hover:bg-gray-200'>
-            <ChevronRight size={20} />
+          <button
+            onClick={nextMonth}
+            className='p-1 rounded hover:bg-gray-200 text-xs sm:text-sm'
+          >
+            <ChevronRight size={16} />
           </button>
         </div>
       </div>
