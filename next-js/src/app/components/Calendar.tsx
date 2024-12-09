@@ -76,8 +76,10 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
         return (
           <div
             key={day}
-            className={`border p-1 sm:p-2 h-16 sm:h-24 overflow-hidden ${
-              isToday(day) ? 'bg-purple-200' : 'hover:bg-gray-100'
+            className={`border p-1 rounded-lg sm:p-2 h-16 sm:h-24 overflow-hidden ${
+              isToday(day)
+                ? 'ring-2 ring-purple-500 shadow-lg'
+                : 'hover:bg-gray-100'
             } transition-colors duration-200`}
           >
             <div className='font-semibold text-xs sm:text-sm'>{day}</div>
@@ -119,8 +121,10 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
           return (
             <div
               key={index}
-              className={`border p-1 sm:p-2 min-h-[80px] sm:min-h-[100px] overflow-hidden ${
-                isToday(day.getDate()) ? 'bg-purple-200' : 'hover:bg-gray-100'
+              className={`border p-1 rounded-lg sm:p-2 min-h-[80px] sm:min-h-[100px] overflow-hidden ${
+                isToday(day.getDate())
+                  ? 'ring-2 ring-purple-500 shadow-lg'
+                  : 'hover:bg-gray-100'
               } transition-colors duration-200`}
             >
               <div className='font-semibold text-xs sm:text-sm'>
