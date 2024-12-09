@@ -55,6 +55,15 @@ export default function MainContent() {
     })
   }
 
+  const clearFilters = () => {
+    // Сбрасываем значения состояний фильтров
+    setSearchQuery('')
+    setOrdering(null)
+
+    // Выполняем запрос на обновление задач без фильтров
+    fetchTasks('http://127.0.0.1:8000/tasks/')
+  }
+
   const getCategoryNameById = (id: number): string => {
     const category = categories.find((cat) => cat.id === id)
     return category ? category.name : 'Unknown'
@@ -304,7 +313,10 @@ export default function MainContent() {
               </div>
             </div>
           </div>
-          <button className='rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700 duration-200'>
+          <button
+            className='rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700 duration-200'
+            onClick={() => clearFilters()}
+          >
             Clear Filters
           </button>
         </div>
