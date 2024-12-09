@@ -93,7 +93,7 @@ export default function TaskCreationPopup({
       priority: priority.charAt(0).toUpperCase(),
     }
 
-    console.log('Task being sent to server:', formattedTask)
+    // console.log('Task being sent to server:', formattedTask)
     onSave(formattedTask)
 
     // Resetting form values

@@ -110,7 +110,7 @@ export default function TaskEditPopup({
     let categoryId: number | null = null
 
     if (category) {
-      // Преобразуем category к числу, если оно выбрано
+      // Convert category to number if it is selected
       const parsedCategoryId = parseInt(category, 10)
       const categoryObj = categories.find((cat) => cat.id === parsedCategoryId)
       if (!categoryObj) {
@@ -121,19 +121,20 @@ export default function TaskEditPopup({
       categoryId = categoryObj.id
     }
 
-    // Логируем данные перед отправкой на сервер
+    // Log data before sending to the server
+    /*
     console.log('Данные, которые будут отправлены на сервер:', {
       title,
       description,
-      categoryId: categoryId, // Может быть null, если категория не выбрана
+      categoryId: categoryId, // May be null if no category is selected
       dueDate: `${dueDate}T${dueTime}`,
       priority,
     })
-
+    */
     onSave(
       title,
       description,
-      categoryId, // Отправляем null, если категория не выбрана
+      categoryId, // Send null if no category is selected
       `${dueDate}T${dueTime}`,
       priority
     )

@@ -44,7 +44,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       const data = await getUserProfile()
       setUser(data)
     } catch (error) {
-      console.error('Error fetching user profile:', error)
+      // console.error('Error fetching user profile:', error)
       setUser(null)
     }
   }

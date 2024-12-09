@@ -39,7 +39,7 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const data = await getCategories() // Receive response from service
 
-      console.log('Server response:', data) // Server response log
+      // console.log('Server response:', data) // Server response log
 
       if (!data.results || !Array.isArray(data.results)) {
         throw new Error('Invalid data format: results is not an array')
@@ -47,7 +47,7 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({
 
       setCategories(data.results) // Use the array from the "results" key
     } catch (error) {
-      console.error('Error fetching categories:', error)
+      // console.error('Error fetching categories:', error)
       setCategories([]) // Set an empty array in case of error
     }
   }
@@ -93,7 +93,7 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [])
 
   useEffect(() => {
-    console.log('Fetched categories:', categories)
+    // console.log('Fetched categories:', categories)
   }, [categories])
 
   return (

@@ -142,7 +142,7 @@ export default function MainContent() {
     priority: 'L' | 'M' | 'H'
   }) => {
     try {
-      console.log('Task being sent to server:', task)
+      // console.log('Task being sent to server:', task)
       await addTask(
         task.title,
         task.description,

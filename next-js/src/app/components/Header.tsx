@@ -53,7 +53,7 @@ export default function Header({
 
   const handleLogout = () => {
     logout()
-    console.log('Logged out')
+    // console.log('Logged out')
   }
 
   return (

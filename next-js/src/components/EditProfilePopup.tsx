@@ -140,7 +140,7 @@ export default function EditProfilePopup({
       addNotification('error', 'Please fix validation errors.')
       return
     }
-    console.log('Form data to be sent:', formData)
+    // console.log('Form data to be sent:', formData)
     try {
       addNotification('info', 'Updating profile...')
       await updateUserProfile({

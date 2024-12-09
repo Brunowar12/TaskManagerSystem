@@ -39,7 +39,7 @@ export const createTask = async (task: {
   due_date: string
   priority: 'L' | 'M' | 'H'
 }) => {
-  console.log('Data being sent to server:', task)
+  // console.log('Data being sent to server:', task)
   const response = await fetch(`${BASE_URL}create/`, {
     method: 'POST',
     headers: headersWithAuth(),

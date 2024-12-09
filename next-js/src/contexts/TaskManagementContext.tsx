@@ -69,7 +69,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       const fullUrl = `${url}${separator}${searchParams.toString()}`
 
       const data = await getTasks(fullUrl)
-      console.log('Fetched tasks:', data)
+      // console.log('Fetched tasks:', data)
 
       setTasks((prevTasks) => {
         if (url === 'http://127.0.0.1:8000/tasks/' && !params.page) {
@@ -86,7 +86,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
 
       setNextPageUrl(data.next)
     } catch (error) {
-      console.error('Error fetching tasks:', error)
+      // console.error('Error fetching tasks:', error)
     }
   }
 
