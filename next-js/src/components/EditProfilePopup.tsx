@@ -76,8 +76,8 @@ export default function EditProfilePopup({
             error = 'Invalid email format.'
           break
         case 'age':
-          if (valueStr && (isNaN(Number(valueStr)) || Number(valueStr) <= 0)) {
-            error = 'Age must be a positive number.'
+          if (formData.age && Number(formData.age) < 6) {
+            error = 'Age must be greater than or equal to 6.'
           }
           break
         case 'phoneNumber':
