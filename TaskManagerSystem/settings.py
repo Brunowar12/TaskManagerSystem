@@ -70,10 +70,26 @@ MIDDLEWARE = [
     
 ]
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  # Next.js
+    "http://127.0.0.1:3000",  # Allow Next.js to the client
+    "http://localhost:3000",  # Additionally for other options
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
+
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+    "x-csrftoken",
+]
 
 # REST Framework settings
 REST_FRAMEWORK = {
