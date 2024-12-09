@@ -4,13 +4,14 @@ import { useState } from 'react'
 import {
   Search,
   Filter,
-  ChevronDown,
   Edit,
   Star,
   Trash,
   Plus,
   Calendar,
   Clock,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 import TaskCreationPopup from './TaskCreationPopup'
 import TaskEditPopup from './TaskEditPopup'
@@ -37,6 +38,11 @@ export default function MainContent() {
   const [ordering, setOrdering] = useState<string | null>(null)
   const [priority, setPriority] = useState<string | null>(null)
   const [completionFilter, setCompletionFilter] = useState<string | null>(null)
+  const [isFiltersVisible, setFiltersVisible] = useState(true)
+
+  const toggleFiltersVisibility = () => {
+    setFiltersVisible(!isFiltersVisible)
+  }
 
   const handleSearch = () => {
     fetchTasks('http://127.0.0.1:8000/tasks/', { title: searchQuery, ordering })
@@ -278,86 +284,102 @@ export default function MainContent() {
       <div className='flex-1 overflow-y-auto space-y-6'>
         {/* Filters and Search */}
         <div className='rounded-lg bg-white bg-opacity-75 p-6 shadow-lg'>
-          <h3 className='mb-4 text-xl font-semibold'>Filters and Search</h3>
-          <div className='mb-4 flex flex-wrap gap-4'>
-            <div className='flex-1 min-w-[200px]'>
-              <div className='relative'>
-                <input
-                  type='text'
-                  className='w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200'
-                  placeholder='Search tasks...'
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                />
-
-                <Search
-                  className='absolute left-3 top-2.5 text-gray-400'
-                  size={20}
-                />
-              </div>
-            </div>
-            <div className='flex-1 min-w-[200px]'>
-              <div className='relative'>
-                <select
-                  className='w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200'
-                  value={completionFilter || 'All Status'}
-                  onChange={handleCompletionChange}
-                >
-                  <option value='All Status'>All Status</option>
-                  <option value='Completed'>Completed</option>
-                  <option value='Incomplete'>Incomplete</option>
-                </select>
-                <ChevronDown
-                  className='pointer-events-none absolute right-3 top-2.5 text-gray-400'
-                  size={20}
-                />
-              </div>
-            </div>
-            <div className='flex-1 min-w-[200px]'>
-              <div className='relative'>
-                <select
-                  className='w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200'
-                  value={priority || 'All'}
-                  onChange={handlePriorityChange}
-                >
-                  <option value='All'>All Priority</option>
-                  <option value='H'>High</option>
-                  <option value='M'>Medium</option>
-                  <option value='L'>Low</option>
-                </select>
-                <ChevronDown
-                  className='pointer-events-none absolute right-3 top-2.5 text-gray-400'
-                  size={20}
-                />
-              </div>
-            </div>
-            <div className='flex-1 min-w-[200px]'>
-              <div className='relative'>
-                <select
-                  className='w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200'
-                  value={ordering || ''}
-                  onChange={handleSortChange}
-                >
-                  <option value=''>Sort by Default</option>
-                  <option value='due_date'>Due Date (Ascending)</option>
-                  <option value='-due_date'>Due Date (Descending)</option>
-                  <option value='title'>Title (A-Z)</option>
-                  <option value='-title'>Title (Z-A)</option>
-                </select>
-                <ChevronDown
-                  className='pointer-events-none absolute right-3 top-2.5 text-gray-400'
-                  size={20}
-                />
-              </div>
-            </div>
+          <div className='flex items-center justify-between mb-4'>
+            <h3 className='text-xl font-semibold'>Filters and Search</h3>
+            <button
+              onClick={toggleFiltersVisibility}
+              className='text-gray-500 hover:text-gray-800'
+            >
+              {isFiltersVisible ? (
+                <ChevronUp size={24} />
+              ) : (
+                <ChevronDown size={24} />
+              )}
+            </button>
           </div>
-          <button
-            className='rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700 duration-200'
-            onClick={() => clearFilters()}
-          >
-            Clear Filters
-          </button>
+
+          {isFiltersVisible && ( // Условное отображение фильтров
+            <div className='mb-4 flex flex-wrap gap-4'>
+              <div className='flex-1 min-w-[200px]'>
+                <div className='relative'>
+                  <input
+                    type='text'
+                    className='w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200'
+                    placeholder='Search tasks...'
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                  />
+
+                  <Search
+                    className='absolute left-3 top-2.5 text-gray-400'
+                    size={20}
+                  />
+                </div>
+              </div>
+              <div className='flex-1 min-w-[200px]'>
+                <div className='relative'>
+                  <select
+                    className='w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200'
+                    value={completionFilter || 'All Status'}
+                    onChange={handleCompletionChange}
+                  >
+                    <option value='All Status'>All Status</option>
+                    <option value='Completed'>Completed</option>
+                    <option value='Incomplete'>Incomplete</option>
+                  </select>
+                  <ChevronDown
+                    className='pointer-events-none absolute right-3 top-2.5 text-gray-400'
+                    size={20}
+                  />
+                </div>
+              </div>
+              <div className='flex-1 min-w-[200px]'>
+                <div className='relative'>
+                  <select
+                    className='w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200'
+                    value={priority || 'All'}
+                    onChange={handlePriorityChange}
+                  >
+                    <option value='All'>All Priority</option>
+                    <option value='H'>High</option>
+                    <option value='M'>Medium</option>
+                    <option value='L'>Low</option>
+                  </select>
+                  <ChevronDown
+                    className='pointer-events-none absolute right-3 top-2.5 text-gray-400'
+                    size={20}
+                  />
+                </div>
+              </div>
+              <div className='flex-1 min-w-[200px]'>
+                <div className='relative'>
+                  <select
+                    className='w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200'
+                    value={ordering || ''}
+                    onChange={handleSortChange}
+                  >
+                    <option value=''>Sort by Default</option>
+                    <option value='due_date'>Due Date (Ascending)</option>
+                    <option value='-due_date'>Due Date (Descending)</option>
+                    <option value='title'>Title (A-Z)</option>
+                    <option value='-title'>Title (Z-A)</option>
+                  </select>
+                  <ChevronDown
+                    className='pointer-events-none absolute right-3 top-2.5 text-gray-400'
+                    size={20}
+                  />
+                </div>
+              </div>
+
+              <button
+                className='rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700 duration-200'
+                onClick={() => clearFilters()}
+              >
+                Clear Filters
+              </button>
+            </div>
+          )}
         </div>
 
         <div className='mb-6'>
