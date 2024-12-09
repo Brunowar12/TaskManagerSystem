@@ -85,7 +85,7 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
             <div className='font-semibold text-xs sm:text-sm'>{day}</div>
             {/* Для маленьких экранов показываем только количество задач */}
             <div className='block sm:hidden text-[10px] text-gray-500'>
-              {dayTasks.length > 0 ? `${dayTasks.length} task(s)` : 'No tasks'}
+              {dayTasks.length > 0 ? `${dayTasks.length} task(s)` : ''}
             </div>
             {/* Для больших экранов показываем задачи */}
             <div className='hidden sm:block'>
@@ -134,9 +134,7 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
                 })}
               </div>
               <div className='block sm:hidden text-[10px] text-gray-500'>
-                {dayTasks.length > 0
-                  ? `${dayTasks.length} task(s)`
-                  : 'No tasks'}
+                {dayTasks.length > 0 ? `${dayTasks.length} task(s)` : ''}
               </div>
               <div className='hidden sm:block'>
                 {dayTasks.map((task) => (
