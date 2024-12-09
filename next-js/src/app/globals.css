@@ -34,7 +34,6 @@ body {
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
-  
 }
 
 @layer base {
@@ -44,4 +43,34 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Очень тонкий скролл с градиентом */
+::-webkit-scrollbar {
+  width: 4px; /* Тонкий скролл */
+}
+
+/* Стиль фона для дорожки скролла */
+::-webkit-scrollbar-track {
+  background: rgba(200, 200, 200, 0.3); /* Лёгкий серый фон для дорожки */
+  border-radius: 10px; /* Скругление углов дорожки */
+}
+
+/* Стиль бегунка скролла с градиентом */
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    45deg,
+    #d1d1d1,
+    #b0b0b0
+  ); /* Светлый серый градиент */
+  border-radius: 10px; /* Скругление углов бегунка */
+}
+
+/* Цвет бегунка при наведении */
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    45deg,
+    #a0a0a0,
+    #909090
+  ); /* Более тёмный серый градиент при наведении */
 }
