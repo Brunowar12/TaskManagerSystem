@@ -34,15 +34,25 @@ export default function MainContent() {
   const { addNotification } = useNotification()
   const { categories } = useCategoryContext()
   const [searchQuery, setSearchQuery] = useState('')
+  const [ordering, setOrdering] = useState<string | null>(null)
 
   const handleSearch = () => {
-    fetchTasks('http://127.0.0.1:8000/tasks/', { title: searchQuery })
+    fetchTasks('http://127.0.0.1:8000/tasks/', { title: searchQuery, ordering })
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch()
     }
+  }
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value
+    setOrdering(value)
+    fetchTasks('http://127.0.0.1:8000/tasks/', {
+      title: searchQuery,
+      ordering: value,
+    })
   }
 
   const getCategoryNameById = (id: number): string => {
@@ -276,10 +286,16 @@ export default function MainContent() {
             </div>
             <div className='flex-1 min-w-[200px]'>
               <div className='relative'>
-                <select className='w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200'>
-                  <option>Sort by Due Date</option>
-                  <option>Sort by Priority</option>
-                  <option>Sort Alphabetically</option>
+                <select
+                  className='w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200'
+                  value={ordering || ''}
+                  onChange={handleSortChange}
+                >
+                  <option value=''>Sort by Default</option>
+                  <option value='due_date'>Due Date (Ascending)</option>
+                  <option value='-due_date'>Due Date (Descending)</option>
+                  <option value='title'>Title (A-Z)</option>
+                  <option value='-title'>Title (Z-A)</option>
                 </select>
                 <ChevronDown
                   className='pointer-events-none absolute right-3 top-2.5 text-gray-400'

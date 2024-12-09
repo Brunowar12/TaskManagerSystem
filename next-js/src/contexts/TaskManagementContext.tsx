@@ -45,15 +45,16 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const fetchTasks = async (
     url: string = 'http://127.0.0.1:8000/tasks/',
-    params: { title?: string } = {}
+    params: { title?: string; ordering?: string } = {}
   ) => {
     try {
       const searchParams = new URLSearchParams()
       if (params.title) searchParams.append('title', params.title)
+      if (params.ordering) searchParams.append('ordering', params.ordering)
 
       const fullUrl = `${url}?${searchParams.toString()}`
       const data = await getTasks(fullUrl)
-      console.log('Fetched tasks with filters:', data)
+      console.log('Fetched tasks with filters and ordering:', data)
 
       setTasks(data.results) // Перезаписываем задачи
       setNextPageUrl(data.next)
