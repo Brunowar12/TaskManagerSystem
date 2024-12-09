@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   User2,
   Mail,
@@ -8,37 +8,31 @@ import {
   Building2,
   Clock,
   Edit2,
-  Settings,
-  LogOut,
   ArrowLeft,
 } from 'lucide-react'
 import { PieChart } from '@/components/ui/pie-chart'
 import EditProfilePopup from '@/components/EditProfilePopup'
 import { useUserContext } from '@/contexts/UserManagement'
+import { useTaskContext } from '@/contexts/TaskManagementContext'
 import { formatDate } from '@/services/formatDateServide'
 
-interface ProfileStats {
-  completedTasks: number
-  ongoingTasks: number
-  totalTasks: number
-}
-
 interface ProfileProps {
-  stats?: ProfileStats
   onBackToTasks: () => void
 }
 
-export default function Profile({
-  stats = { completedTasks: 0, ongoingTasks: 0, totalTasks: 0 },
-  onBackToTasks,
-}: ProfileProps) {
+export default function Profile({ onBackToTasks }: ProfileProps) {
   const [isEditing, setIsEditing] = useState(false)
   const { user } = useUserContext() // Fetch the user from context
+  const { tasks } = useTaskContext() // Fetch tasks from context
 
+  // Calculate active (ongoing) and completed tasks
+  const ongoingTasks = tasks.filter((task) => !task.completed).length
+  const completedTasks = tasks.filter((task) => task.completed).length
+  const totalTasks = tasks.length
+
+  // Calculate task completion rate
   const completionRate =
-    stats.totalTasks > 0
-      ? Math.round((stats.completedTasks / stats.totalTasks) * 100)
-      : 0
+    totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
 
   return (
     <div className='max-w-4xl mx-auto p-4 sm:p-6 space-y-6 animate-fadeIn'>
@@ -81,8 +75,8 @@ export default function Profile({
                   Edit Profile
                 </button>
                 <EditProfilePopup
-                  isOpen={isEditing} // Pass the state to control popup visibility
-                  onClose={() => setIsEditing(false)} // Close the popup on click
+                  isOpen={isEditing}
+                  onClose={() => setIsEditing(false)}
                   user={user}
                 />
               </div>
@@ -141,17 +135,13 @@ export default function Profile({
             <div>
               <div className='flex justify-between text-sm text-gray-600 mb-1'>
                 <span>Ongoing</span>
-                <span>{stats.ongoingTasks}</span>
+                <span>{ongoingTasks}</span>
               </div>
               <div className='w-full bg-gray-200 rounded-full h-2'>
                 <div
                   className='bg-purple-600 h-2 rounded-full transition-all duration-300'
                   style={{
-                    width: `${
-                      stats.totalTasks > 0
-                        ? (stats.ongoingTasks / stats.totalTasks) * 100
-                        : 0
-                    }%`,
+                    width: `${(ongoingTasks / totalTasks) * 100}%`,
                   }}
                 />
               </div>
@@ -159,17 +149,13 @@ export default function Profile({
             <div>
               <div className='flex justify-between text-sm text-gray-600 mb-1'>
                 <span>Completed</span>
-                <span>{stats.completedTasks}</span>
+                <span>{completedTasks}</span>
               </div>
               <div className='w-full bg-gray-200 rounded-full h-2'>
                 <div
                   className='bg-green-500 h-2 rounded-full transition-all duration-300'
                   style={{
-                    width: `${
-                      stats.totalTasks > 0
-                        ? (stats.completedTasks / stats.totalTasks) * 100
-                        : 0
-                    }%`,
+                    width: `${(completedTasks / totalTasks) * 100}%`,
                   }}
                 />
               </div>
