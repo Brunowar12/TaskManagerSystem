@@ -33,6 +33,17 @@ export default function MainContent() {
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null)
   const { addNotification } = useNotification()
   const { categories } = useCategoryContext()
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const handleSearch = () => {
+    fetchTasks('http://127.0.0.1:8000/tasks/', { title: searchQuery })
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch()
+    }
+  }
 
   const getCategoryNameById = (id: number): string => {
     const category = categories.find((cat) => cat.id === id)
@@ -225,7 +236,11 @@ export default function MainContent() {
                   type='text'
                   className='w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200'
                   placeholder='Search tasks...'
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
                 />
+
                 <Search
                   className='absolute left-3 top-2.5 text-gray-400'
                   size={20}

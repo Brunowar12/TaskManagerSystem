@@ -43,21 +43,22 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
   const [tasks, setTasks] = useState<Task[]>([])
   const [nextPageUrl, setNextPageUrl] = useState<string | null>(null)
 
-  const fetchTasks = async (url: string = 'http://127.0.0.1:8000/tasks/') => {
+  const fetchTasks = async (
+    url: string = 'http://127.0.0.1:8000/tasks/',
+    params: { title?: string } = {}
+  ) => {
     try {
-      const data = await getTasks(url)
-      console.log('Fetched tasks:', data)
+      const searchParams = new URLSearchParams()
+      if (params.title) searchParams.append('title', params.title)
 
-      // Убедимся, что задачи с одинаковым id не добавляются повторно
-      setTasks((prev) => {
-        const newTasks = data.results.filter(
-          (newTask) => !prev.some((task) => task.id === newTask.id)
-        )
-        return [...prev, ...newTasks]
-      })
+      const fullUrl = `${url}?${searchParams.toString()}`
+      const data = await getTasks(fullUrl)
+      console.log('Fetched tasks with filters:', data)
+
+      setTasks(data.results) // Перезаписываем задачи
       setNextPageUrl(data.next)
     } catch (error) {
-      console.error('Error fetching tasks:', error)
+      console.error('Error fetching tasks with filters:', error)
     }
   }
 

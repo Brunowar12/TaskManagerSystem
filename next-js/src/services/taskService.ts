@@ -19,7 +19,7 @@ const headersWithAuth = () => {
   }
 }
 
-export const getTasks = async (url: string = BASE_URL) => {
+export const getTasks = async (url: string) => {
   const response = await fetch(url, {
     method: 'GET',
     headers: headersWithAuth(),
