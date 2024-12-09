@@ -60,9 +60,6 @@ export default function TaskCreationPopup({
     if (!title.trim()) {
       newErrors.title = 'Title is required'
     }
-    if (!description.trim()) {
-      newErrors.description = 'Description is required'
-    }
     if (!dueDate || !dueTime) {
       newErrors.dueDate = 'Due date is required'
       newErrors.dueTime = 'Due time is required'
@@ -193,19 +190,10 @@ export default function TaskCreationPopup({
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       rows={2}
-                      className={`flex-grow rounded-lg border ${
-                        errors.description
-                          ? 'border-red-500'
-                          : 'border-gray-300'
-                      } px-3 py-2 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors duration-200`}
+                      className={`flex-grow rounded-lg border px-3 py-2 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors duration-200`}
                       placeholder='Enter task description'
                     />
                   </div>
-                  {errors.description && (
-                    <p className='text-red-500 text-sm mt-1'>
-                      {errors.description}
-                    </p>
-                  )}
                 </div>
 
                 <div className='space-y-1'>
