@@ -36,6 +36,7 @@ export default function MainContent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [ordering, setOrdering] = useState<string | null>(null)
   const [priority, setPriority] = useState<string | null>(null)
+  const [completionFilter, setCompletionFilter] = useState<string | null>(null)
 
   const handleSearch = () => {
     fetchTasks('http://127.0.0.1:8000/tasks/', { title: searchQuery, ordering })
@@ -51,6 +52,22 @@ export default function MainContent() {
     })
   }
 
+  const handleCompletionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value
+    setCompletionFilter(value === 'All Status' ? null : value)
+    fetchTasks('http://127.0.0.1:8000/tasks/', {
+      title: searchQuery,
+      ordering,
+      priority,
+      completed:
+        value === 'Completed'
+          ? true
+          : value === 'Incomplete'
+          ? false
+          : undefined,
+    })
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch()
@@ -63,6 +80,8 @@ export default function MainContent() {
     fetchTasks('http://127.0.0.1:8000/tasks/', {
       title: searchQuery,
       ordering: value,
+      priority: priority || undefined, // Учитываем текущий приоритет
+      completionFilter: completionFilter || undefined, // Учитываем текущий статус
     })
   }
 
@@ -71,6 +90,7 @@ export default function MainContent() {
     setSearchQuery('')
     setOrdering(null)
     setPriority(null)
+    setCompletionFilter(null)
     // Выполняем запрос на обновление задач без фильтров
     fetchTasks('http://127.0.0.1:8000/tasks/')
   }
@@ -279,10 +299,14 @@ export default function MainContent() {
             </div>
             <div className='flex-1 min-w-[200px]'>
               <div className='relative'>
-                <select className='w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200'>
-                  <option>All Status</option>
-                  <option>Completed</option>
-                  <option>Incomplete</option>
+                <select
+                  className='w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200'
+                  value={completionFilter || 'All Status'}
+                  onChange={handleCompletionChange}
+                >
+                  <option value='All Status'>All Status</option>
+                  <option value='Completed'>Completed</option>
+                  <option value='Incomplete'>Incomplete</option>
                 </select>
                 <ChevronDown
                   className='pointer-events-none absolute right-3 top-2.5 text-gray-400'

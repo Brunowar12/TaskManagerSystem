@@ -50,6 +50,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       ordering?: string
       page?: number
       priority?: string
+      completed?: boolean
     } = {}
   ) => {
     if (!url) return
@@ -61,6 +62,8 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       if (params.title) searchParams.append('title', params.title)
       if (params.ordering) searchParams.append('ordering', params.ordering)
       if (params.priority) searchParams.append('priority', params.priority) // Новый параметр
+      if (params.completed !== undefined)
+        searchParams.append('completed', params.completed.toString())
 
       const separator = url.includes('?') ? '&' : '?'
       const fullUrl = `${url}${separator}${searchParams.toString()}`
