@@ -14,12 +14,28 @@ import {
   YAxis,
 } from 'recharts'
 import { useStatsContext } from '@/contexts/StatsContext'
+import { useTaskContext } from '@/contexts/TaskManagementContext'
 
 export default function StatsView() {
-  const { tasksCompleted, productivityScore, taskDistribution } =
-    useStatsContext()
+  const { productivityScore, taskDistribution } = useStatsContext()
+  const { tasks } = useTaskContext()
 
-  // Форматируем данные для диаграмм
+  // Форматируем данные для "Tasks Completed"
+  const completedTasks = tasks.filter((task) => task.completed).length
+  const remainingTasks = tasks.length - completedTasks
+
+  const completedData = [
+    { name: 'Tasks Completed', value: completedTasks },
+    { name: 'Remaining', value: remainingTasks },
+  ]
+
+  // Форматируем данные для "Task Distribution"
+  const categoryCounts: Record<string, number> = {}
+  tasks.forEach((task) => {
+    const category = task.category || 'Uncategorized'
+    categoryCounts[category] = (categoryCounts[category] || 0) + 1
+  })
+
   const distributionData = Object.entries(taskDistribution).map(
     ([name, value]) => ({
       name,
@@ -27,16 +43,13 @@ export default function StatsView() {
     })
   )
 
+  // Форматируем данные для продуктивности
   const productivityData = [
     { name: 'This Week', value: productivityScore },
     { name: 'Last Week', value: 100 - productivityScore },
   ]
 
-  const completedData = [
-    { name: 'Tasks Completed', value: tasksCompleted },
-    { name: 'Remaining', value: 100 - tasksCompleted }, // Пример: если из 100 задач выполнено N
-  ]
-
+  // Карты данных для диаграмм
   const chartDataMap = {
     distribution: distributionData,
     productivity: productivityData,
@@ -68,9 +81,11 @@ export default function StatsView() {
             </h3>
           </div>
           <p className='text-3xl font-bold text-gray-800 mt-2'>
-            {tasksCompleted}
+            {completedTasks}
           </p>
-          <p className='text-sm text-gray-500 mt-1'>Last 7 days</p>
+          <p className='text-sm text-gray-500 mt-1'>
+            Remaining: {remainingTasks}
+          </p>
         </div>
 
         <div className='bg-white rounded-lg shadow-lg p-6'>
@@ -99,7 +114,7 @@ export default function StatsView() {
                   style={{ backgroundColor: COLORS[index % COLORS.length] }}
                 ></div>
                 <span className='text-sm text-gray-600'>
-                  {name}: {value}%
+                  {name}: {value}
                 </span>
               </div>
             ))}
@@ -160,7 +175,14 @@ export default function StatsView() {
                 <XAxis dataKey='name' />
                 <YAxis />
                 <Bar dataKey='value' fill='#8b5cf6' />
-                <Tooltip />
+                <Tooltip
+                  formatter={(value: number) =>
+                    selectedData === 'distribution' ||
+                    selectedData === 'productivity'
+                      ? `${value}%`
+                      : value
+                  }
+                />
                 <Legend />
               </BarChart>
             ) : (
@@ -171,6 +193,12 @@ export default function StatsView() {
                   nameKey='name'
                   outerRadius={80}
                   fill='#8b5cf6'
+                  label={(entry) =>
+                    selectedData === 'distribution' ||
+                    selectedData === 'productivity'
+                      ? `${entry.name}: ${entry.value}%`
+                      : `${entry.name}: ${entry.value}`
+                  }
                 >
                   {chartData.map((entry, index) => (
                     <Cell
@@ -179,7 +207,14 @@ export default function StatsView() {
                     />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  formatter={(value: number) =>
+                    selectedData === 'distribution' ||
+                    selectedData === 'productivity'
+                      ? `${value}%`
+                      : value
+                  }
+                />
                 <Legend />
               </PieChart>
             )}
