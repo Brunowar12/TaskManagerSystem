@@ -272,7 +272,7 @@ export default function EditProfilePopup({
                   </div>
                 ))}
 
-                {/* Profile picture */}
+                {/* Profile picture 
                 <div className='relative'>
                   <label className='text-sm font-medium text-gray-700 mb-1 block'>
                     Profile Picture (Optional)
@@ -317,7 +317,7 @@ export default function EditProfilePopup({
                     />
                   </div>
                 </div>
-
+                */}
                 <div className='flex flex-col sm:flex-row sm:gap-4'>
                   <motion.button
                     type='submit'
