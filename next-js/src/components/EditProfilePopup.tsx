@@ -45,7 +45,7 @@ export default function EditProfilePopup({
   const [image, setImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { addNotification } = useNotification()
-  const { updateUserProfile } = useUserContext() // Используем контекст
+  const { updateUserProfile } = useUserContext() // Используем контекс
 
   useEffect(() => {
     setFormData({
