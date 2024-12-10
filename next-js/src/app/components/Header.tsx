@@ -56,7 +56,6 @@ export default function Header({
   const handleLogout = () => {
     setPendingNotification('success', 'You have successfully logged out!', 5000)
     logout()
-    // Перенаправление на /auth, если это не выполняется внутри `logout`
     window.location.href = '/auth'
   }
 

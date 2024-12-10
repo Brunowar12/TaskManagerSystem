@@ -6,7 +6,7 @@ export async function logout() {
 
   if (accessToken) {
     try {
-      // Отправляем запрос на сервер для выхода
+      // Send a request to the server to exit
       const response = await fetch(`http://127.0.0.1:8000/auth/logout/`, {
         method: 'POST',
         headers: {
