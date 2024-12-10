@@ -95,7 +95,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
 
       setNextPageUrl(data.next)
     } catch (error) {
-      console.error('Error fetching tasks:', error)
+      // console.error('Error fetching tasks:', error)
     }
   }
 
@@ -116,7 +116,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       })
       setTasks((prev) => [newTask, ...prev])
     } catch (error) {
-      console.error('Error adding task:', error)
+      // console.error('Error adding task:', error)
     }
   }
 
@@ -148,7 +148,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
         )
       )
     } catch (error) {
-      console.error('Error updating task:', error)
+      // console.error('Error updating task:', error)
     }
   }
 
@@ -175,7 +175,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       // Remove the task from the state
       setTasks((prev) => prev.filter((task) => task.id !== id))
     } catch (error) {
-      console.error('Error in deleteTaskById:', error)
+      // console.error('Error in deleteTaskById:', error)
       throw error
     }
   }

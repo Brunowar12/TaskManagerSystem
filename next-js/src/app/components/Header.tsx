@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { UserCircle, LogOut, Menu, ChevronDown, User2 } from 'lucide-react'
 import { logout } from '@/services/logoutService'
 import { useUserContext } from '@/contexts/UserManagement'
+import { useNotification } from '@/contexts/notification-context'
 
 interface HeaderProps {
   toggleSidebar: () => void
@@ -22,6 +23,7 @@ export default function Header({
   const [isDesktop, setIsDesktop] = useState(false)
   const { user } = useUserContext()
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const { addNotification } = useNotification()
 
   useEffect(() => {
     // Update the state to determine if the device is a desktop
@@ -53,6 +55,7 @@ export default function Header({
 
   const handleLogout = () => {
     logout()
+    addNotification('success', 'You have successfully logged out!', 5000)
     // console.log('Logged out')
   }
 
