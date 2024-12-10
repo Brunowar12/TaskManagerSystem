@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { BarChart, ListTodo, Calendar, Plus, Trash2 } from 'lucide-react'
 import { useNotification } from '@/contexts/notification-context'
@@ -27,7 +27,14 @@ export default function Sidebar({
   const [tempCategory, setTempCategory] = useState('')
   const { addNotification } = useNotification()
 
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+  const [isTouchDevice, setIsTouchDevice] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Только на клиенте можно использовать window
+      setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0)
+    }
+  }, [])
   let touchTimeout: NodeJS.Timeout | null = null
 
   const isValidCategoryName = (name: string) => {
