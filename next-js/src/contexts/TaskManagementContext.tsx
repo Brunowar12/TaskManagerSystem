@@ -134,7 +134,15 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       const updatedTask = await updateTask(id, data)
       setTasks((prev) =>
         prev.map((task) =>
-          task.id === id ? { ...task, ...updatedTask } : task
+          task.id === id
+            ? {
+                ...updatedTask,
+                isOverdue:
+                  updatedTask.due_date &&
+                  new Date(updatedTask.due_date) < new Date() &&
+                  !updatedTask.completed,
+              }
+            : task
         )
       )
     } catch (error) {
