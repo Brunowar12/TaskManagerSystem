@@ -46,7 +46,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
   const fetchTasks = async (
     url: string = 'http://127.0.0.1:8000/tasks/',
     params: {
-      title?: string
+      search?: string
       ordering?: string
       page?: number
       priority?: string
@@ -59,7 +59,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       const searchParams = new URLSearchParams()
 
       if (params.page) searchParams.append('page', params.page.toString())
-      if (params.title) searchParams.append('title', params.title)
+      if (params.search) searchParams.append('search', params.search)
       if (params.ordering) searchParams.append('ordering', params.ordering)
       if (params.priority) searchParams.append('priority', params.priority)
       if (params.completed !== undefined)

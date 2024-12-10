@@ -45,14 +45,17 @@ export default function MainContent() {
   }
 
   const handleSearch = () => {
-    fetchTasks('http://127.0.0.1:8000/tasks/', { title: searchQuery, ordering })
+    fetchTasks('http://127.0.0.1:8000/tasks/', {
+      search: searchQuery,
+      ordering,
+    })
   }
 
   const handlePriorityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value
     setPriority(value === 'All' ? null : value)
     fetchTasks('http://127.0.0.1:8000/tasks/', {
-      title: searchQuery,
+      search: searchQuery,
       ordering,
       priority: value === 'All' ? undefined : value,
     })
@@ -62,7 +65,7 @@ export default function MainContent() {
     const value = e.target.value
     setCompletionFilter(value === 'All Status' ? null : value)
     fetchTasks('http://127.0.0.1:8000/tasks/', {
-      title: searchQuery,
+      search: searchQuery,
       ordering,
       priority,
       completed:
@@ -84,7 +87,7 @@ export default function MainContent() {
     const value = e.target.value
     setOrdering(value)
     fetchTasks('http://127.0.0.1:8000/tasks/', {
-      title: searchQuery,
+      search: searchQuery,
       ordering: value,
       priority: priority || undefined,
       completionFilter: completionFilter || undefined,
