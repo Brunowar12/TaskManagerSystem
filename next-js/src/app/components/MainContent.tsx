@@ -460,7 +460,13 @@ export default function MainContent() {
                     </div>
                     <div className='flex items-center'>
                       <Clock size={16} className='mr-1' />
-                      <span>Due: {formatDate(task.due_date)}</span>
+                      <span
+                        className={`${
+                          task.isOverdue ? 'text-red-600 font-bold' : ''
+                        }`}
+                      >
+                        Due: {formatDate(task.due_date)}
+                      </span>
                     </div>
                     {task.category && (
                       <div className='flex items-center'>
