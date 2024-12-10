@@ -29,8 +29,7 @@ class User(AbstractUser):
                 "The phone number must start with '+' and contain only digits after it",
             )],)
 
-    # add logic for these fields
-    logged_in = models.DateTimeField(blank=True, null=True, verbose_name="last login") # На даному етапі є складності з реалізацією.
+    logged_in = models.DateTimeField(blank=True, null=True, verbose_name="last login")
     profile_edited = models.DateTimeField(blank=True, null=True, verbose_name="last profile edit")
     task_n_completed = models.DateTimeField(blank=True, null=True, verbose_name="last task completed")
 

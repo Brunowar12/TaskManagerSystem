@@ -63,6 +63,7 @@ class UpdateProfileView(GetAuthenticatedUserMixin, generics.UpdateAPIView):
     """
     serializer_class = UserProfileSerializer
 
+# To remove, bc of next.js
 def auth_page(request):    
     @csrf_protect
     def render_protected(request):

@@ -4,10 +4,7 @@ from .views import (
     UpdateProfileView, ProfileView,
     auth_page, user_page
 )
-from rest_framework_simplejwt.views import ( # Більшість під видалення
-    TokenObtainPairView, TokenRefreshView,
-    TokenVerifyView, TokenBlacklistView,
-)
+from rest_framework_simplejwt.views import TokenRefreshView, TokenBlacklistView
 
 urlpatterns = [
     path("", include([
@@ -23,8 +20,7 @@ urlpatterns = [
         path("update/", UpdateProfileView.as_view(), name="profile-update"),
     ])),
     
-    path("token/", include([
-        
+    path("token/", include([        
         path("refresh/", TokenRefreshView.as_view(), name="token_refresh"),
         path('blacklist/', TokenBlacklistView.as_view(), name='token_blacklist'),
     ])),

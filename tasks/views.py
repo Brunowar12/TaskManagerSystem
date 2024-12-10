@@ -1,11 +1,10 @@
 import logging
-from django.shortcuts import render
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.filters import OrderingFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 from .serializers import TaskSerializer, CategorySerializer
 from .services import TaskService
@@ -18,10 +17,10 @@ class TaskCreateView(UserQuerysetMixin, generics.CreateAPIView):
 # Task list
 class TaskListView(UserQuerysetMixin, generics.ListAPIView):
     serializer_class = TaskSerializer
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_fields = ["is_favorite", "title", "due_date", "completed", "priority"]
-    ordering_fields = ["is_favorite", "title", "due_date", "completed", "priority"]
-
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    search_fields = ["title", "description"]
+    filterset_fields = ["completed", "priority"]
+    ordering_fields = ["title", "due_date", "is_favorite"]
     
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -30,7 +29,7 @@ class TaskListView(UserQuerysetMixin, generics.ListAPIView):
                 return queryset.filter(due_date__date=now().date())
             except Exception as e:
                 logging.error(f"Error filtering today's tasks: {e}")
-                raise ValidationError("Error filtering today's tasks")
+                raise ValidationError("Error filtering today's tasks") from e
         return queryset
 
 # Task details, updates, and deletion
