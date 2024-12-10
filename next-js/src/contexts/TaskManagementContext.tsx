@@ -72,11 +72,13 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
 
       const now = new Date()
 
-      const tasksWithOverdue = data.results.map((task: Task) => ({
-        ...task,
-        isOverdue:
-          task.due_date && new Date(task.due_date) < now && !task.completed,
-      }))
+      const tasksWithOverdue = data.results.map((task: Task) => {
+        const dueDate = task.due_date ? new Date(task.due_date) : null
+        return {
+          ...task,
+          isOverdue: dueDate && dueDate <= now && !task.completed,
+        }
+      })
 
       setTasks((prevTasks) => {
         if (url === 'http://127.0.0.1:8000/tasks/' && !params.page) {
