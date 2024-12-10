@@ -75,7 +75,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
 
       const tasksWithOverdue = data.results.map((task: Task) => {
         const dueDate = task.due_date ? new Date(task.due_date) : null
-        const dueDateISO = dueDate ? dueDate.toISOString() : null // Преобразуем дату в строку ISO
+        const dueDateISO = dueDate ? dueDate : null // Преобразуем дату в строку ISO
 
         console.log(task.due_date, 'console.log(task.due_date)')
         console.log(dueDateISO, 'dueDateISO') // Проверяем формат ISO
