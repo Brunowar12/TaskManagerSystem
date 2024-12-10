@@ -69,14 +69,21 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       const fullUrl = `${url}${separator}${searchParams.toString()}`
 
       const data = await getTasks(fullUrl)
-      // console.log('Fetched tasks:', data)
+
+      const now = new Date()
+
+      const tasksWithOverdue = data.results.map((task: Task) => ({
+        ...task,
+        isOverdue:
+          task.due_date && new Date(task.due_date) < now && !task.completed,
+      }))
 
       setTasks((prevTasks) => {
         if (url === 'http://127.0.0.1:8000/tasks/' && !params.page) {
-          return data.results
+          return tasksWithOverdue
         }
 
-        const uniqueTasks = [...prevTasks, ...data.results].filter(
+        const uniqueTasks = [...prevTasks, ...tasksWithOverdue].filter(
           (task, index, self) =>
             self.findIndex((t) => t.id === task.id) === index
         )
@@ -86,7 +93,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
 
       setNextPageUrl(data.next)
     } catch (error) {
-      // console.error('Error fetching tasks:', error)
+      console.error('Error fetching tasks:', error)
     }
   }
 

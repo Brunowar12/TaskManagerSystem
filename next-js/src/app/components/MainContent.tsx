@@ -396,7 +396,9 @@ export default function MainContent() {
             {tasks.map((task) => (
               <li
                 key={task.id}
-                className='overflow-hidden rounded-lg bg-white shadow-md'
+                className={`overflow-hidden rounded-lg shadow-md ${
+                  task.isOverdue ? 'overdue-task' : 'bg-white'
+                }`}
               >
                 <div className='flex items-center justify-between border-b border-gray-200 p-4'>
                   <div className='flex items-center'>
@@ -415,6 +417,11 @@ export default function MainContent() {
                     >
                       {task.title}
                     </h4>
+                    {task.isOverdue && (
+                      <span className='ml-2 text-sm text-red-600 font-semibold'>
+                        Deadline missed!
+                      </span>
+                    )}
                   </div>
                   <div className='flex space-x-2'>
                     <button
