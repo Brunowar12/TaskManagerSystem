@@ -23,7 +23,7 @@ export default function Header({
   const [isDesktop, setIsDesktop] = useState(false)
   const { user } = useUserContext()
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const { addNotification } = useNotification()
+  const { setPendingNotification } = useNotification()
 
   useEffect(() => {
     // Update the state to determine if the device is a desktop
@@ -54,9 +54,10 @@ export default function Header({
   }, [])
 
   const handleLogout = () => {
+    setPendingNotification('success', 'You have successfully logged out!', 5000)
     logout()
-    addNotification('success', 'You have successfully logged out!', 5000)
-    // console.log('Logged out')
+    // Перенаправление на /auth, если это не выполняется внутри `logout`
+    window.location.href = '/auth'
   }
 
   return (
