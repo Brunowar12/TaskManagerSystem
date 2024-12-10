@@ -27,6 +27,9 @@ export default function Sidebar({
   const [tempCategory, setTempCategory] = useState('')
   const { addNotification } = useNotification()
 
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+  let touchTimeout: NodeJS.Timeout | null = null
+
   const isValidCategoryName = (name: string) => {
     return name.trim().length > 0
   }
@@ -83,6 +86,19 @@ export default function Sidebar({
       addNotification('error', `Error: ${errorMessage}`)
     }
     setEditingIndex(null)
+  }
+
+  const handleTouchDoubleTap = (categoryId: number, categoryName: string) => {
+    if (touchTimeout) {
+      clearTimeout(touchTimeout)
+      touchTimeout = null
+      setEditingIndex(categoryId)
+      setTempCategory(categoryName)
+    } else {
+      touchTimeout = setTimeout(() => {
+        touchTimeout = null
+      }, 300)
+    }
   }
 
   return (
@@ -192,8 +208,15 @@ export default function Sidebar({
                       ) : (
                         <span
                           onDoubleClick={() => {
-                            setEditingIndex(category.id)
-                            setTempCategory(category.name)
+                            if (!isTouchDevice) {
+                              setEditingIndex(category.id)
+                              setTempCategory(category.name)
+                            }
+                          }}
+                          onTouchStart={() => {
+                            if (isTouchDevice) {
+                              handleTouchDoubleTap(category.id, category.name)
+                            }
                           }}
                           className='ml-2 cursor-pointer'
                         >
