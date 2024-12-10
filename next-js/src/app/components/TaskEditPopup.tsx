@@ -64,9 +64,14 @@ export default function TaskEditPopup({
 
       // Date and Time Conversion
       if (task.due_date) {
-        const date = new Date(task.due_date)
-        setDueDate(date.toISOString().split('T')[0]) // yyyy-MM-dd
-        setDueTime(date.toTimeString().slice(0, 5)) // HH:mm
+        const utcDate = new Date(task.due_date) // Парсим дату в UTC
+        const localDate = new Date(
+          utcDate.getTime() + utcDate.getTimezoneOffset() * 60000
+        ) // Корректируем смещение UTC
+
+        // Устанавливаем значения для локального времени
+        setDueDate(localDate.toISOString().split('T')[0]) // yyyy-MM-dd
+        setDueTime(localDate.toTimeString().slice(0, 5)) // HH:mm
       } else {
         setDueDate('')
         setDueTime('')

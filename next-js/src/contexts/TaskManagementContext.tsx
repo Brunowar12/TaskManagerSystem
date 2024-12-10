@@ -8,6 +8,7 @@ import {
   deleteTask,
 } from '@/services/taskService'
 import Cookies from 'js-cookie'
+import { log } from 'console'
 
 interface Task {
   id: number
@@ -74,6 +75,11 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
 
       const tasksWithOverdue = data.results.map((task: Task) => {
         const dueDate = task.due_date ? new Date(task.due_date) : null
+        const dueDateISO = dueDate ? dueDate.toISOString() : null // Преобразуем дату в строку ISO
+
+        console.log(task.due_date, 'console.log(task.due_date)')
+        console.log(dueDateISO, 'dueDateISO') // Проверяем формат ISO
+
         return {
           ...task,
           isOverdue: dueDate && dueDate <= now && !task.completed,
