@@ -45,7 +45,6 @@ export default function MainContent() {
   }
 
   const handleSearch = () => {
-    // Всегда используем текущие значения всех фильтров
     fetchTasks('http://127.0.0.1:8000/tasks/', {
       search: searchQuery,
       ordering,
