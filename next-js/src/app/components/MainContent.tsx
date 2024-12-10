@@ -45,9 +45,17 @@ export default function MainContent() {
   }
 
   const handleSearch = () => {
+    // Всегда используем текущие значения всех фильтров
     fetchTasks('http://127.0.0.1:8000/tasks/', {
       search: searchQuery,
       ordering,
+      priority,
+      completed:
+        completionFilter === 'Completed'
+          ? true
+          : completionFilter === 'Incomplete'
+          ? false
+          : undefined,
     })
   }
 
@@ -58,6 +66,12 @@ export default function MainContent() {
       search: searchQuery,
       ordering,
       priority: value === 'All' ? undefined : value,
+      completed:
+        completionFilter === 'Completed'
+          ? true
+          : completionFilter === 'Incomplete'
+          ? false
+          : undefined,
     })
   }
 
@@ -77,31 +91,34 @@ export default function MainContent() {
     })
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch()
-    }
-  }
-
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value
     setOrdering(value)
     fetchTasks('http://127.0.0.1:8000/tasks/', {
       search: searchQuery,
       ordering: value,
-      priority: priority || undefined,
-      completionFilter: completionFilter || undefined,
+      priority,
+      completed:
+        completionFilter === 'Completed'
+          ? true
+          : completionFilter === 'Incomplete'
+          ? false
+          : undefined,
     })
   }
 
   const clearFilters = () => {
-    // Resetting filter state values
     setSearchQuery('')
     setOrdering(null)
     setPriority(null)
     setCompletionFilter(null)
-    // We execute a request to update tasks without filters
     fetchTasks('http://127.0.0.1:8000/tasks/')
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch()
+    }
   }
 
   const getCategoryNameById = (id: number): string => {
