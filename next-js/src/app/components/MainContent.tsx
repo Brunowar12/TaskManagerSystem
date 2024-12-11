@@ -132,7 +132,6 @@ export default function MainContent() {
         'info',
         !completed ? 'Task marked as completed!' : 'Task marked as incomplete.'
       )
-      fetchTasks()
     } catch (error) {
       console.error('Error toggling task completion:', error)
       addNotification('error', 'Failed to update task completion status.')
