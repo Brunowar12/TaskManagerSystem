@@ -59,13 +59,13 @@ INSTALLED_APPS = [
 # List of middleware classes to use
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',  # authentication middleware
+    'django.middleware.security.SecurityMiddleware',            # security-related middleware
     'django.contrib.sessions.middleware.SessionMiddleware',     # session management middleware
+    'django.middleware.common.CommonMiddleware',                # common middleware
+    #'django.middleware.csrf.CsrfViewMiddleware',               # CSRF protection middleware
+    'django.contrib.auth.middleware.AuthenticationMiddleware',  # authentication middleware
     'django.contrib.messages.middleware.MessageMiddleware',     # messaging middleware
     'django.middleware.clickjacking.XFrameOptionsMiddleware',   # clickjacking protection middleware
-    'django.middleware.common.CommonMiddleware',                # common middleware
-    # 'django.middleware.csrf.CsrfViewMiddleware',              # CSRF protection middleware
-    'django.middleware.security.SecurityMiddleware',            # security-related middleware         
 ]
 
 CORS_ALLOWED_ORIGINS = [
