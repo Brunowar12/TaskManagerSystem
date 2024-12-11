@@ -57,7 +57,7 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({
       const newCategory = await createCategory({ name, description })
       setCategories((prev) => [...prev, newCategory])
     } catch (error) {
-      console.error('Error adding category:', error)
+      // console.error('Error adding category:', error)
     }
   }
 
@@ -74,7 +74,7 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({
         )
       )
     } catch (error) {
-      console.error('Error updating category:', error)
+      // console.error('Error updating category:', error)
     }
   }
 
@@ -83,7 +83,7 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({
       await deleteCategory(id)
       setCategories((prev) => prev.filter((cat) => cat.id !== id)) // Update the list of categories
     } catch (error) {
-      console.error('Error deleting category:', error)
+      // console.error('Error deleting category:', error)
       throw error // Pass the error forward
     }
   }

@@ -67,7 +67,7 @@ export const deleteCategory = async (id: number) => {
       throw new Error(errorMessage)
     }
   } catch (error) {
-    console.error('Error in deleteCategory:', error)
+    // console.error('Error in deleteCategory:', error)
     throw error // Pass the error forward
   }
 }

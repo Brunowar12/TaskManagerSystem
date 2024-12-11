@@ -22,7 +22,7 @@ export async function checkUserAuthorization(): Promise<boolean> {
       Cookies.set('accessToken', newAccessToken, { expires: 1 / 24 }) // 60 минут
       return true
     } catch (error) {
-      console.error('Ошибка при обновлении токена:', error)
+      // console.error('Ошибка при обновлении токена:', error)
       redirectToAuthPage()
       return false
     }
