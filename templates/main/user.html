@@ -1,0 +1,85 @@
+{% extends "main/base.html" %} {% load static %} {% block title %}Личный кабинет
+- Plan My Day{% endblock %} {% block extra_styles %}
+<link rel="stylesheet" href="{% static 'main/css/user-main.css' %}" />
+{% endblock %} {% block content %}
+<main class="main-content">
+  <header class="header-main">
+    <div class="header-left">
+      <a href="/" class="back-to-main"> &#x2190; Back to Tasks </a>
+    </div>
+    <div class="header-right">
+      <img
+        src="{% static 'main/img/gordon.jpeg' %}"
+        alt="User Avatar"
+        class="user-avatar"
+      />
+      <div class="user-menu">
+        <a class="username" id="username">Your Name &#x25BC;</a>
+        <div class="dropdown" id="userDropdown">
+          <button id="logoutButton">Log out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="profile-section" class="profile-section">
+    <h2>Profile</h2>
+    <div class="profile-content">
+      <div class="profile-info">
+        <img
+          src="{% static 'main/img/gordon.jpeg' %}"
+          alt="Profile Picture"
+          class="profile-picture"
+        />
+        <button
+          class="edit-button edit-profile-button"
+          style="margin-top: 10px"
+          onclick="editProfile()"
+        >
+          Edit Profile
+        </button>
+        <button
+          class="edit-button profile_setting_button"
+          style="margin-top: 10px"
+          onclick="settingsProfile()"
+        >
+          Settings
+        </button>
+      </div>
+      <div class="user-details-container">
+        <h3 class="user-name">Dmytro Gordon</h3>
+        <div class="user-details">
+          <p>Age: <span>Unknown</span></p>
+          <p>Email: <span>Unknown</span></p>
+          <p>Phone Number: <span>Unknown</span></p>
+          <p>Place of Work: <span>Unknown</span></p>
+        </div>
+      </div>
+    </div>
+    <div class="activity-log">
+      <h3>Activity Log</h3>
+      <ul>
+        <li>Logged in - November 8, 2024</li>
+        <li>Profile edited - November 5, 2024</li>
+        <li>Task "Programming" completed - November 1, 2024</li>
+      </ul>
+    </div>
+    <div class="social-links">
+      <button onclick="connectSocial('facebook')">Facebook</button>
+      <button onclick="connectSocial('google')">Google</button>
+      <button onclick="connectSocial('twitter')">Twitter</button>
+    </div>
+  </section>
+  {% include "main/pop-up.html" %}
+</main>
+{% endblock %} {% block extra_scripts %}
+<!-- Controllers -->
+<script src="{% static 'main/js/controllers/authStatus.js' %}" defer></script>
+<script src="{% static 'main/js/controllers/getUserInfo.js' %}" defer></script>
+<script
+  src="{% static 'main/js/controllers/updateProfile.js' %}"
+  defer
+></script>
+<script src="{% static 'main/js/controllers/categories.js' %}" defer></script>
+
+{% endblock %}
