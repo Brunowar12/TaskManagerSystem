@@ -384,6 +384,7 @@ export default function MainContent() {
                     <option value='-due_date'>Due Date (Descending)</option>
                     <option value='title'>Title (A-Z)</option>
                     <option value='-title'>Title (Z-A)</option>
+                    <option value='-is_favorite'>Favorites</option>
                   </select>
                   <ChevronDown
                     className='pointer-events-none absolute right-3 top-2.5 text-gray-400'
