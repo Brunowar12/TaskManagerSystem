@@ -67,37 +67,79 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       await updateUserProfile(data)
       await fetchUserProfile() // Refetch after successful update
 
-      // Обновляем cookies только в случае успешного обновления
-      if (data.username) {
-        document.cookie = `username=${encodeURIComponent(
-          data.username
-        )}; path=/; max-age=${60 * 60 * 24 * 365}`
+      // We update cookies only in case of a successful update
+      if (data.username || data.email) {
+        const cookieData = []
+        if (data.username) {
+          cookieData.push(
+            `username=${encodeURIComponent(data.username)}; path=/; max-age=${
+              60 * 60 * 24 * 365
+            }`
+          )
+        }
+        if (data.email) {
+          cookieData.push(
+            `email=${encodeURIComponent(data.email)}; path=/; max-age=${
+              60 * 60 * 24 * 365
+            }`
+          )
+        }
+        document.cookie = cookieData.join('; ')
       }
-      if (data.email) {
-        document.cookie = `email=${encodeURIComponent(
-          data.email
-        )}; path=/; max-age=${60 * 60 * 24 * 365}`
-      }
+
       addNotification('success', 'Profile updated successfully!')
-      setError(null) // Очистить ошибку после успешного обновления
+      setError(null) // Clear error after successful update
     } catch (error: any) {
-      console.error('Error updating user profile:', error)
+      // console.error('Error updating user profile:', error)
 
-      // Логируем весь объект ошибки для диагностики
-      console.log('Full error:', error)
+      // Checking for errors related to the API (for example, from DRF)
+      if (error.response?.data) {
+        const errorData = error.response.data
+        if (errorData.username?.[0]?.includes('already exists')) {
+          addNotification(
+            'error',
+            'Username already exists. Please choose a different one.'
+          )
+        } else if (errorData.email?.[0]?.includes('already exists')) {
+          addNotification(
+            'error',
+            'Email already exists. Please choose a different one.'
+          )
+          // console.log(errorData.email)
+        } else {
+          // Handling common errors from the API
 
-      // Проверка на наличие ошибки с именем пользователя
-      if (
-        error.message &&
-        error.message.includes('user with this username already exists')
-      ) {
-        setError('Username already exists. Please choose a different one.')
-        addNotification(
-          'error',
-          'Username already exists. Please choose a different one.'
-        )
+          addNotification(
+            'error',
+            'An unexpected error occurred. Please try again.'
+          )
+        }
+      } else if (error.message) {
+        // Handling errors without `response.data` (for example, network errors)
+        if (error.message.includes('user with this username already exists')) {
+          setError('Username already exists. Please choose a different one.')
+          addNotification(
+            'error',
+            'Username already exists. Please choose a different one.'
+          )
+        } else if (
+          error.message.includes('user with this email already exists')
+        ) {
+          setError('Email already exists. Please choose a different one.')
+          addNotification(
+            'error',
+            'Email already exists. Please choose a different one.'
+          )
+        } else {
+          // General error for unexpected cases
+          setError('An unexpected error occurred. Please try again.')
+          addNotification(
+            'error',
+            'An unexpected error occurred. Please try again.'
+          )
+        }
       } else {
-        // Обрабатываем другие ошибки
+        // Handling completely unknown errors
         setError('An unexpected error occurred. Please try again.')
         addNotification(
           'error',
