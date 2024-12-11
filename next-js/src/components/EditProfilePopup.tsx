@@ -59,35 +59,49 @@ export default function EditProfilePopup({
 
   const validateField = (name: string, value: string | number) => {
     let error = ''
-    const containsCyrillic = /[а-яА-ЯёЁ]/.test(String(value))
+    const valueStr = String(value).trim()
 
-    if (containsCyrillic) {
-      error = 'Only Latin characters are allowed.'
-    } else {
-      const valueStr = String(value).trim()
+    switch (name) {
+      case 'username':
+        if (!valueStr) {
+          error = 'Username is required.'
+        } else if (!/^[a-zA-Z]+$/.test(valueStr)) {
+          error = 'Username must contain only Latin letters without symbols.'
+        } else if (valueStr.length > 20) {
+          error = 'Username must be at most 20 characters long.'
+        }
+        break
 
-      switch (name) {
-        case 'username':
-          if (!valueStr) error = 'Username is required.'
-          break
-        case 'email':
-          if (!valueStr) error = 'Email is required.'
-          else if (!/\S+@\S+\.\S+/.test(valueStr))
-            error = 'Invalid email format.'
-          break
-        case 'age':
-          if (formData.age && Number(formData.age) < 6) {
-            error = 'Age must be greater than or equal to 6.'
-          }
-          break
-        case 'phoneNumber':
-          if (valueStr && !/^\+?[0-9\s-]{0,15}$/.test(valueStr)) {
-            error = 'Phone number must contain only digits, spaces, "+" or "-".'
-          } else if (valueStr && valueStr.replace(/[^0-9]/g, '').length > 15) {
-            error = 'Invalid phone number (max 15 digits).'
-          }
-          break
-      }
+      case 'placeOfWork':
+        if (valueStr.length > 20) {
+          error = 'Place of Work must be at most 20 characters long.'
+        } else if (!/^[a-zA-Zа-яА-ЯёЁЇїІіЄєҐґ\s]*$/.test(valueStr)) {
+          error =
+            'Place of Work can contain only Latin, Cyrillic letters, and spaces.'
+        }
+        break
+
+      case 'email':
+        if (!valueStr) {
+          error = 'Email is required.'
+        } else if (!/\S+@\S+\.\S+/.test(valueStr)) {
+          error = 'Invalid email format.'
+        }
+        break
+
+      case 'age':
+        if (valueStr && Number(valueStr) < 6) {
+          error = 'Age must be greater than or equal to 6.'
+        }
+        break
+
+      case 'phoneNumber':
+        if (valueStr && !/^\+?[0-9\s-]{0,15}$/.test(valueStr)) {
+          error = 'Phone number must contain only digits, spaces, "+" or "-".'
+        } else if (valueStr.replace(/[^0-9]/g, '').length > 15) {
+          error = 'Invalid phone number (max 15 digits).'
+        }
+        break
     }
 
     return error
@@ -140,7 +154,6 @@ export default function EditProfilePopup({
       addNotification('error', 'Please fix validation errors.')
       return
     }
-    // console.log('Form data to be sent:', formData)
     try {
       addNotification('info', 'Updating profile...')
       await updateUserProfile({
@@ -205,7 +218,6 @@ export default function EditProfilePopup({
 
               <form onSubmit={handleSubmit} className='space-y-3' noValidate>
                 {[
-                  // Form with data already filled in
                   {
                     icon: User,
                     label: 'Username',
@@ -258,7 +270,7 @@ export default function EditProfilePopup({
                         placeholder={placeholder}
                         whileFocus='focus'
                         variants={inputVariants}
-                        maxLength={name === 'phoneNumber' ? 15 : undefined}
+                        maxLength={20}
                         className={`w-full pl-10 pr-4 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none transition-all duration-300 text-gray-800 bg-white ${
                           errors[name] ? 'border-red-500' : 'border-gray-200'
                         }`}
@@ -272,52 +284,6 @@ export default function EditProfilePopup({
                   </div>
                 ))}
 
-                {/* Profile picture 
-                <div className='relative'>
-                  <label className='text-sm font-medium text-gray-700 mb-1 block'>
-                    Profile Picture (Optional)
-                  </label>
-                  <div className='mt-1 flex items-center gap-4'>
-                    {image ? (
-                      <div className='relative w-12 h-12 rounded-full overflow-hidden'>
-                        <img
-                          src={image}
-                          alt='Profile'
-                          className='w-full h-full object-cover'
-                        />
-                        <button
-                          type='button'
-                          onClick={() => setImage(null)}
-                          className='absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white'
-                        >
-                          <X className='h-4 w-4' />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className='w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-400'>
-                        <ImageIcon className='h-6 w-6' />
-                      </div>
-                    )}
-                    <motion.button
-                      type='button'
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => fileInputRef.current?.click()}
-                      className='px-3 py-1.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-2 focus:ring-offset-2 focus:ring-purple-500'
-                    >
-                      <Upload className='h-4 w-4 inline-block mr-2' />
-                      Upload
-                    </motion.button>
-                    <input
-                      type='file'
-                      ref={fileInputRef}
-                      onChange={handleImageUpload}
-                      accept='image/*'
-                      className='hidden'
-                    />
-                  </div>
-                </div>
-                */}
                 <div className='flex flex-col sm:flex-row sm:gap-4'>
                   <motion.button
                     type='submit'
