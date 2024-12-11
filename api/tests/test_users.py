@@ -1,6 +1,6 @@
 from django.urls import reverse
-from .test_setup import APITestSetup
 from rest_framework import status
+from .test_setup import APITestSetup
 
 class UserAPITests(APITestSetup):
     def test_user_registration(self):

@@ -1,9 +1,9 @@
-from django.urls import reverse
-from rest_framework import status
-from .test_setup import APITestSetup
-from tasks.models import Task
 from datetime import datetime
+from django.urls import reverse
 from django.utils.timezone import now, make_aware
+from rest_framework import status
+from tasks.models import Task
+from .test_setup import APITestSetup
 
 class TaskAPITests(APITestSetup):
     def setUp(self):
