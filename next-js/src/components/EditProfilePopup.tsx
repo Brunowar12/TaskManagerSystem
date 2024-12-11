@@ -154,6 +154,7 @@ export default function EditProfilePopup({
       addNotification('error', 'Please fix validation errors.')
       return
     }
+
     try {
       addNotification('info', 'Updating profile...')
       await updateUserProfile({
@@ -163,11 +164,27 @@ export default function EditProfilePopup({
         place_of_work: formData.placeOfWork,
         phone_number: formData.phoneNumber,
       })
-      addNotification('success', 'Profile updated successfully!')
+
       onClose()
-    } catch (error) {
-      console.error('Failed to update profile:', error)
-      addNotification('error', 'Failed to update profile. Please try again.')
+    } catch (error: any) {
+      console.error('Error updating user profile:', error)
+
+      // Логируем полный объект ошибки для диагностики
+      console.log('Full error:', error)
+
+      // Проверка на ошибку с уже существующим именем пользователя
+      if (
+        error.message &&
+        error.message.includes('user with this username already exists')
+      ) {
+        addNotification(
+          'error',
+          'Username already exists. Please choose a different one.'
+        )
+      } else {
+        // Если ошибка другая, выводим общий текст
+        addNotification('error', 'Failed to update profile. Please try again.')
+      }
     }
   }
 

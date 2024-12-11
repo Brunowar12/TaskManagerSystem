@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { getUserProfile, updateUserProfile } from '@/services/userService'
+import { useNotification } from '@/contexts/notification-context'
 
 interface User {
   id: number
@@ -38,6 +39,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null)
+  const { addNotification } = useNotification()
+  const [error, setError] = useState<string | null>(null)
 
   const fetchUserProfile = async () => {
     try {
@@ -64,6 +67,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       await updateUserProfile(data)
       await fetchUserProfile() // Refetch after successful update
 
+      // Обновляем cookies только в случае успешного обновления
       if (data.username) {
         document.cookie = `username=${encodeURIComponent(
           data.username
@@ -74,8 +78,32 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
           data.email
         )}; path=/; max-age=${60 * 60 * 24 * 365}`
       }
-    } catch (error) {
+      addNotification('success', 'Profile updated successfully!')
+      setError(null) // Очистить ошибку после успешного обновления
+    } catch (error: any) {
       console.error('Error updating user profile:', error)
+
+      // Логируем весь объект ошибки для диагностики
+      console.log('Full error:', error)
+
+      // Проверка на наличие ошибки с именем пользователя
+      if (
+        error.message &&
+        error.message.includes('user with this username already exists')
+      ) {
+        setError('Username already exists. Please choose a different one.')
+        addNotification(
+          'error',
+          'Username already exists. Please choose a different one.'
+        )
+      } else {
+        // Обрабатываем другие ошибки
+        setError('An unexpected error occurred. Please try again.')
+        addNotification(
+          'error',
+          'An unexpected error occurred. Please try again.'
+        )
+      }
     }
   }
 

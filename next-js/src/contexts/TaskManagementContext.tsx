@@ -77,8 +77,8 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
         const dueDate = task.due_date ? new Date(task.due_date) : null
         const dueDateISO = dueDate ? dueDate : null // Преобразуем дату в строку ISO
 
-        console.log(task.due_date, 'console.log(task.due_date)')
-        console.log(dueDateISO, 'dueDateISO') // Проверяем формат ISO
+        // console.log(task.due_date, 'console.log(task.due_date)')
+        //  console.log(dueDateISO, 'dueDateISO') // Проверяем формат ISO
 
         return {
           ...task,

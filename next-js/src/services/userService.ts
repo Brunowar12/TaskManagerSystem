@@ -20,6 +20,30 @@ const headersWithAuth = () => {
   }
 }
 
+// Function to handle server errors
+const handleServerError = async (response: Response) => {
+  let errorMessage = 'An error occurred.'
+
+  try {
+    const errorData = await response.json()
+    // Проверяем на наличие ошибок с конкретным полем
+    if (errorData?.username) {
+      errorMessage = errorData.username.join('; ')
+    } else if (errorData?.detail) {
+      errorMessage = errorData.detail
+    } else if (typeof errorData === 'object') {
+      const errors = Object.entries(errorData)
+        .map(([key, value]) => `${key}: ${(value as string[]).join(', ')}`)
+        .join('; ')
+      errorMessage = `${errors}`
+    }
+  } catch {
+    // Если ошибка не в JSON формате, используем сообщение по умолчанию
+  }
+
+  throw new Error(errorMessage) // Возвращаем ошибку с сообщением
+}
+
 // Get profile data
 export const getUserProfile = async () => {
   const response = await fetch(`${BASE_URL}prf/`, {
@@ -28,7 +52,7 @@ export const getUserProfile = async () => {
   })
 
   if (!response.ok) {
-    throw new Error('Failed to fetch user profile')
+    await handleServerError(response)
   }
 
   return response.json()
@@ -49,7 +73,7 @@ export const updateUserProfile = async (data: {
   })
 
   if (!response.ok) {
-    throw new Error('Failed to update user profile')
+    await handleServerError(response)
   }
 
   return response.json()
