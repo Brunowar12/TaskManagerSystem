@@ -123,21 +123,21 @@ SIMPLE_JWT = {
 ROOT_URLCONF = 'TaskManagerSystem.urls'
 
 # Template configuration
-# TEMPLATES = [
-    # {
-        # 'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # 'DIRS': [BASE_DIR / "templates"],  # dir where templates are
-        # 'APP_DIRS': True,  # automatically discover templates in each app's
-        # 'OPTIONS': {
-            # 'context_processors': [
-                # 'django.template.context_processors.debug',
-                # 'django.template.context_processors.request',
-                # 'django.contrib.auth.context_processors.auth',
-                # 'django.contrib.messages.context_processors.messages',
-            # ],
-        # },
-    # },
-# ]
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],  # dir where templates are
+        'APP_DIRS': True,  # automatically discover templates in each app's
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
 
 WSGI_APPLICATION = 'TaskManagerSystem.wsgi.application'
 
@@ -248,9 +248,9 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-# STATIC_URL = 'static/'
+STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 # STATICFILES_DIRS = [BASE_DIR / "static"]
-# STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
