@@ -57,7 +57,7 @@ export default function EditProfilePopup({
     })
   }, [user])
 
-  const validateField = (name: string, value: string | number) => {
+  const validateField = (name, value) => {
     let error = ''
     const valueStr = String(value).trim()
 
@@ -90,13 +90,18 @@ export default function EditProfilePopup({
         break
 
       case 'age':
-        if (valueStr && Number(valueStr) < 6) {
-          error = 'Age must be greater than or equal to 6.'
+        const age = Number(valueStr)
+        if (!valueStr || isNaN(age)) {
+          error = 'Age is required and must be a number.'
+        } else if (age < 6 || age > 100) {
+          error = 'Age must be between 6 and 100.'
         }
         break
 
       case 'phoneNumber':
-        if (valueStr && !/^\+?[0-9\s-]{0,15}$/.test(valueStr)) {
+        if (!valueStr.startsWith('+')) {
+          error = 'Phone number must start with a "+".'
+        } else if (!/^\+?[0-9\s-]{1,15}$/.test(valueStr)) {
           error = 'Phone number must contain only digits, spaces, "+" or "-".'
         } else if (valueStr.replace(/[^0-9]/g, '').length > 15) {
           error = 'Invalid phone number (max 15 digits).'
