@@ -125,31 +125,47 @@ export default function MainContent() {
     return category ? category.name : 'Unknown'
   }
 
-  const toggleTaskCompletion = async (id: number, completed: boolean) => {
+  const toggleTaskCompletion = async (
+    id: number,
+    completed: boolean,
+    title: string
+  ) => {
     try {
       await updateTaskById(id, { completed: !completed })
       addNotification(
         'info',
-        !completed ? 'Task marked as completed!' : 'Task marked as incomplete.'
+        !completed
+          ? `Task "${title}" marked as completed!`
+          : `Task "${title}" marked as incomplete.`
       )
     } catch (error) {
       console.error('Error toggling task completion:', error)
-      addNotification('error', 'Failed to update task completion status.')
+      addNotification(
+        'error',
+        `Failed to update the status of task "${title}".`
+      )
     }
   }
 
-  const toggleTaskStarred = async (id: number, is_favorite: boolean) => {
+  const toggleTaskStarred = async (
+    id: number,
+    is_favorite: boolean,
+    title: string
+  ) => {
     try {
       await updateTaskById(id, { is_favorite: !is_favorite })
       addNotification(
         'success',
         !is_favorite
-          ? 'Task added to favorites!'
-          : 'Task removed from favorites.'
+          ? `Task "${title}" added to favorites!`
+          : `Task "${title}" removed from favorites.`
       )
     } catch (error) {
       console.error('Error toggling task favorite status:', error)
-      addNotification('error', 'Failed to update favorite status.')
+      addNotification(
+        'error',
+        `Failed to update the favorite status of task "${title}".`
+      )
     }
   }
 
@@ -193,7 +209,6 @@ export default function MainContent() {
     try {
       await updateTaskById(id, data)
       setEditPopupOpen(false)
-      addNotification('info', 'Task updated successfully!')
     } catch (error) {
       console.error('Error updating task:', error)
       addNotification('error', 'Failed to update task.')
@@ -205,14 +220,14 @@ export default function MainContent() {
     setEditPopupOpen(true)
   }
 
-  const handleDeleteTask = async (id: number) => {
+  const handleDeleteTask = async (id: number, title: string) => {
     try {
       await deleteTaskById(id)
       await fetchTasks()
-      addNotification('success', 'Task deleted successfully!')
+      addNotification('success', `Task "${title}" deleted successfully!`)
     } catch (error) {
       console.error('Error deleting task:', error)
-      addNotification('error', 'Failed to delete task.')
+      addNotification('error', `Failed to delete task "${title}".`)
     }
   }
 
@@ -427,7 +442,11 @@ export default function MainContent() {
                       type='checkbox'
                       checked={task.completed}
                       onChange={() =>
-                        toggleTaskCompletion(task.id, task.completed)
+                        toggleTaskCompletion(
+                          task.id,
+                          task.completed,
+                          task.title
+                        )
                       }
                       className='mr-4 h-5 w-5 rounded text-purple-600 focus:ring-purple-500'
                     />
@@ -453,7 +472,7 @@ export default function MainContent() {
                     </button>
                     <button
                       onClick={() =>
-                        toggleTaskStarred(task.id, task.is_favorite)
+                        toggleTaskStarred(task.id, task.is_favorite, task.title)
                       }
                       className={`text-gray-400 hover:text-yellow-500 ${
                         task.is_favorite ? 'text-yellow-500' : ''
@@ -465,7 +484,7 @@ export default function MainContent() {
                       />
                     </button>
                     <button
-                      onClick={() => handleDeleteTask(task.id)}
+                      onClick={() => handleDeleteTask(task.id, task.title)}
                       className='text-gray-400 hover:text-red-500'
                     >
                       <Trash size={20} />

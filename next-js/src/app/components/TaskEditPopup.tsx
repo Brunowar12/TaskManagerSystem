@@ -146,7 +146,7 @@ export default function TaskEditPopup({
 
     setErrors({})
     onClose()
-    addNotification('success', 'Task updated successfully!')
+    addNotification('success', `Task "${title}" updated successfully!`)
   }
 
   return (
