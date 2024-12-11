@@ -51,7 +51,7 @@ export default function Sidebar({
       await addCategory(newCategoryName.trim())
       addNotification('success', `Category "${newCategoryName.trim()}" added.`)
     } catch (error: any) {
-      console.error('Error adding category:', error)
+      // console.error('Error adding category:', error)
       const errorMessage =
         error?.response?.data?.message || 'Failed to add category.'
       addNotification('error', `Error: ${errorMessage}`)
@@ -66,7 +66,7 @@ export default function Sidebar({
       await deleteCategoryById(id)
       addNotification('info', `Category "${category?.name}" deleted.`)
     } catch (error: any) {
-      console.error('Error deleting category:', error)
+      // console.error('Error deleting category:', error)
       const errorMessage =
         error.message ||
         'An unexpected error occurred while deleting the category.'
@@ -87,7 +87,7 @@ export default function Sidebar({
         `Category updated to "${tempCategory.trim()}".`
       )
     } catch (error: any) {
-      console.error('Error updating category:', error)
+      // console.error('Error updating category:', error)
       const errorMessage =
         error?.response?.data?.message || 'Failed to update category.'
       addNotification('error', `Error: ${errorMessage}`)

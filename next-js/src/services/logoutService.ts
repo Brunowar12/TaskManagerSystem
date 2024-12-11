@@ -17,13 +17,10 @@ export async function logout() {
       })
 
       if (!response.ok) {
-        console.error(
-          'Ошибка при попытке выйти из системы:',
-          response.statusText
-        )
+        // console.error('Error when trying to log out:',response.statusText)
       }
     } catch (error) {
-      console.error('Ошибка сети при попытке выйти из системы:', error)
+      // console.error('Network error when trying to log out:', error)
     }
   }
 

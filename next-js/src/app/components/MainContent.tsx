@@ -139,7 +139,7 @@ export default function MainContent() {
           : `Task "${title}" marked as incomplete.`
       )
     } catch (error) {
-      console.error('Error toggling task completion:', error)
+      // console.error('Error toggling task completion:', error)
       addNotification(
         'error',
         `Failed to update the status of task "${title}".`
@@ -161,7 +161,7 @@ export default function MainContent() {
           : `Task "${title}" removed from favorites.`
       )
     } catch (error) {
-      console.error('Error toggling task favorite status:', error)
+      // console.error('Error toggling task favorite status:', error)
       addNotification(
         'error',
         `Failed to update the favorite status of task "${title}".`
@@ -191,7 +191,7 @@ export default function MainContent() {
       setCreationPopupOpen(false)
       addNotification('success', `Task "${task.title}" created successfully!`)
     } catch (error) {
-      console.error('Error creating task:', error)
+      // console.error('Error creating task:', error)
       addNotification('error', 'Failed to create task. Please try again.')
     }
   }
@@ -210,7 +210,7 @@ export default function MainContent() {
       await updateTaskById(id, data)
       setEditPopupOpen(false)
     } catch (error) {
-      console.error('Error updating task:', error)
+      // console.error('Error updating task:', error)
       addNotification('error', 'Failed to update task.')
     }
   }
@@ -226,7 +226,7 @@ export default function MainContent() {
       await fetchTasks()
       addNotification('success', `Task "${title}" deleted successfully!`)
     } catch (error) {
-      console.error('Error deleting task:', error)
+      // console.error('Error deleting task:', error)
       addNotification('error', `Failed to delete task "${title}".`)
     }
   }

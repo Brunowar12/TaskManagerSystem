@@ -119,7 +119,7 @@ export default function TaskEditPopup({
       const parsedCategoryId = parseInt(category, 10)
       const categoryObj = categories.find((cat) => cat.id === parsedCategoryId)
       if (!categoryObj) {
-        console.error('Category not found!')
+        // console.error('Category not found!')
         addNotification('error', 'Invalid category selection.')
         return
       }
