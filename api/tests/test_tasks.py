@@ -130,23 +130,31 @@ class TaskAPITests(APITestSetup):
         
     # Filtering tests
         
-    def test_filter_by_title(self):
-        response = self.client.get(reverse("task-list"), {"title": "Today Task"})
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK, "Filtering by name does not work")
+    def test_filter_by_status(self):
+        self.task_today.completed = False
+        self.task_today.save()
+        
+        self.task_future.completed = True
+        self.task_future.save()
+        
+        response = self.client.get(reverse("task-list"), {"completed": "False"})
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK, "Filtering by status does not work")
         self.assertEqual(len(response.data["results"]), 1, "Incorrect number of tasks")
-        self.assertEqual(response.data["results"][0]["title"], "Today Task", "Incorrect task returned")
+        self.assertFalse(response.data["results"][0]["completed"], "Incorrect task returned")
 
-    def test_filter_by_due_date(self):
-        response = self.client.get(reverse("task-list"), {"due_date": "2024-12-31"})
+    def test_filter_by_priority(self):
+        self.task_today.priority = "M"
+        self.task_today.save()
+        
+        self.task_future.priority = "L"
+        self.task_future.save()
+        
+        response = self.client.get(reverse("task-list"), {"priority": "M"})
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK, "Filtering by deadline date does not work")
+        self.assertEqual(response.status_code, status.HTTP_200_OK, "Filtering by priority does not work")
         self.assertEqual(len(response.data["results"]), 1, "Incorrect number of tasks")
-        self.assertEqual(
-            response.data["results"][0]["due_date"].split("T")[0], 
-            "2024-12-31", 
-            "Incorrect task returned"
-        )
+        self.assertEqual(response.data["results"][0]["priority"], "M", "Incorrect task returned")
 
     def test_filter_by_today(self):
         response = self.client.get(reverse("task-list"), {"today": "true"})
@@ -160,8 +168,21 @@ class TaskAPITests(APITestSetup):
         )
 
     def test_combined_filters(self):
-        response = self.client.get(reverse("task-list"), {"title": "Today Task", "today": "true"})
-
+        self.task_today.priority = "H"
+        self.task_today.save()
+        
+        response = self.client.get(reverse("task-list"), {"search": "Today", "priority": "H"})
+        
         self.assertEqual(response.status_code, status.HTTP_200_OK, "Filtering with a combination of parameters does not work")
         self.assertEqual(len(response.data["results"]), 1, "Incorrect number of tasks")
         self.assertEqual(response.data["results"][0]["title"], "Today Task", "Incorrect task returned")
+        
+    def test_sorting_by_title(self):
+        response = self.client.get(reverse("task-list"), {"ordering": "title"})
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK, "Sorting by title does not work")
+        self.assertEqual(
+            [task["title"] for task in response.data["results"]],
+            sorted([self.task_today.title, self.task_future.title]),
+            "Tasks are not sorted correctly by title"
+        )

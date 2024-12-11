@@ -49,6 +49,7 @@ jobs:
           echo "psycopg2>=2.9.0" >> requirements.in
           echo "django-filter>=23.2,<24.0" >> requirements.in
           echo "python-decouple>=3.8" >> requirements.in
+          echo "django-cors-headers>=4.6.0" >> requirements.in
           pip-compile requirements.in
         fi
         pip install -r requirements.txt

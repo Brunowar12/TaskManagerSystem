@@ -52,18 +52,42 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'users',
-    'tasks'
+    'tasks',
+    'corsheaders',
 ]
 
 # List of middleware classes to use
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',            # security-related middleware
     'django.contrib.sessions.middleware.SessionMiddleware',     # session management middleware
     'django.middleware.common.CommonMiddleware',                # common middleware
-    'django.middleware.csrf.CsrfViewMiddleware',                # CSRF protection middleware
+    #'django.middleware.csrf.CsrfViewMiddleware',               # CSRF protection middleware
     'django.contrib.auth.middleware.AuthenticationMiddleware',  # authentication middleware
     'django.contrib.messages.middleware.MessageMiddleware',     # messaging middleware
     'django.middleware.clickjacking.XFrameOptionsMiddleware',   # clickjacking protection middleware
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:3000",  # Allow Next.js to the client
+    "http://localhost:3000",  # Additionally for other options
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
+
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+    "x-csrftoken",
 ]
 
 # REST Framework settings
@@ -81,18 +105,18 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer',],
     'DEFAULT_PARSER_CLASSES': ['rest_framework.parsers.JSONParser',],
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
-    
-    # Limit for authorized users, Limit for anonymous users
+    'UNAUTHENTICATED_USER': None,
 }
 
 # Simple JWT settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),     # lifetime access token
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),        # lifetime refresh token
-    'ROTATE_REFRESH_TOKENS': True,                      # rotate refresh tokens on each request
+    'ROTATE_REFRESH_TOKENS': False,                     # rotate refresh tokens on each request
     'BLACKLIST_AFTER_ROTATION': True,                   # blacklist old refresh tokens after rotation
     'UPDATE_LAST_LOGIN': False,                         # dont update last login on token refresh
     'ALGORITHM': 'HS256',                               # algorithm used for signing tokens
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 # Root URL configuration
@@ -102,7 +126,7 @@ ROOT_URLCONF = 'TaskManagerSystem.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "templates"],  # dir where templates are
+        'DIRS': [],  # dir where templates are
         'APP_DIRS': True,  # automatically discover templates in each app's
         'OPTIONS': {
             'context_processors': [
@@ -218,15 +242,15 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+# STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

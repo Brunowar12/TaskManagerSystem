@@ -34,16 +34,8 @@ class Task(models.Model):
     completed_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    # def mark_as_completed(self): # Зараз працює некоректно
-    #     self.completed = True
-    #     self.completed_at = timezone.now()
-    #     self.save()
-
-    #     self.user.task_n_completed = timezone.now()
-    #     self.user.save()
     class Meta:
         ordering = ['id']  # Sorting by id
-
 
     def update_completed_at(self):
         if self.completed and not self.completed_at:
@@ -53,7 +45,6 @@ class Task(models.Model):
 
     def save(self, *args, **kwargs):
         self.update_completed_at()
-
         if self.completed:
             self.user.task_n_completed = timezone.now()
             self.user.save(update_fields=["task_n_completed"])
