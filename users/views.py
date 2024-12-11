@@ -1,5 +1,3 @@
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_protect
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -62,17 +60,3 @@ class UpdateProfileView(GetAuthenticatedUserMixin, generics.UpdateAPIView):
     API endpoint for updating user profile
     """
     serializer_class = UserProfileSerializer
-
-# To remove, bc of next.js
-def auth_page(request):    
-    @csrf_protect
-    def render_protected(request):
-        return render(request, "auth/index.html")
-    return render_protected(request)
-
-# HTML Page View
-def user_page(request):
-    @csrf_protect
-    def render_protected(request):
-        return render(request, 'main/user.html', {"user": request.user})
-    return render_protected(request)

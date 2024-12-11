@@ -5,7 +5,7 @@ from rest_framework import status
 class HelloWorldTest(APITestCase):
     def test_hello_world(self):
         """
-        Тест для перевірки, що API 'hello_world' повертає коректну відповідь.
+        Test to verify that the 'hello_world' API returns the correct response
         """
         url = reverse('hello_world')
         response = self.client.get(url)

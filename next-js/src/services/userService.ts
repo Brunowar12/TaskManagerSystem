@@ -46,7 +46,7 @@ const handleServerError = async (response: Response) => {
 
 // Get profile data
 export const getUserProfile = async () => {
-  const response = await fetch(`${BASE_URL}prf/`, {
+  const response = await fetch(`${BASE_URL}`, {
     method: 'GET',
     headers: headersWithAuth(),
   })
