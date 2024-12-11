@@ -59,16 +59,15 @@ INSTALLED_APPS = [
 # List of middleware classes to use
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',            # security-related middleware
-    'django.contrib.sessions.middleware.SessionMiddleware',     # session management middleware
-    'django.middleware.common.CommonMiddleware',                # common middleware
-    'django.middleware.csrf.CsrfViewMiddleware',                # CSRF protection middleware
     'django.contrib.auth.middleware.AuthenticationMiddleware',  # authentication middleware
+    'django.contrib.sessions.middleware.SessionMiddleware',     # session management middleware
     'django.contrib.messages.middleware.MessageMiddleware',     # messaging middleware
     'django.middleware.clickjacking.XFrameOptionsMiddleware',   # clickjacking protection middleware
-     
-    
+    'django.middleware.common.CommonMiddleware',                # common middleware
+    # 'django.middleware.csrf.CsrfViewMiddleware',              # CSRF protection middleware
+    'django.middleware.security.SecurityMiddleware',            # security-related middleware         
 ]
+
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",  # Allow Next.js to the client
     "http://localhost:3000",  # Additionally for other options
@@ -106,6 +105,7 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer',],
     'DEFAULT_PARSER_CLASSES': ['rest_framework.parsers.JSONParser',],
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'UNAUTHENTICATED_USER': None,
 }
 
 # Simple JWT settings
@@ -123,21 +123,21 @@ SIMPLE_JWT = {
 ROOT_URLCONF = 'TaskManagerSystem.urls'
 
 # Template configuration
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "templates"],  # dir where templates are
-        'APP_DIRS': True,  # automatically discover templates in each app's
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
-]
+# TEMPLATES = [
+    # {
+        # 'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        # 'DIRS': [BASE_DIR / "templates"],  # dir where templates are
+        # 'APP_DIRS': True,  # automatically discover templates in each app's
+        # 'OPTIONS': {
+            # 'context_processors': [
+                # 'django.template.context_processors.debug',
+                # 'django.template.context_processors.request',
+                # 'django.contrib.auth.context_processors.auth',
+                # 'django.contrib.messages.context_processors.messages',
+            # ],
+        # },
+    # },
+# ]
 
 WSGI_APPLICATION = 'TaskManagerSystem.wsgi.application'
 
@@ -248,9 +248,9 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / "staticfiles"
+# STATIC_URL = 'static/'
+# STATICFILES_DIRS = [BASE_DIR / "static"]
+# STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
