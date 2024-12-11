@@ -167,14 +167,6 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
         </h2>
         <div className='flex flex-wrap items-center space-x-1 sm:space-x-2'>
           <select
-            value={view}
-            onChange={(e) => setView(e.target.value as 'month' | 'week')}
-            className='border rounded p-1 text-xs sm:text-sm'
-          >
-            <option value='month'>Month</option>
-            <option value='week'>Week</option>
-          </select>
-          <select
             value={filter}
             onChange={(e) =>
               setFilter(e.target.value as 'all' | 'completed' | 'not_completed')
