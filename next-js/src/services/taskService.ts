@@ -35,7 +35,7 @@ export const getTasks = async (url: string) => {
 export const createTask = async (task: {
   title: string
   description?: string
-  category_id: number
+  category_id: string
   due_date: string
   priority: 'L' | 'M' | 'H'
 }) => {
@@ -47,7 +47,9 @@ export const createTask = async (task: {
   })
 
   if (!response.ok) {
-    throw new Error('Failed to create task')
+    throw new Error(
+      `Failed to create task: ${response.status} ${response.statusText}`
+    )
   }
 
   return response.json()

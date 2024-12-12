@@ -88,7 +88,7 @@ export default function TaskCreationPopup({
     const formattedTask = {
       title,
       description,
-      category: category === 'Select Category' ? '' : category,
+      category_id: category === 'Select Category' ? '' : category,
       due_date: `${dueDate}T${dueTime}`,
       priority: priority.charAt(0).toUpperCase(),
     }
