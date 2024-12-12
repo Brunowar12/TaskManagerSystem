@@ -108,7 +108,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
   const addTask = async (
     title: string,
     description = '',
-    category_id: number,
+    category: string,
     due_date: string,
     priority: 'L' | 'M' | 'H'
   ) => {
@@ -116,13 +116,14 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       const newTask = await createTask({
         title,
         description,
-        category_id,
+        category,
         due_date,
         priority,
       })
+
       setTasks((prev) => [newTask, ...prev])
     } catch (error) {
-      // console.error('Error adding task:', error)
+      throw error
     }
   }
 

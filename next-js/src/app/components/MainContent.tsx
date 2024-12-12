@@ -187,12 +187,16 @@ export default function MainContent() {
       )
 
       await fetchTasks()
-
       setCreationPopupOpen(false)
       addNotification('success', `Task "${task.title}" created successfully!`)
     } catch (error) {
       // console.error('Error creating task:', error)
-      addNotification('error', 'Failed to create task. Please try again.')
+      addNotification(
+        'error',
+        error instanceof Error
+          ? `${error.message}`
+          : 'Failed to create task. Please try again.'
+      )
     }
   }
 
