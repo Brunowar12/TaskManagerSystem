@@ -40,8 +40,6 @@ class SecurityTests(APITestSetup):
 
     def test_access_other_user_resources(self):
         """Check access to another user's tasks"""
-
-        # Крок 1: Створити задачу від імені першого користувача
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
         user_task = self.client.post(reverse("task-create"), {
             "title": "User Task",
@@ -49,7 +47,6 @@ class SecurityTests(APITestSetup):
         }).data
         self.assertIn("id", user_task, "Task creation failed")
 
-        # Крок 2: Спробувати отримати доступ до задачі як інший користувач
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.other_user_token}")
         response_get = self.client.get(reverse("task-detail", kwargs={"pk": user_task["id"]}))
         logger.info(f"Access Other User Resources Test - GET Response Status Code: {response_get.status_code}")
@@ -112,16 +109,16 @@ class SecurityTests(APITestSetup):
 
     def test_expired_token_manually(self):
         """Create an expired token and test"""
-        # Генеруємо токен з минулим терміном дії
+        # Generate an expired token
         token = AccessToken()
-        token.set_exp(lifetime=-timedelta(seconds=1))  # Закінчився на 1 секунду раніше
+        token.set_exp(lifetime=-timedelta(seconds=1))  # Ended 1 second earlier
         expired_token = str(token)
 
-        # Використовуємо недійсний токен
+        # Using an invalid token
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {expired_token}")
         response = self.client.get(reverse("task-list"))
 
-        # Перевіряємо статус
+        # Check the status
         self.assertEqual(response.status_code, 401, "Expired token should not be accepted")
         self.assertIn("detail", response.data, "Error message should include 'detail' field")
 
@@ -131,7 +128,7 @@ class SecurityTests(APITestSetup):
             "email": self.user.email,
             "password": "testpassword123"
         })
-        refresh_token = response.data.get("refresh")  # Отримати REFRESH токен
+        refresh_token = response.data.get("refresh")  # Get REFRESH token
         logger.info(f"Revoked Token Test - Refresh Token: {refresh_token}")
 
         self.client.post(reverse("logout"), {"refresh": refresh_token})
