@@ -18,7 +18,7 @@ class SecurityTests(BaseAPITestCase):
     def test_sql_injection(self):
         malicious_input = "' OR '1'='1"
         response = self.client.post(
-            reverse("task-create"),
+            reverse("task-list"),
             {"title": malicious_input, "due_date": TestHelper.get_valid_due_date()}
         )
         logger.info(f"SQL Injection Test - Response Status Code: {response.status_code}")
@@ -37,7 +37,7 @@ class SecurityTests(BaseAPITestCase):
         """Check access to another user's tasks"""
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
         user_task = self.client.post(
-            reverse("task-create"),
+            reverse("task-list"),
             {"title": "User Task", "due_date": TestHelper.get_valid_due_date()}
         ).data
         self.assertIn("id", user_task, "Task creation failed")
@@ -51,7 +51,7 @@ class SecurityTests(BaseAPITestCase):
         """Check for protection against XSS attacks"""
         malicious_input = '<script>alert("XSS")</script>'
         response = self.client.post(
-            reverse("task-create"),
+            reverse("task-list"),
             {"title": malicious_input, "due_date": TestHelper.get_valid_due_date()}
         )
         logger.info(f"XSS Prevention Test - Response Status Code: {response.status_code}")
@@ -67,8 +67,10 @@ class SecurityTests(BaseAPITestCase):
 
     def test_http_methods_security(self):
         """Checking the unavailability of prohibited HTTP methods"""
-        for method, expected_status in (("put", 405), ("post", 405), ("delete", 405)):
-            response = getattr(self.client, method)(reverse("task-list"))
+        url = reverse("task-list")
+        
+        for method, expected_status in (("put", 405), ("delete", 405)):
+            response = getattr(self.client, method)(url)
             logger.info(f"HTTP Methods Security Test ({method.upper()}) - Response Status Code: {response.status_code}")
             self.assertEqual(response.status_code, expected_status, f"{method.upper()} method should not be allowed on task-list")
 
@@ -76,7 +78,7 @@ class SecurityTests(BaseAPITestCase):
         """Check the input data length limit"""
         large_input = "A" * 10000  # Very long string
         response = self.client.post(
-            reverse("task-create"),
+            reverse("task-list"),
             {"title": large_input, "due_date": TestHelper.get_valid_due_date()}
         )
         logger.info(f"Large Payload Test - Response Status Code: {response.status_code}")
@@ -92,7 +94,7 @@ class SecurityTests(BaseAPITestCase):
     def test_invalid_json_payload(self):
         """Check for incorrect JSON processing"""
         response = self.client.post(
-            reverse("task-create"),
+            reverse("task-list"),
             data="Invalid JSON",
             content_type="application/json"
         )
@@ -116,17 +118,17 @@ class SecurityTests(BaseAPITestCase):
 
     def test_revoked_refresh_token(self):
         """Test using a revoked refresh token"""
-        response = self.client.post(reverse("login"), {
+        response = self.client.post(reverse("user-login"), {
             "email": self.user.email,
             "password": "testpassword123"
         })
         refresh_token = response.data.get("refresh")
         logger.info(f"Revoked Token Test - Refresh Token: {refresh_token}")
 
-        self.client.post(reverse("logout"), {"refresh": refresh_token})
+        self.client.post(reverse("user-logout"), {"refresh": refresh_token})
         logger.info("Revoked Token Test - Refresh token has been revoked.")
 
-        response = self.client.post(reverse("token_refresh"), {"refresh": refresh_token})
+        response = self.client.post(reverse("token_refresh"), {"refresh": refresh_token}) # endpoint?
         logger.info(f"Revoked Token Test - Response Status Code: {response.status_code}")
         
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, "Revoked refresh token should not be accepted")

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.urls import reverse
 from django.utils.timezone import now, make_aware
 from rest_framework import status
@@ -12,25 +12,25 @@ class TaskAPITests(BaseAPITestCase):
 
         # Turning "naive" dates into "aware" dates
         today = now().date()
-        future_date = make_aware(datetime.strptime("2024-12-31", "%Y-%m-%d"))
+        future_date = make_aware(datetime.combine((now().date() + timedelta(days=365)), datetime.min.time()))
 
         # Create test tasks
         self.task_today = Task.objects.create(
             title="Today Task",
             due_date=make_aware(datetime.combine(today, datetime.min.time())),
             user=self.user,
-            is_favorite=True,
+            is_favorite=True
         )
         self.task_future = Task.objects.create(
             title="Future Task",
             due_date=future_date,
             user=self.user,
-            is_favorite=False,
+            is_favorite=False
         )
     
     # default tests
     def test_task_creation(self):
-        url = reverse("task-create")
+        url = reverse("task-list")
         task_data = {"title": "Test Task", "due_date": TestHelper.get_valid_due_date()}
         response = self.client.post(url, task_data)
 
@@ -40,8 +40,8 @@ class TaskAPITests(BaseAPITestCase):
 
     def test_task_update(self):
         task = self.client.post(
-            reverse("task-create"),
-            {"title": "Old Task", "due_date": TestHelper.get_valid_due_date()},
+            reverse("task-list"),
+            {"title": "Old Task", "due_date": TestHelper.get_valid_due_date()}
         ).data
         url = reverse("task-detail", kwargs={"pk": task["id"]})
         response = self.client.patch(url, {"title": "Updated Task"})
@@ -51,8 +51,8 @@ class TaskAPITests(BaseAPITestCase):
         
     def test_task_deletion(self):
         task = self.client.post(
-            reverse("task-create"),
-            {"title": "Task to Delete", "due_date": TestHelper.get_valid_due_date()},
+            reverse("task-list"),
+            {"title": "Task to Delete", "due_date": TestHelper.get_valid_due_date()}
         ).data
         url = reverse("task-detail", kwargs={"pk": task["id"]})
         response = self.client.delete(url)
@@ -61,14 +61,13 @@ class TaskAPITests(BaseAPITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND, "Task not deleted")
 
-    # advanced scenarios tests
-    
+    # advanced scenarios tests    
     def test_task_detail_invalid_id(self):
         response = self.client.get(reverse("task-detail", kwargs={"pk": 999}))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND, "Invalid task ID did not return 404")
     
     def test_task_creation_unauthenticated(self):
-        url = reverse("task-create")
+        url = reverse("task-list")
         task_data = {"title": "Test Task", "due_date": TestHelper.get_valid_due_date()}
         self.client.credentials()
         response = self.client.post(url, task_data)
@@ -77,7 +76,7 @@ class TaskAPITests(BaseAPITestCase):
 
     def test_task_update_unauthenticated(self):
         task = self.client.post(
-            reverse("task-create"),
+            reverse("task-list"),
             {"title": "Old Task", "due_date": TestHelper.get_valid_due_date()}
         ).data
         url = reverse("task-detail", kwargs={"pk": task["id"]})
@@ -89,7 +88,7 @@ class TaskAPITests(BaseAPITestCase):
 
     def test_task_deletion_unauthenticated(self):
         task = self.client.post(
-            reverse("task-create"),
+            reverse("task-list"),
             {"title": "Task to Delete", "due_date": TestHelper.get_valid_due_date()}
         ).data
         url = reverse("task-detail", kwargs={"pk": task["id"]})
@@ -100,7 +99,7 @@ class TaskAPITests(BaseAPITestCase):
         self.assertIn("Authentication credentials were not provided", response.data.get("detail", ""), "Authentication error not included in response")
 
     def test_task_creation_invalid_due_date(self):
-        url = reverse("task-create")
+        url = reverse("task-list")
         task_data = {"title": "Test Task", "due_date": "invalid-date"}
         response = self.client.post(url, task_data)
         
@@ -108,7 +107,7 @@ class TaskAPITests(BaseAPITestCase):
         self.assertIn("due_date", response.data, "Due date validation error not included in response")
 
     def test_task_creation_missing_title(self):
-        url = reverse("task-create")
+        url = reverse("task-list")
         task_data = {"due_date": TestHelper.get_valid_due_date()}
         response = self.client.post(url, task_data)
         
@@ -116,15 +115,14 @@ class TaskAPITests(BaseAPITestCase):
         self.assertIn("title", response.data, "Title validation error not included in response")
 
     def test_task_creation_missing_due_date(self):
-        url = reverse("task-create")
+        url = reverse("task-list")
         task_data = {"title": "Test Task"}
         response = self.client.post(url, task_data)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, "Task creation without due date did not fail")
         self.assertIn("due_date", response.data, "Due date validation error not included in response")
         
-    # Filtering tests
-        
+    # Filtering tests        
     def test_filter_by_status(self):
         self.task_today.completed = False
         self.task_today.save()

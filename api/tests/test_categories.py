@@ -5,7 +5,7 @@ from .test_setup import BaseAPITestCase
 
 class CategoryAPITests(BaseAPITestCase):
     def test_create_category_success(self):
-        url = reverse("category-create")
+        url = reverse("category-list")
         data = {"name": "Work"}
         response = self.client.post(url, data)
 
@@ -14,7 +14,7 @@ class CategoryAPITests(BaseAPITestCase):
         self.assertEqual(response.data.get("user"), self.user.id, "Category user mismatch")
 
     def test_create_category_invalid_data(self):
-        url = reverse("category-create")
+        url = reverse("category-list")
         response = self.client.post(url, {})
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, "Invalid category data not handled")

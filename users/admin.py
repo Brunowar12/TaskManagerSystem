@@ -11,14 +11,17 @@ class CustomUserAdmin(UserAdmin):
                     "age",
                     "place_of_work",
                     "phone_number",
-                    "logged_in",
-                    "profile_edited",
-                    "task_n_completed",
+                    "last_login_at", 
+                    "last_profile_edit_at", 
+                    "last_task_completed_at",
                 )
             },
         ),
     )
-    readonly_fields = ("logged_in", "profile_edited", "task_n_completed")
+    readonly_fields = (
+        "last_login_at", 
+        "last_profile_edit_at", 
+        "last_task_completed_at")
 
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Category)

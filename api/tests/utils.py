@@ -12,13 +12,14 @@ class TestHelper:
         Helper method to create and authenticate a test user
         """
         user_data = {"email": email, "password": password}
-        client.post(reverse("register"), user_data)
+        client.post(reverse("user-register"), user_data)
         user = User.objects.get(email=email)
-        response = client.post(reverse("login"), user_data)
+        response = client.post(reverse("user-login"), user_data)
         token = response.data.get("access")
         refresh = response.data.get("refresh")
         return user, token, refresh
 
+    @staticmethod
     def get_valid_due_date(days=14):
         """
         Returns an ISO-formatted date that is in the future (in 'days' days from the current moment)
