@@ -7,15 +7,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
-from users.models import Category
-from .serializers import TaskSerializer, CategorySerializer
-from .services import TaskService, CategoryService
+from .serializers import TaskSerializer, CategorySerializer, ProjectSerializer
+from .services import TaskService, CategoryService, ProjectService
 from .mixins import UserQuerysetMixin, IsOwner
-from .models import Task
+from .models import Task, Category, Project
 
 logger = logging.getLogger(__name__)
 
-class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
+class TaskViewSet(UserQuerysetMixin, IsOwner, viewsets.ModelViewSet):
     """
     ViewSet for operations with tasks
     
@@ -24,7 +23,6 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     """
     serializer_class = TaskSerializer
     queryset = Task.objects.all()
-    permission_classes = [IsAuthenticated, IsOwner]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     search_fields = ["title", "description"]
     filterset_fields = ["completed", "priority", "is_favorite", "category"]
@@ -81,8 +79,26 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         queryset = super().get_queryset().filter(is_favorite=True)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=["post"])
+    def move_task(self, request, pk=None):
+        """
+        Move a task between projects
+        """
+        task = self.get_object()
+        project_id = request.data.get("project_id")
 
-class CategoryViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
+        try:
+            new_project = Project.objects.get(id=project_id, owner=request.user)
+        except Project.DoesNotExist:
+            return Response({"error": "Project not found or access denied"}, status=status.HTTP_404_NOT_FOUND)
+
+        task.project = new_project
+        task.save()
+
+        return Response({"status": "Task moved successfully"})            
+
+class CategoryViewSet(UserQuerysetMixin, IsOwner, viewsets.ModelViewSet):
     """
     ViewSet for operations with categories
     
@@ -91,12 +107,29 @@ class CategoryViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     """
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
-    permission_classes = [IsAuthenticated, IsOwner]
     
     @action(detail=True, methods=["get"])
     def tasks(self, request, pk=None):
-        """Отримати всі завдання для категорії"""
+        """Get all tasks for a category"""
         category = self.get_object()
         tasks = CategoryService.get_tasks_for_category(category)
+        serializer = TaskSerializer(tasks, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
+    """
+    ViewSet for operations with projects
+    
+    Allows you to view, create, edit, and delete projects
+    Includes an additional method for getting tasks in a project
+    """
+    serializer_class = ProjectSerializer
+    queryset = Project.objects.all()
+    
+    @action(detail=True, methods=["get"])
+    def projects(self, request, pk=None):
+        """Get all tasks for a project"""
+        project = self.get_object()
+        tasks = ProjectService.get_tasks_for_project(project)
         serializer = TaskSerializer(tasks, many=True, context={'request': request})
         return Response(serializer.data)

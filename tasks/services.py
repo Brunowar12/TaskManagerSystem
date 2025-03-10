@@ -26,7 +26,7 @@ class TaskService:
         
     @staticmethod
     def filter_by_priority(queryset, priority):
-        """Фільтрувати завдання за пріоритетом"""
+        """Filter tasks by priority"""
         if priority and priority in ['L', 'M', 'H']:
             return queryset.filter(priority=priority)
         return queryset
@@ -35,3 +35,8 @@ class CategoryService:
     @staticmethod
     def get_tasks_for_category(category):
         return category.tasks.all()
+    
+class ProjectService:
+    @staticmethod
+    def get_tasks_for_project(project):
+        return project.tasks.all()

@@ -1,6 +1,6 @@
 from django.urls import reverse
 from rest_framework import status
-from users.models import Category
+from tasks.models import Category
 from .test_setup import BaseAPITestCase
 
 class CategoryAPITests(BaseAPITestCase):

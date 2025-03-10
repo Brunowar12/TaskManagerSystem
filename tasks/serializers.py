@@ -1,7 +1,6 @@
 from django.utils import timezone
 from rest_framework import serializers
-from users.models import Category
-from .models import Task
+from .models import Task, Category, Project
 
 class TaskSerializer(serializers.ModelSerializer):
     category_name = serializers.StringRelatedField(
@@ -38,5 +37,16 @@ class CategorySerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Category cannot be empty")
         return value
     
+    def get_tasks_count(self, obj):
+        return obj.tasks.count()
+    
+class ProjectSerializer(serializers.ModelSerializer):
+    tasks_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Project
+        fields = ["id", "name", "owner", "tasks_count", "created_at"]
+        read_only_fields = ["id", "owner", "tasks_count", "created_at"]
+
     def get_tasks_count(self, obj):
         return obj.tasks.count()

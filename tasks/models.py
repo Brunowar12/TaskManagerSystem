@@ -3,7 +3,6 @@ from django.db import models
 from django.utils import timezone
 from django.conf import settings
 from django.core.validators import RegexValidator
-from users.models import Category
 
 TEXT_FIELD_VALIDATOR = RegexValidator(
     r"^[a-zA-Zа-яА-ЯёЁіІїЇєЄґҐ0-9_. -]+$",
@@ -11,6 +10,40 @@ TEXT_FIELD_VALIDATOR = RegexValidator(
 )
 
 logger = logging.getLogger(__name__)
+
+class Project(models.Model):
+    name = models.CharField(max_length=128)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="projects"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ["id"]
+    
+    def __str__(self):
+        return f"{self.name} (Owner: {self.owner.username})"
+    
+
+class Category(models.Model):
+    name = models.CharField(
+        max_length=20,
+        validators=[TEXT_FIELD_VALIDATOR]
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name="categories"
+    )
+
+    class Meta:
+        ordering = ["id"]
+        verbose_name_plural = "Categories"
+
+    def __str__(self):
+        return f"{self.name} (User: {self.user.username})"
 
 class Task(models.Model):
     PRIORITY_CHOICES = [
@@ -31,6 +64,10 @@ class Task(models.Model):
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, null=True, blank=True, 
         related_name="tasks")
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="tasks",
+        null=True, blank=True
+    )
     priority = models.CharField(max_length=1, choices=PRIORITY_CHOICES, 
         default='M')
     is_favorite = models.BooleanField(default=False, verbose_name="Favorite")

@@ -47,21 +47,3 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
-        
-class Category(models.Model):
-    name = models.CharField(
-        max_length=20,
-        validators=[TEXT_FIELD_VALIDATOR]
-    )
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
-        related_name="categories"
-    )
-
-    class Meta:
-        ordering = ["id"]
-        verbose_name_plural = "Categories"
-
-    def __str__(self):
-        return f"{self.name} (User: {self.user.username})"
