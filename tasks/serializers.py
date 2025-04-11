@@ -1,20 +1,39 @@
 from django.utils import timezone
 from rest_framework import serializers
-from .models import Task, Category, Project
+from .models import Task, Category, Project, Role, ProjectMembership
+
+class RoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        fields = ["id", "name", "permissions"]
+
+
+class ProjectMembershipSerializer(serializers.ModelSerializer):
+    role_name = serializers.StringRelatedField(
+        source="role.name", read_only=True)
+    user_name = serializers.StringRelatedField(
+        source="user.username", read_only=True)
+
+    class Meta:
+        model = ProjectMembership
+        fields = ["id", "user", "user_name", "project", "role", "role_name"]
+
 
 class TaskSerializer(serializers.ModelSerializer):
     category_name = serializers.StringRelatedField(
-        source='category.name', read_only=True)
+        source="category.name", read_only=True)
     user_name = serializers.StringRelatedField(
-        source='user.username', read_only=True)
-    
+        source="user.username", read_only=True)
+
     class Meta:
         model = Task
-        fields = ["id", "title", "description", "category", "category_name", 
-            "due_date", "priority", "completed", "is_favorite", "user", 
-            "user_name", "created_at", "updated_at", "completed_at"]
-        read_only_fields = ["id", "created_at", "updated_at", "user", 
-            "completed_at", "user_name"]
+        fields = ["id", "title", "description", "category", "category_name",
+            "due_date", "priority", "completed", "is_favorite", "user",
+            "user_name", "created_at", "updated_at", "completed_at",
+        ]
+        read_only_fields = [ "id", "created_at", "updated_at", "user",
+            "completed_at", "user_name",
+        ]
 
     def validate_due_date(self, value):
         if value is None:
@@ -24,22 +43,24 @@ class TaskSerializer(serializers.ModelSerializer):
                 "The due date cannot be in the past")
         return value
 
+
 class CategorySerializer(serializers.ModelSerializer):
     tasks_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Category
         fields = ["id", "name", "user", "tasks_count"]
         read_only_fields = ["user", "tasks_count"]
-        
+
     def validate_name(self, value):
         if not value.strip():
             raise serializers.ValidationError("Category cannot be empty")
         return value
-    
+
     def get_tasks_count(self, obj):
         return obj.tasks.count()
-    
+
+
 class ProjectSerializer(serializers.ModelSerializer):
     tasks_count = serializers.SerializerMethodField()
 

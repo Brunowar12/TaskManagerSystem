@@ -2,6 +2,7 @@ import logging
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
+from django.contrib.auth.models import Permission
 from django.core.validators import RegexValidator
 
 TEXT_FIELD_VALIDATOR = RegexValidator(
@@ -11,21 +12,46 @@ TEXT_FIELD_VALIDATOR = RegexValidator(
 
 logger = logging.getLogger(__name__)
 
+class Role(models.Model):
+    name = models.CharField(max_length=64, unique=True)
+    permissions = models.ManyToManyField(Permission, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class ProjectMembership(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name="project_memberships")
+    project = models.ForeignKey("Project", on_delete=models.CASCADE, related_name="memberships")
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, related_name="members")
+    
+    class Meta:
+        unique_together = ("user", "project")
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.project.name} ({self.role.name})"
+
+
 class Project(models.Model):
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, validators = [TEXT_FIELD_VALIDATOR])
+    description = models.TextField(blank=True)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="projects"
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    # members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="project_members")
     
     class Meta:
         ordering = ["id"]
     
     def __str__(self):
         return f"{self.name} (Owner: {self.owner.username})"
-    
+
 
 class Category(models.Model):
     name = models.CharField(
@@ -77,7 +103,7 @@ class Task(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        ordering = ['id']  # Sorting by id
+        ordering = ['id']
 
     def update_completed_at(self):
         if self.completed and not self.completed_at:
@@ -86,17 +112,16 @@ class Task(models.Model):
             self.completed_at = None
 
     def save(self, *args, **kwargs):
-        self.update_completed_at()
-        
+        self.update_completed_at()        
         super().save(*args, **kwargs)
         
-        if self.completed:
+        if self.completed and hasattr(self.user, 'last_task_completed_at'):
             try:
-                if hasattr(self.user, 'task_n_completed'):
-                    self.user.task_n_completed = timezone.now()
-                    self.user.save(update_fields=["task_n_completed"])
+                self.user.last_task_completed_at = timezone.now()
+                self.user.save(update_fields=["last_task_completed_at"])
             except Exception as e:
-                logger.error(f"Error updating user task_n_completed: {e}")
+                logger.error("Error updating user last_task_completed_at: %s", e)
+
 
     def __str__(self):
         return f"{self.title} - {self.user.username if self.user else 'No user'}"

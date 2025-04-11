@@ -79,14 +79,14 @@ REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'UNAUTHENTICATED_USER': None,
     
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle'
-    ],
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/minute',
-        'user': '1000\minute'
-    }
+    # 'DEFAULT_THROTTLE_CLASSES': [
+        # 'rest_framework.throttling.AnonRateThrottle',
+        # 'rest_framework.throttling.UserRateThrottle'
+    # ],
+    # 'DEFAULT_THROTTLE_RATES': {
+        # 'anon': '100/minute',
+        # 'user': '1000\minute'
+    # }
 }
 
 # Simple JWT settings

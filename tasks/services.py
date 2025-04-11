@@ -5,38 +5,57 @@ from rest_framework.exceptions import ValidationError
 logger = logging.getLogger(__name__)
 
 class TaskService:
+    """
+    A service for task operations
+    Responsible for business logic related to tasks
+    """
     @staticmethod
     def is_today_filter(request):
         today = request.query_params.get("today")
         return today and today.lower() == "true"
-    
+
     @staticmethod
     def toggle_favorite(task):
         task.is_favorite = not task.is_favorite
         task.save()
         return task
-    
+
     @staticmethod
-    def filter_today_tasks(queryset):
+    def toggle_completed(task):
+        task.completed = not task.completed
+        task.update_completed_at()
+        task.save()
+        return task
+
+    @staticmethod
+    def filter_today_tasks(queryset):        
         try:
             return queryset.filter(due_date__date=now().date())
         except Exception as e:
             logger.error(f"Error filtering today's tasks: {e}")
             raise ValidationError("Error filtering today's tasks") from e
-        
+
     @staticmethod
     def filter_by_priority(queryset, priority):
-        """Filter tasks by priority"""
-        if priority and priority in ['L', 'M', 'H']:
+        if priority and priority in ["L", "M", "H"]:
             return queryset.filter(priority=priority)
         return queryset
-        
+
+
 class CategoryService:
+    """
+    Service for operations with categories
+    """
+    
     @staticmethod
     def get_tasks_for_category(category):
         return category.tasks.all()
-    
+
+
 class ProjectService:
+    """
+    Service for operations with projects
+    """
     @staticmethod
     def get_tasks_for_project(project):
         return project.tasks.all()

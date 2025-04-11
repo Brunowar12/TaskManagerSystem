@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from django.urls import reverse
 from django.utils.timezone import now, make_aware
 from rest_framework import status
-from tasks.models import Task
+from tasks.models import Task, Role, Project, ProjectMembership, Category
 from .test_setup import BaseAPITestCase
 from .utils import TestHelper
 
@@ -121,6 +121,86 @@ class TaskAPITests(BaseAPITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, "Task creation without due date did not fail")
         self.assertIn("due_date", response.data, "Due date validation error not included in response")
+        
+    def test_task_queryset_only_user_tasks(self):
+        other_user, other_token, _ = TestHelper.create_test_user(self.client, email="another@example.com")
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {other_token}")
+        self.client.post(reverse("task-list"), {"title": "Other Task", "due_date": TestHelper.get_valid_due_date()})
+
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
+        response = self.client.get(reverse("task-list"))
+        self.assertTrue(all(task["user"] == self.user.id for task in response.data["results"]))
+        
+    def test_toggle_favorite(self):
+        task = self.task_today
+        url = reverse("task-toggle-favorite", kwargs={"pk": task.id})
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["is_favorite"], not task.is_favorite)
+
+    def test_toggle_completed(self):
+        task = self.task_future
+        url = reverse("task-toggle-completed", kwargs={"pk": task.id})
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("completed_at", response.data)
+
+    def test_task_today_action(self):
+        url = reverse("task-today")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(any("Today" in task["title"] for task in response.data))
+
+    def test_task_favorites_action(self):
+        url = reverse("task-favorites")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(any(task["is_favorite"] for task in response.data))
+        
+    def test_completed_at_updated_correctly(self):
+        task = self.client.post(reverse("task-list"), {
+            "title": "Auto Complete",
+            "due_date": TestHelper.get_valid_due_date(),
+            "completed": True
+        }).data
+        detail = self.client.get(reverse("task-detail", kwargs={"pk": task["id"]})).data
+        self.assertIsNotNone(detail["completed_at"], "Completed at not set")
+
+    def test_task_str_representation(self):
+        task = self.task_today
+        self.assertIn(task.title, str(task))
+        self.assertIn(self.user.username, str(task))
+        
+    def test_move_task_to_project(self):
+        project = Project.objects.create(name="Move Project", owner=self.user)
+        url = reverse("task-move-task", kwargs={"pk": self.task_today.id})
+        response = self.client.post(url, {"project_id": project.id})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "Task moved successfully")   
+        
+    def test_get_tasks_by_category(self):
+        self.task_today.category = Category.objects.create(name="Work", user=self.user)
+        self.task_today.save()
+        url = reverse("category-tasks", kwargs={"pk": self.task_today.category.id})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+
+    # def test_get_tasks_by_project(self): DO NOT WORKING
+    #     project = Project.objects.create(name="Proj1", owner=self.user)
+    #     self.task_today.project = project
+    #     self.task_today.save()
+    #     url = reverse("project-tasks", kwargs={"pk": project.id})
+    #     response = self.client.get(url)
+
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertEqual(len(response.data), 1)
         
     # Filtering tests        
     def test_filter_by_status(self):

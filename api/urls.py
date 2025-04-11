@@ -1,7 +1,8 @@
-from django.urls import path
-from . import views
+from django.urls import path, include
+from api.views import api_status
 
 urlpatterns = [
-    # path('hello/', views.hello_world, name='hello_world'),  
-    path('', views.home, name='index'),
+    path("status/", api_status),
+    path("auth/", include("users.urls")),
+    path("tasks/", include("tasks.urls")),
 ]
