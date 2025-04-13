@@ -7,7 +7,7 @@ from .validators import USERNAME_VALIDATOR, TEXT_FIELD_VALIDATOR, PHONE_NUMBER_V
 
 class User(AbstractUser):
     username = models.CharField(max_length=80, 
-        unique=True, 
+        unique=True,
         verbose_name="username", 
         validators=[USERNAME_VALIDATOR])
     age = models.PositiveIntegerField(
@@ -28,7 +28,7 @@ class User(AbstractUser):
         verbose_name="last task completed")
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ["username"]
 
     def save(self, *args, **kwargs):
         if not self.pk and not self.username:
@@ -38,6 +38,8 @@ class User(AbstractUser):
     @transaction.atomic
     def generate_username(self):
         base_username = self.email.split('@')[0] 
+        max_base_length = self._meta.get_field('username').max_length - 10 # reserve for random suffix
+        base_username = base_username[:max_base_length]
         new_username = base_username      
          
         while User.objects.filter(username=new_username).select_for_update().exists():

@@ -28,3 +28,9 @@ class CategoryAPITests(BaseAPITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK, "Category listing failed")
         self.assertEqual(len(response.data.get("results", [])), 2, "Category count mismatch")
+        
+    def test_create_category_unauthenticated(self):
+        self.client.credentials()
+        response = self.client.post(reverse("category-list"), {"name": "Work"})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn("Authentication credentials were not provided", response.data.get("detail", ""))

@@ -4,11 +4,13 @@ from rest_framework.exceptions import ValidationError
 
 logger = logging.getLogger(__name__)
 
+
 class TaskService:
     """
     A service for task operations
     Responsible for business logic related to tasks
     """
+
     @staticmethod
     def is_today_filter(request):
         today = request.query_params.get("today")
@@ -26,9 +28,23 @@ class TaskService:
         task.update_completed_at()
         task.save()
         return task
+    
+    @staticmethod
+    def move_task_to_project(task, project_id, user):
+        from .models import Project
+
+        try:
+            new_project = Project.objects.get(id=project_id, owner=user)
+        except Project.DoesNotExist:
+            raise ValueError("Project not found or access denied")
+
+        task.project = new_project
+        task.save()
+
+        return task
 
     @staticmethod
-    def filter_today_tasks(queryset):        
+    def filter_today_tasks(queryset):
         try:
             return queryset.filter(due_date__date=now().date())
         except Exception as e:
@@ -46,7 +62,7 @@ class CategoryService:
     """
     Service for operations with categories
     """
-    
+
     @staticmethod
     def get_tasks_for_category(category):
         return category.tasks.all()
@@ -56,6 +72,7 @@ class ProjectService:
     """
     Service for operations with projects
     """
+
     @staticmethod
     def get_tasks_for_project(project):
         return project.tasks.all()

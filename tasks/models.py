@@ -1,4 +1,5 @@
 import logging
+import uuid
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
@@ -11,6 +12,23 @@ TEXT_FIELD_VALIDATOR = RegexValidator(
 )
 
 logger = logging.getLogger(__name__)
+
+class ProjectShareLink(models.Model):
+    token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    project = models.ForeignKey("Project", on_delete=models.CASCADE, related_name="share_links")
+    role = models.ForeignKey("Role", on_delete=models.CASCADE, related_name="share_links", help_text="Role for invited user")
+    max_uses = models.PositiveIntegerField(default=1)
+    used_count = models.PositiveIntegerField(default=0)
+    expires_at = models.DateTimeField()
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def is_valid(self):
+        return self.used_count < self.max_uses and timezone.now() < self.expires_at
+    
+    def __str__(self):
+        return f"Link to {self.project.name} ({self.role.name})"
+
 
 class Role(models.Model):
     name = models.CharField(max_length=64, unique=True)
@@ -44,7 +62,6 @@ class Project(models.Model):
         related_name="projects"
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    # members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="project_members")
     
     class Meta:
         ordering = ["id"]

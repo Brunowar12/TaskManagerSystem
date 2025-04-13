@@ -1,8 +1,18 @@
 from django.utils import timezone
+from django.contrib.auth.models import Permission
 from rest_framework import serializers
 from .models import Task, Category, Project, Role, ProjectMembership
 
+class PermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = ['id', 'name', 'codename']
+
 class RoleSerializer(serializers.ModelSerializer):
+    permissions = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Permission.objects.all()
+    )
+    
     class Meta:
         model = Role
         fields = ["id", "name", "permissions"]

@@ -76,3 +76,10 @@ class UserAPITests(BaseAPITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, "Logout with invalid token did not fail")
         self.assertIn("Token is invalid or expired", response.data.get("error", ""), "Invalid token error not included in response")
+        
+    def test_user_registration_duplicate_email(self):
+        url = reverse("user-register")
+        user_data = {"email": self.user.email, "password": "anotherpassword"}
+        response = self.client.post(url, user_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("email", response.data)

@@ -1,20 +1,21 @@
 import logging
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
+from django.contrib.auth.models import Permission
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.exceptions import ValidationError, NotFound, PermissionDenied
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .serializers import (
     TaskSerializer, CategorySerializer, ProjectSerializer,
-    RoleSerializer, ProjectMembershipSerializer,
+    RoleSerializer, ProjectMembershipSerializer, PermissionSerializer
 )
 from .services import TaskService, CategoryService, ProjectService
 from .mixins import UserQuerysetMixin, IsOwner
-from .models import Task, Category, Project, ProjectMembership, Role
+from .models import Task, Category, Project, ProjectMembership, Role, ProjectShareLink
 from .permissions import IsProjectAdmin
 
 logger = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     search_fields = ["title", "description"]
     filterset_fields = ["completed", "priority", "is_favorite", "category"]
-    ordering_fields = ["title", "due_date", "priority", "created_at", "updated_at",]
+    ordering_fields = ["title", "due_date", "priority", "created_at", "updated_at"]
 
     def get_queryset(self):
         base_qs = super().get_queryset().filter(user=self.request.user)
@@ -44,6 +45,24 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         if priority:
             base_qs = task_service.filter_by_priority(base_qs, priority)
         return base_qs
+    
+    def get_object(self):
+        """
+        Overridden method for getting an object without first filtering by user.
+        """
+        lookup_field = self.lookup_field or "pk"
+        lookup_value = self.kwargs.get(lookup_field)
+        try:
+            obj = Task.objects.get(pk=lookup_value)
+        except Task.DoesNotExist:
+            raise NotFound()
+        try:
+            self.check_object_permissions(self.request, obj)
+        except PermissionDenied:
+            if self.request.method in SAFE_METHODS:
+                raise NotFound()
+            raise
+        return obj
 
     @action(detail=True, methods=["post"])
     def toggle_favorite(self, request, pk=None):
@@ -100,16 +119,18 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     def move_task(self, request, pk=None):
         task = self.get_object()
         project_id = request.data.get("project_id")
+
         try:
-            new_project = Project.objects.get(
-                id=project_id, owner=request.user)
-        except Project.DoesNotExist:
+            TaskService.move_task_to_project(task, project_id, request.user)
+            return Response({"status": "Task moved successfully"})
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"Error moving task: {e}", exc_info=True)
             return Response(
-                {"error": "Project not found or access denied"},
-                status=status.HTTP_404_NOT_FOUND,)
-        task.project = new_project
-        task.save()
-        return Response({"status": "Task moved successfully"})
+                {"error": "Failed to move task"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class CategoryViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
@@ -173,18 +194,78 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
             membership.role = role
             membership.save()
         return Response({"status": "Role assigned"})
+    
+    @action(detail=True, methods=["post"], permission_classes=[IsProjectAdmin])
+    def generate_share_link(self, request, pk=None):
+        project = self.get_object()
+        role_id = request.data.get("role_id")
+        max_uses = int(request.data.get("max_uses", 1))
+        expires_in_minutes = int(request.data.get("expires_in", 60))
+
+        try:
+            role = Role.objects.get(id=role_id)
+        except Role.DoesNotExist:
+            return Response({"error": "Role not found"}, status=404)
+
+        share_link = ProjectShareLink.objects.create(
+            project=project,
+            role=role,
+            max_uses=max_uses,
+            expires_at=timezone.now() + timezone.timedelta(minutes=expires_in_minutes),
+            created_by=request.user
+        )
+
+        return Response({"share_url": f"/projects/join/{share_link.token}/"}, status=201)
 
 
 class RoleViewSet(viewsets.ModelViewSet):
+    """    
+    ViewSet for operations with roles
+    
+    Allows you to view, create, edit, and delete roles    
+    """
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
     permission_classes = [IsAuthenticated]
 
+class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Permission.objects.all()
+    serializer_class = PermissionSerializer
 
 class ProjectMembershipViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for operations with project memberships
+    
+    Allows you to view, create, edit, and delete project memberships
+    """
     queryset = ProjectMembership.objects.all()
     serializer_class = ProjectMembershipSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return ProjectMembership.objects.filter(user=self.request.user)
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def join_project(request, token):
+    try:
+        link = ProjectShareLink.objects.select_related("project", "role").get(token=token)
+    except ProjectShareLink.DoesNotExist:
+        return Response({"error": "Invalid link"}, status=404)
+
+    if not link.is_valid():
+        return Response({"error": "Link expired or max uses reached"}, status=403)
+
+    already_member = ProjectMembership.objects.filter(project=link.project, user=request.user).exists()
+    if already_member:
+        return Response({"info": "Already a member of the project"}, status=200)
+
+    ProjectMembership.objects.create(
+        user=request.user,
+        project=link.project,
+        role=link.role
+    )
+    link.used_count += 1
+    link.save(update_fields=["used_count"])
+
+    return Response({"status": "Successfully joined the project"}, status=200)

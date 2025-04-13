@@ -15,6 +15,41 @@ class SecurityTests(BaseAPITestCase):
             self.client, email="otheruser@example.com"
         )
 
+    def test_unauthorized_access(self):
+        """Check access to protected resources without authorization"""        
+        self.client.credentials()
+        response = self.client.get(reverse("task-list"))
+        logger.info(f"Unauthorized Access Test - Response Status Code: {response.status_code}")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, "Access without token should be denied")
+        
+    def test_invalid_json_payload(self):
+        """Check for incorrect JSON processing"""
+        response = self.client.post(
+            reverse("task-list"),
+            data="Invalid JSON",
+            content_type="application/json"
+        )
+        logger.info(f"Invalid JSON Payload Test - Response Status Code: {response.status_code}")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, "Invalid JSON payload should return 400")
+        self.assertIn("detail", response.data, "Error message should include 'detail' field")
+        
+    def test_large_payload(self):
+        """Check the input data length limit"""
+        large_input = "A" * 10000  # Very long string
+        response = self.client.post(
+            reverse("task-list"),
+            {"title": large_input, "due_date": TestHelper.get_valid_due_date()}
+        )
+        logger.info(f"Large Payload Test - Response Status Code: {response.status_code}")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, "Large input should be rejected")
+        self.assertIn("title", response.data, "Error message should include 'title' field")
+        
+    def test_nonexistent_endpoint(self):
+        """Checking the response to a request for a non-existent route"""
+        response = self.client.get("/nonexistent-endpoint/")
+        logger.info(f"Nonexistent Endpoint Test - Response Status Code: {response.status_code}")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND, "Nonexistent endpoint should return 404")
+        
     def test_sql_injection(self):
         malicious_input = "' OR '1'='1"
         response = self.client.post(
@@ -25,27 +60,6 @@ class SecurityTests(BaseAPITestCase):
         
         self.assertNotEqual(response.status_code, status.HTTP_200_OK, "API vulnerable to SQL injection")
         self.assertNotIn(malicious_input, response.data.get("title", ""), "SQL injection not prevented")
-
-    def test_unauthorized_access(self):
-        """Check access to protected resources without authorization"""        
-        self.client.credentials()
-        response = self.client.get(reverse("task-list"))
-        logger.info(f"Unauthorized Access Test - Response Status Code: {response.status_code}")
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, "Access without token should be denied")
-
-    def test_access_other_user_resources(self):
-        """Check access to another user's tasks"""
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
-        user_task = self.client.post(
-            reverse("task-list"),
-            {"title": "User Task", "due_date": TestHelper.get_valid_due_date()}
-        ).data
-        self.assertIn("id", user_task, "Task creation failed")
-
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.other_user_token}")
-        response_get = self.client.get(reverse("task-detail", kwargs={"pk": user_task["id"]}))
-        logger.info(f"Access Other User Resources Test - GET Response Status Code: {response_get.status_code}")
-        self.assertEqual(response_get.status_code, status.HTTP_404_NOT_FOUND, "Should not access other user's task")
 
     def test_xss_prevention(self):
         """Check for protection against XSS attacks"""
@@ -63,8 +77,6 @@ class SecurityTests(BaseAPITestCase):
             logger.info(f"XSS Prevention Test - Task Detail Response Status Code: {response.status_code}")
             self.assertNotIn(malicious_input, response.data.get("title", ""), "XSS attack not sanitized")
 
-    # def test_rate_limiting(self) """Checking the number of requests limit""" i've really realised that
-
     def test_http_methods_security(self):
         """Checking the unavailability of prohibited HTTP methods"""
         url = reverse("task-list")
@@ -73,35 +85,7 @@ class SecurityTests(BaseAPITestCase):
             response = getattr(self.client, method)(url)
             logger.info(f"HTTP Methods Security Test ({method.upper()}) - Response Status Code: {response.status_code}")
             self.assertEqual(response.status_code, expected_status, f"{method.upper()} method should not be allowed on task-list")
-
-    def test_large_payload(self):
-        """Check the input data length limit"""
-        large_input = "A" * 10000  # Very long string
-        response = self.client.post(
-            reverse("task-list"),
-            {"title": large_input, "due_date": TestHelper.get_valid_due_date()}
-        )
-        logger.info(f"Large Payload Test - Response Status Code: {response.status_code}")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, "Large input should be rejected")
-        self.assertIn("title", response.data, "Error message should include 'title' field")
-
-    def test_nonexistent_endpoint(self):
-        """Checking the response to a request for a non-existent route"""
-        response = self.client.get("/nonexistent-endpoint/")
-        logger.info(f"Nonexistent Endpoint Test - Response Status Code: {response.status_code}")
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND, "Nonexistent endpoint should return 404")
-
-    def test_invalid_json_payload(self):
-        """Check for incorrect JSON processing"""
-        response = self.client.post(
-            reverse("task-list"),
-            data="Invalid JSON",
-            content_type="application/json"
-        )
-        logger.info(f"Invalid JSON Payload Test - Response Status Code: {response.status_code}")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, "Invalid JSON payload should return 400")
-        self.assertIn("detail", response.data, "Error message should include 'detail' field")
-
+            
     def test_expired_token_manually(self):
         """Create an expired token and test"""
         token = AccessToken()
@@ -128,9 +112,23 @@ class SecurityTests(BaseAPITestCase):
         self.client.post(reverse("user-logout"), {"refresh": refresh_token})
         logger.info("Revoked Token Test - Refresh token has been revoked.")
 
-        response = self.client.post(reverse("token_refresh"), {"refresh": refresh_token}) # endpoint?
+        response = self.client.post(reverse("token_refresh"), {"refresh": refresh_token})
         logger.info(f"Revoked Token Test - Response Status Code: {response.status_code}")
         
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, "Revoked refresh token should not be accepted")
-        self.assertIn("detail", response.data, "Error should include 'detail' field")
+        self.assertIn("detail", response.data, "Error message should include 'detail' field")
         self.assertEqual(response.data.get("detail"), "Token is blacklisted", "Error message should indicate token is blacklisted")
+        
+    def test_access_other_user_resources(self):
+        """Check access to another user's tasks"""
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
+        user_task = self.client.post(
+            reverse("task-list"),
+            {"title": "User Task", "due_date": TestHelper.get_valid_due_date()}
+        ).data
+        self.assertIn("id", user_task, "Task creation failed")
+
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.other_user_token}")
+        response_get = self.client.get(reverse("task-detail", kwargs={"pk": user_task["id"]}))
+        logger.info(f"Access Other User Resources Test - GET Response Status Code: {response_get.status_code}")
+        self.assertEqual(response_get.status_code, status.HTTP_404_NOT_FOUND, "Should not access other user's task")

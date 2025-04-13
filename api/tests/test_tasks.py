@@ -28,7 +28,8 @@ class TaskAPITests(BaseAPITestCase):
             is_favorite=False
         )
     
-    # default tests
+    # crud
+    
     def test_task_creation(self):
         url = reverse("task-list")
         task_data = {"title": "Test Task", "due_date": TestHelper.get_valid_due_date()}
@@ -37,67 +38,7 @@ class TaskAPITests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, "Task creation failed")
         self.assertEqual(response.data["title"], task_data["title"], "Task title mismatch")
         self.assertEqual(response.data["user"], self.user.id, "Task user mismatch")
-
-    def test_task_update(self):
-        task = self.client.post(
-            reverse("task-list"),
-            {"title": "Old Task", "due_date": TestHelper.get_valid_due_date()}
-        ).data
-        url = reverse("task-detail", kwargs={"pk": task["id"]})
-        response = self.client.patch(url, {"title": "Updated Task"})
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK, "Task update failed")
-        self.assertEqual(response.data["title"], "Updated Task", "Task title not updated")
         
-    def test_task_deletion(self):
-        task = self.client.post(
-            reverse("task-list"),
-            {"title": "Task to Delete", "due_date": TestHelper.get_valid_due_date()}
-        ).data
-        url = reverse("task-detail", kwargs={"pk": task["id"]})
-        response = self.client.delete(url)
-
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT, "Task deletion failed")
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND, "Task not deleted")
-
-    # advanced scenarios tests    
-    def test_task_detail_invalid_id(self):
-        response = self.client.get(reverse("task-detail", kwargs={"pk": 999}))
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND, "Invalid task ID did not return 404")
-    
-    def test_task_creation_unauthenticated(self):
-        url = reverse("task-list")
-        task_data = {"title": "Test Task", "due_date": TestHelper.get_valid_due_date()}
-        self.client.credentials()
-        response = self.client.post(url, task_data)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, "Unauthenticated task creation did not fail")
-        self.assertIn("Authentication credentials were not provided", response.data.get("detail", ""), "Authentication error not included in response")
-
-    def test_task_update_unauthenticated(self):
-        task = self.client.post(
-            reverse("task-list"),
-            {"title": "Old Task", "due_date": TestHelper.get_valid_due_date()}
-        ).data
-        url = reverse("task-detail", kwargs={"pk": task["id"]})
-        self.client.credentials()
-        response = self.client.patch(url, {"title": "Updated Task"})
-        
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, "Unauthenticated task update did not fail")
-        self.assertIn("Authentication credentials were not provided", response.data.get("detail", ""), "Authentication error not included in response")
-
-    def test_task_deletion_unauthenticated(self):
-        task = self.client.post(
-            reverse("task-list"),
-            {"title": "Task to Delete", "due_date": TestHelper.get_valid_due_date()}
-        ).data
-        url = reverse("task-detail", kwargs={"pk": task["id"]})
-        self.client.credentials()
-        response = self.client.delete(url)
-        
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, "Unauthenticated task deletion did not fail")
-        self.assertIn("Authentication credentials were not provided", response.data.get("detail", ""), "Authentication error not included in response")
-
     def test_task_creation_invalid_due_date(self):
         url = reverse("task-list")
         task_data = {"title": "Test Task", "due_date": "invalid-date"}
@@ -122,8 +63,85 @@ class TaskAPITests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, "Task creation without due date did not fail")
         self.assertIn("due_date", response.data, "Due date validation error not included in response")
         
+    def test_task_creation_unauthenticated(self):
+        url = reverse("task-list")
+        task_data = {"title": "Test Task", "due_date": TestHelper.get_valid_due_date()}
+        self.client.credentials()
+        response = self.client.post(url, task_data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, "Unauthenticated task creation did not fail")
+        self.assertIn("Authentication credentials were not provided", response.data.get("detail", ""), "Authentication error not included in response")
+        
+    def test_task_update(self):
+        task = self.client.post(
+            reverse("task-list"),
+            {"title": "Old Task", "due_date": TestHelper.get_valid_due_date()}
+        ).data
+        url = reverse("task-detail", kwargs={"pk": task["id"]})
+        response = self.client.patch(url, {"title": "Updated Task"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, "Task update failed")
+        self.assertEqual(response.data["title"], "Updated Task", "Task title not updated")
+        
+    def test_task_update_unauthenticated(self):
+        task = self.client.post(
+            reverse("task-list"),
+            {"title": "Old Task", "due_date": TestHelper.get_valid_due_date()}
+        ).data
+        url = reverse("task-detail", kwargs={"pk": task["id"]})
+        self.client.credentials()
+        response = self.client.patch(url, {"title": "Updated Task"})
+        
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, "Unauthenticated task update did not fail")
+        self.assertIn("Authentication credentials were not provided", response.data.get("detail", ""), "Authentication error not included in response")
+        
+    def test_task_deletion(self):
+        task = self.client.post(
+            reverse("task-list"),
+            {"title": "Task to Delete", "due_date": TestHelper.get_valid_due_date()}
+        ).data
+        url = reverse("task-detail", kwargs={"pk": task["id"]})
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT, "Task deletion failed")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND, "Task not deleted")
+
+    def test_task_deletion_unauthenticated(self):
+        task = self.client.post(
+            reverse("task-list"),
+            {"title": "Task to Delete", "due_date": TestHelper.get_valid_due_date()}
+        ).data
+        url = reverse("task-detail", kwargs={"pk": task["id"]})
+        self.client.credentials()
+        response = self.client.delete(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, "Unauthenticated task deletion did not fail")
+        self.assertIn("Authentication credentials were not provided", response.data.get("detail", ""), "Authentication error not included in response")
+
+    def test_task_deletion_unauthorized(self):
+        # Creating task with one user
+        task = self.client.post(
+            reverse("task-list"),
+            {"title": "Task to Delete", "due_date": TestHelper.get_valid_due_date()}
+        ).data
+        task_id = task["id"]
+
+        # Trying to delete the task as another user
+        _, other_token, _ = TestHelper.create_test_user(self.client, email="otheruser@example.com")
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {other_token}")
+        url = reverse("task-detail", kwargs={"pk": task_id})
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, "Unauthorized user was able to delete task")
+  
+    def test_task_detail_invalid_id(self):
+        response = self.client.get(reverse("task-detail", kwargs={"pk": 999}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND, "Invalid task ID did not return 404")
+      
+    # management
+    
     def test_task_queryset_only_user_tasks(self):
-        other_user, other_token, _ = TestHelper.create_test_user(self.client, email="another@example.com")
+        _, other_token, _ = TestHelper.create_test_user(self.client, email="another@example.com")
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {other_token}")
         self.client.post(reverse("task-list"), {"title": "Other Task", "due_date": TestHelper.get_valid_due_date()})
 
@@ -147,20 +165,25 @@ class TaskAPITests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("completed_at", response.data)
 
-    def test_task_today_action(self):
-        url = reverse("task-today")
-        response = self.client.get(url)
+    def test_task_mark_completed_twice(self):
+        task = self.client.post(reverse("task-list"), {
+            "title": "Task To Complete",
+            "due_date": TestHelper.get_valid_due_date(),
+            "completed": True
+        }).data
+        task_id = task["id"]
 
+        # Initially mark as completed
+        url = reverse("task-toggle-completed", kwargs={"pk": task_id})
+        response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(any("Today" in task["title"] for task in response.data))
+        completed_at = response.data["completed_at"]
 
-    def test_task_favorites_action(self):
-        url = reverse("task-favorites")
-        response = self.client.get(url)
-
+        # Toggle completed status again
+        response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(any(task["is_favorite"] for task in response.data))
-        
+        self.assertNotEqual(response.data["completed_at"], completed_at, "Completed at date should be updated")
+
     def test_completed_at_updated_correctly(self):
         task = self.client.post(reverse("task-list"), {
             "title": "Auto Complete",
@@ -192,17 +215,33 @@ class TaskAPITests(BaseAPITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
 
-    # def test_get_tasks_by_project(self): DO NOT WORKING
-    #     project = Project.objects.create(name="Proj1", owner=self.user)
-    #     self.task_today.project = project
-    #     self.task_today.save()
-    #     url = reverse("project-tasks", kwargs={"pk": project.id})
-    #     response = self.client.get(url)
+    def test_get_tasks_by_project(self):
+        project = Project.objects.create(name="Proj1", owner=self.user)
+        self.task_today.project = project
+        self.task_today.save()
+        self.task_today.refresh_from_db()
+        url = reverse("project-tasks", kwargs={"pk": project.id})
+        response = self.client.get(url)
 
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+
+    def test_task_today_action(self):
+        url = reverse("task-today")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(any("Today" in task["title"] for task in response.data))
+
+    def test_task_favorites_action(self):
+        url = reverse("task-favorites")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(any(task["is_favorite"] for task in response.data))
         
-    # Filtering tests        
+    # filtering
+    
     def test_filter_by_status(self):
         self.task_today.completed = False
         self.task_today.save()

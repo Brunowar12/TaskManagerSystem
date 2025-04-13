@@ -14,3 +14,6 @@ class PermissionTests(BaseAPITestCase):
         response = self.client.post(url, data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK, "Admin role assignment failed")
+        
+        membership = ProjectMembership.objects.get(user=self.user, project=project)
+        self.assertEqual(membership.role, role, "Role assignment did not match")

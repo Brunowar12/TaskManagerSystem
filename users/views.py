@@ -3,13 +3,12 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
-from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.tokens import RefreshToken
+
 from .serializers import (
-    UserRegistrationSerializer,
-    UserLoginSerializer,
+    UserRegistrationSerializer, UserLoginSerializer,
     UserProfileSerializer
 )
+from .services import UserService
 
 class UserViewSet(viewsets.GenericViewSet):
     """
@@ -38,38 +37,27 @@ class UserViewSet(viewsets.GenericViewSet):
 
     @action(detail=False, methods=['post'])
     def register(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        data = UserService.register_user(request.data)
+        return Response(data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['post'])
     def login(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.validated_data, status=status.HTTP_200_OK)
+        data = UserService.login_user(request.data)
+        return Response(data, status=status.HTTP_200_OK)
     
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def logout(self, request):
-        try:
-            refresh_token = request.data.get("refresh")
-            if not refresh_token:
-                return Response(
-                    {"error":"Refresh token is required"}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            token = RefreshToken(refresh_token)
-            token.blacklist()
+        refresh_token = request.data.get("refresh")
+        if not refresh_token:
             return Response(
-                {"message":"Successfully logged out"}, 
-                status=status.HTTP_200_OK
-            )
-        except TokenError as e:
-            return Response(
-                {"error": f"Invalid token: {str(e)}"}, 
+                {"error": "Refresh token is required"}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
+        try:
+            data = UserService.logout_user(refresh_token)
+            return Response(data, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(
                 {"error": f"Unexpected error: {str(e)}"}, 
@@ -83,7 +71,5 @@ class UserViewSet(viewsets.GenericViewSet):
     
     @action(detail=False, methods=['put', 'patch'])
     def update_profile(self, request):
-        serializer = self.get_serializer(request.user, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+        data = UserService.update_profile(request.user, request.data)
+        return Response(data)

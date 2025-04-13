@@ -12,11 +12,16 @@ class UserQuerysetMixin:
 
     def get_queryset(self):
         base_queryset = super().get_queryset()
+        if hasattr(base_queryset.model, 'owner'):
+            return base_queryset.filter(owner=self.request.user)
         return base_queryset.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         logger.debug(f"Request perform_create for User: {self.request.user}")
-        serializer.save(user=self.request.user)
+        if hasattr(serializer.Meta.model, 'owner'):
+            serializer.save(owner=self.request.user)
+        else:
+            serializer.save(user=self.request.user)
 
 
 class IsOwner(BasePermission):
@@ -24,7 +29,8 @@ class IsOwner(BasePermission):
     Checking whether the user is the owner of the object
     """
     def has_object_permission(self, request, view, obj):
-        if not hasattr(obj, "user"):
-            logger.error(f"Access check failed: object {obj} has no 'user' attribute.")
+        user_field = getattr(obj, 'user', None) or getattr(obj, 'owner', None)
+        if user_field is None:
+            logger.error("Object has no ownership attribute")
             raise PermissionDenied("Access denied: missing ownership information.")
-        return obj.user == request.user
+        return user_field == request.user

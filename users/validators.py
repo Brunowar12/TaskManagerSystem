@@ -11,6 +11,6 @@ TEXT_FIELD_VALIDATOR = RegexValidator(
 )
 
 PHONE_NUMBER_VALIDATOR = RegexValidator(
-    r"^\+\d+$",
-    "The phone number must start with '+' and contain only digits after it",
+    r"^\+\d{7,15}$",
+    "The phone number must start with '+' and contain 7 to 15 digits only after it",
 )
