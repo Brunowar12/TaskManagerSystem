@@ -1,22 +1,21 @@
 import logging
 from rest_framework import viewsets, status
-from django.contrib.auth.models import Permission
-from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.exceptions import ValidationError, NotFound, PermissionDenied
+from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
 
+from api.mixins import UserQuerysetMixin
+
 from .serializers import (
-    TaskSerializer, CategorySerializer, ProjectSerializer,
-    RoleSerializer, ProjectMembershipSerializer, PermissionSerializer
+    TaskSerializer, CategorySerializer
 )
-from .services import TaskService, CategoryService, ProjectService
-from .mixins import UserQuerysetMixin, IsOwner
-from .models import Task, Category, Project, ProjectMembership, Role, ProjectShareLink
-from .permissions import IsProjectAdmin
+from .services import TaskService, CategoryService
+from .mixins import IsOwner
+from .models import Task, Category
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -150,122 +149,3 @@ class CategoryViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         tasks = CategoryService.get_tasks_for_category(category)
         serializer = TaskSerializer(tasks, many=True, context={'request': request})
         return Response(serializer.data)
-
-
-class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
-    """
-    ViewSet for operations with projects
-    
-    Allows you to view, create, edit, and delete projects
-    Includes an additional method for getting tasks in a project
-    """
-    serializer_class = ProjectSerializer
-    queryset = Project.objects.all()
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return super().get_queryset().filter(owner=self.request.user)
-
-    @action(detail=True, methods=["get"])
-    def tasks(self, request, pk=None):
-        project = self.get_object()
-        tasks = ProjectService.get_tasks_for_project(project)
-        serializer = TaskSerializer(tasks, many=True, context={'request': request})
-        return Response(serializer.data)
-
-    @action(detail=True, methods=["post"], permission_classes=[IsProjectAdmin])
-    def assign_role(self, request, pk=None):
-        project = self.get_object()
-        user_id = request.data.get("user_id")
-        role_id = request.data.get("role_id")
-        try:
-            user = User.objects.get(id=user_id)
-            role = Role.objects.get(id=role_id)
-        except (User.DoesNotExist, Role.DoesNotExist):
-            return Response(
-                {"error": "User or Role not found"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        membership, created = ProjectMembership.objects.get_or_create(
-            user=user, project=project, defaults={"role": role}
-        )
-        if not created:
-            membership.role = role
-            membership.save()
-        return Response({"status": "Role assigned"})
-    
-    @action(detail=True, methods=["post"], permission_classes=[IsProjectAdmin])
-    def generate_share_link(self, request, pk=None):
-        project = self.get_object()
-        role_id = request.data.get("role_id")
-        max_uses = int(request.data.get("max_uses", 1))
-        expires_in_minutes = int(request.data.get("expires_in", 60))
-
-        try:
-            role = Role.objects.get(id=role_id)
-        except Role.DoesNotExist:
-            return Response({"error": "Role not found"}, status=404)
-
-        share_link = ProjectShareLink.objects.create(
-            project=project,
-            role=role,
-            max_uses=max_uses,
-            expires_at=timezone.now() + timezone.timedelta(minutes=expires_in_minutes),
-            created_by=request.user
-        )
-
-        return Response({"share_url": f"/projects/join/{share_link.token}/"}, status=201)
-
-
-class RoleViewSet(viewsets.ModelViewSet):
-    """    
-    ViewSet for operations with roles
-    
-    Allows you to view, create, edit, and delete roles    
-    """
-    queryset = Role.objects.all()
-    serializer_class = RoleSerializer
-    permission_classes = [IsAuthenticated]
-
-class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Permission.objects.all()
-    serializer_class = PermissionSerializer
-
-class ProjectMembershipViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for operations with project memberships
-    
-    Allows you to view, create, edit, and delete project memberships
-    """
-    queryset = ProjectMembership.objects.all()
-    serializer_class = ProjectMembershipSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return ProjectMembership.objects.filter(user=self.request.user)
-    
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def join_project(request, token):
-    try:
-        link = ProjectShareLink.objects.select_related("project", "role").get(token=token)
-    except ProjectShareLink.DoesNotExist:
-        return Response({"error": "Invalid link"}, status=404)
-
-    if not link.is_valid():
-        return Response({"error": "Link expired or max uses reached"}, status=403)
-
-    already_member = ProjectMembership.objects.filter(project=link.project, user=request.user).exists()
-    if already_member:
-        return Response({"info": "Already a member of the project"}, status=200)
-
-    ProjectMembership.objects.create(
-        user=request.user,
-        project=link.project,
-        role=link.role
-    )
-    link.used_count += 1
-    link.save(update_fields=["used_count"])
-
-    return Response({"status": "Successfully joined the project"}, status=200)

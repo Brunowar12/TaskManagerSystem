@@ -2,7 +2,10 @@ from datetime import datetime, timedelta
 from django.urls import reverse
 from django.utils.timezone import now, make_aware
 from rest_framework import status
-from tasks.models import Task, Role, Project, ProjectMembership, Category
+
+from tasks.models import Task, Category
+from projects.models import Project
+
 from .test_setup import BaseAPITestCase
 from .utils import TestHelper
 

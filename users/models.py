@@ -1,9 +1,8 @@
-from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models, transaction
 from django.utils.crypto import get_random_string
-from .validators import USERNAME_VALIDATOR, TEXT_FIELD_VALIDATOR, PHONE_NUMBER_VALIDATOR
+from api.validators import USERNAME_VALIDATOR, TEXT_FIELD_VALIDATOR, PHONE_NUMBER_VALIDATOR
 
 class User(AbstractUser):
     username = models.CharField(max_length=80, 

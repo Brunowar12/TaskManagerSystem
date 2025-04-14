@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.urls import reverse
 from rest_framework import status
 from rest_framework_simplejwt.tokens import AccessToken
+
 from .test_setup import BaseAPITestCase
 from .utils import TestHelper
 
@@ -76,7 +77,7 @@ class SecurityTests(BaseAPITestCase):
             response = self.client.get(reverse("task-detail", kwargs={"pk": task_id}))
             logger.info(f"XSS Prevention Test - Task Detail Response Status Code: {response.status_code}")
             self.assertNotIn(malicious_input, response.data.get("title", ""), "XSS attack not sanitized")
-
+    
     def test_http_methods_security(self):
         """Checking the unavailability of prohibited HTTP methods"""
         url = reverse("task-list")

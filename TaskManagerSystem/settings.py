@@ -25,6 +25,7 @@ X_FRAME_OPTIONS = 'DENY'            # prevent clickjacking
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
 AUTH_USER_MODEL = 'users.User'
+ADMIN_ROLE_NAMES = ["Admin",]
 
 # Application definition
 INSTALLED_APPS = [
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'users',
     'tasks',
+    'projects',
     'corsheaders',
 ]
 
@@ -61,8 +63,8 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS",]
-CORS_ALLOW_HEADERS = ["content-type", "authorization", "x-csrftoken",]
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+CORS_ALLOW_HEADERS = ["content-type", "authorization", "x-csrftoken"]
 
 # REST Framework settings
 REST_FRAMEWORK = {

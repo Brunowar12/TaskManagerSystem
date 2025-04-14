@@ -1,32 +1,6 @@
 from django.utils import timezone
-from django.contrib.auth.models import Permission
 from rest_framework import serializers
-from .models import Task, Category, Project, Role, ProjectMembership
-
-class PermissionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Permission
-        fields = ['id', 'name', 'codename']
-
-class RoleSerializer(serializers.ModelSerializer):
-    permissions = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Permission.objects.all()
-    )
-    
-    class Meta:
-        model = Role
-        fields = ["id", "name", "permissions"]
-
-
-class ProjectMembershipSerializer(serializers.ModelSerializer):
-    role_name = serializers.StringRelatedField(
-        source="role.name", read_only=True)
-    user_name = serializers.StringRelatedField(
-        source="user.username", read_only=True)
-
-    class Meta:
-        model = ProjectMembership
-        fields = ["id", "user", "user_name", "project", "role", "role_name"]
+from .models import Task, Category
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -39,11 +13,9 @@ class TaskSerializer(serializers.ModelSerializer):
         model = Task
         fields = ["id", "title", "description", "category", "category_name",
             "due_date", "priority", "completed", "is_favorite", "user",
-            "user_name", "created_at", "updated_at", "completed_at",
-        ]
+            "user_name", "created_at", "updated_at", "completed_at"]
         read_only_fields = [ "id", "created_at", "updated_at", "user",
-            "completed_at", "user_name",
-        ]
+            "completed_at", "user_name"]
 
     def validate_due_date(self, value):
         if value is None:
@@ -66,18 +38,6 @@ class CategorySerializer(serializers.ModelSerializer):
         if not value.strip():
             raise serializers.ValidationError("Category cannot be empty")
         return value
-
-    def get_tasks_count(self, obj):
-        return obj.tasks.count()
-
-
-class ProjectSerializer(serializers.ModelSerializer):
-    tasks_count = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Project
-        fields = ["id", "name", "owner", "tasks_count", "created_at"]
-        read_only_fields = ["id", "owner", "tasks_count", "created_at"]
 
     def get_tasks_count(self, obj):
         return obj.tasks.count()

@@ -31,7 +31,7 @@ class TaskService:
     
     @staticmethod
     def move_task_to_project(task, project_id, user):
-        from .models import Project
+        from projects.models import Project
 
         try:
             new_project = Project.objects.get(id=project_id, owner=user)
@@ -66,13 +66,3 @@ class CategoryService:
     @staticmethod
     def get_tasks_for_category(category):
         return category.tasks.all()
-
-
-class ProjectService:
-    """
-    Service for operations with projects
-    """
-
-    @staticmethod
-    def get_tasks_for_project(project):
-        return project.tasks.all()
