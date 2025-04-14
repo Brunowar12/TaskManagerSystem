@@ -82,11 +82,11 @@ REST_FRAMEWORK = {
     'UNAUTHENTICATED_USER': None,
     
     'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle', # not auth request
+        # 'rest_framework.throttling.AnonRateThrottle', # not auth request
         # 'rest_framework.throttling.UserRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/minute',
+        # 'anon': '100/minute',
         # 'user': '1000/minute'
   }
 }
