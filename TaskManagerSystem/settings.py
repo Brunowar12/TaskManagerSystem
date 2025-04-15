@@ -91,6 +91,8 @@ REST_FRAMEWORK = {
   }
 }
 
+import sys
+
 if 'test' in sys.argv:
     REST_FRAMEWORK['DEFAULT_THROTTLE_CLASSES'] = []
 
