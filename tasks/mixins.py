@@ -1,18 +1,19 @@
 import logging
-from rest_framework.permissions import IsAuthenticated
+from django.core.exceptions import PermissionDenied
+from rest_framework.permissions import BasePermission
 
 logger = logging.getLogger(__name__)
 
-class UserQuerysetMixin:
-    """
-    Mixin to filter queryset for the authenticated user
-    """
-    permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        model = self.serializer_class.Meta.model
-        return model.objects.filter(user=self.request.user)
-    
-    def perform_create(self, serializer):
-        logger.info(f"Request User: {self.request.user}")
-        serializer.save(user=self.request.user)
+class IsOwner(BasePermission):
+    """
+    Checking whether the user is the owner of the object
+    """
+    def has_object_permission(self, request, view, obj):
+        user_field = getattr(obj, "user", None) or getattr(obj, "owner", None)
+        if user_field is None:
+            logger.error("Object has no ownership attribute")
+            raise PermissionDenied(
+                "Access denied: missing ownership information."
+            )
+        return user_field == request.user

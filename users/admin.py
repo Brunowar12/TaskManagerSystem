@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, Category
+from .models import User
 
 class CustomUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
@@ -11,14 +11,16 @@ class CustomUserAdmin(UserAdmin):
                     "age",
                     "place_of_work",
                     "phone_number",
-                    "logged_in",
-                    "profile_edited",
-                    "task_n_completed",
+                    "last_login_at", 
+                    "last_profile_edit_at", 
+                    "last_task_completed_at",
                 )
             },
         ),
     )
-    readonly_fields = ("logged_in", "profile_edited", "task_n_completed")
+    readonly_fields = (
+        "last_login_at", 
+        "last_profile_edit_at", 
+        "last_task_completed_at")
 
 admin.site.register(User, CustomUserAdmin)
-admin.site.register(Category)

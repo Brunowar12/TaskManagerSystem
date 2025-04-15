@@ -36,8 +36,10 @@ class UserLoginSerializer(serializers.Serializer):
         user = authenticate(email=data["email"], password=data["password"])
         if not user:
             raise serializers.ValidationError("Invalid credentials")
-        user.logged_in = now()
-        user.save(update_fields=["logged_in"])
+        
+        user.last_login_at = now()
+        user.save(update_fields=["last_login_at"])
+        
         token = RefreshToken.for_user(user)
         return {
             "username": user.username,
@@ -53,7 +55,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ["username"]
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    profile_edited = serializers.DateTimeField(read_only=True)
+    last_profile_edit_at = serializers.DateTimeField(read_only=True)
     
     class Meta:
         model = User
@@ -63,12 +65,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "age",
             "place_of_work",
             "phone_number",
-            "logged_in",
-            "profile_edited",
-            "task_n_completed",
+            "last_login_at",
+            "last_profile_edit_at",
+            "last_task_completed_at",
         ]
-        read_only_fields = ["logged_in", "profile_edited", "task_n_completed"]
+        read_only_fields = [
+            "last_login_at", 
+            "last_profile_edit_at", 
+            "last_task_completed_at"]
     
     def update(self, instance, validated_data):
-        instance.profile_edited = now()
+        instance.last_profile_edit_at = now()
         return super().update(instance, validated_data)

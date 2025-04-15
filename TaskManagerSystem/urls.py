@@ -21,7 +21,5 @@ from decouple import config
 
 urlpatterns = [
     path(config("ADMIN_URL", default="admin/"), admin.site.urls),
-    path('', include('api.urls')),
-    path('auth/', include('users.urls')),
-    path('tasks/', include('tasks.urls')),
+    path('api/v1/', include('api.urls')),
 ]

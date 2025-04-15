@@ -23,8 +23,9 @@ SECURE_BROWSER_XSS_FILTER = True    # enable X-XSS-Protection
 SECURE_CONTENT_TYPE_NOSNIFF = True  # enable X-Content-Type-Options
 X_FRAME_OPTIONS = 'DENY'            # prevent clickjacking
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
 AUTH_USER_MODEL = 'users.User'
+ADMIN_ROLE_NAMES = ["Admin",]
 
 # Application definition
 INSTALLED_APPS = [
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'users',
     'tasks',
+    'projects',
     'corsheaders',
 ]
 
@@ -49,7 +51,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',            # security-related middleware
     'django.contrib.sessions.middleware.SessionMiddleware',     # session management middleware
     'django.middleware.common.CommonMiddleware',                # common middleware
-    #'django.middleware.csrf.CsrfViewMiddleware',               # CSRF protection middleware
+    'django.middleware.csrf.CsrfViewMiddleware',                # CSRF protection middleware
     'django.contrib.auth.middleware.AuthenticationMiddleware',  # authentication middleware
     'django.contrib.messages.middleware.MessageMiddleware',     # messaging middleware
     'django.middleware.clickjacking.XFrameOptionsMiddleware',   # clickjacking protection middleware
@@ -61,8 +63,8 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS",]
-CORS_ALLOW_HEADERS = ["content-type", "authorization", "x-csrftoken",]
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+CORS_ALLOW_HEADERS = ["content-type", "authorization", "x-csrftoken"]
 
 # REST Framework settings
 REST_FRAMEWORK = {
@@ -78,12 +80,26 @@ REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': ['rest_framework.parsers.JSONParser',],
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'UNAUTHENTICATED_USER': None,
+    
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle', # not auth request
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '10000/minute',
+        'user': '10000/minute'
+  }
 }
+
+import sys
+
+if 'test' in sys.argv:
+    REST_FRAMEWORK['DEFAULT_THROTTLE_CLASSES'] = []
 
 # Simple JWT settings
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),     # lifetime access token
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),        # lifetime refresh token
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=config('JWT_ACCESS_TOKEN_LIFETIME', default=15, cast=int)),     # lifetime access token
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=config('JWT_REFRESH_TOKEN_LIFETIME', default=1, cast=int)),        # lifetime refresh token
     'ROTATE_REFRESH_TOKENS': False,                     # rotate refresh tokens on each request
     'BLACKLIST_AFTER_ROTATION': True,                   # blacklist old refresh tokens after rotation
     'UPDATE_LAST_LOGIN': False,                         # dont update last login on token refresh
