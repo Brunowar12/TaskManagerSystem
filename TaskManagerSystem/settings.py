@@ -83,13 +83,16 @@ REST_FRAMEWORK = {
     
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle', # not auth request
-        # 'rest_framework.throttling.UserRateThrottle'
+        'rest_framework.throttling.UserRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
         'anon': '100/minute',
-        # 'user': '1000/minute'
+        'user': '1000/minute'
   }
 }
+
+if 'test' in sys.argv:
+    REST_FRAMEWORK['DEFAULT_THROTTLE_CLASSES'] = []
 
 # Simple JWT settings
 SIMPLE_JWT = {
