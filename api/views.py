@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -5,6 +6,6 @@ from rest_framework.response import Response
 def api_status(request):
     return Response({
         "status": "ok",
-        "version": "1.0.0",
+        "version": getattr(settings, 'API_VERSION', 'dev'),
         "message": "TaskManager API is up and running"
     })
