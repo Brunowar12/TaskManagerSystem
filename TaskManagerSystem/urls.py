@@ -16,10 +16,13 @@ Including another URLconf
 """
 
 from django.contrib import admin
+from django.conf import settings
 from django.urls import path, include
 from decouple import config
 
+version = settings.API_VERSION[0]
+
 urlpatterns = [
     path(config("ADMIN_URL", default="admin/"), admin.site.urls),
-    path('api/v1/', include('api.urls')),
+    path(f'api/v{version}/', include('api.urls')),
 ]

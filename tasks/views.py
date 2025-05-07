@@ -5,10 +5,17 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
+
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
+from django.utils.decorators import method_decorator
+from django.utils.timezone import now
+from django.shortcuts import get_object_or_404
+from django.views.decorators.cache import cache_page
 
 from api.mixins import UserQuerysetMixin
+from api.utils import error_response, status_response
 
 from .serializers import (
     TaskSerializer, CategorySerializer
@@ -33,34 +40,52 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     search_fields = ["title", "description"]
     filterset_fields = ["completed", "priority", "is_favorite", "category"]
-    ordering_fields = ["title", "due_date", "priority", "created_at", "updated_at"]
+    ordering_fields = [
+        "title", "due_date", "priority",
+        "created_at", "updated_at",
+    ]
 
     def get_queryset(self):
-        base_qs = super().get_queryset().filter(user=self.request.user)
-        task_service = TaskService()
-        if task_service.is_today_filter(self.request):
-            base_qs = task_service.filter_today_tasks(base_qs)
+        qs = super().get_queryset()        
+        filters = Q(user=self.request.user)
+        
+        project_id = self.kwargs.get("project_pk")
+        if project_id is not None:
+            filters &= Q(project_id=project_id)
+
+        if TaskService.is_today_filter(self.request):
+            filters &= Q(due_date__date=now().date())
+
         priority = self.request.query_params.get("priority")
-        if priority:
-            base_qs = task_service.filter_by_priority(base_qs, priority)
-        return base_qs
-    
+        if priority in ["L", "M", "H"]:
+            filters &= Q(priority=priority)
+
+        completed = self.request.query_params.get("completed")
+        if completed is not None:
+            filters &= Q(completed=completed.lower() == "true")
+
+        is_fav = self.request.query_params.get("is_favorite")
+        if is_fav is not None:
+            filters &= Q(is_favorite=is_fav.lower() == "true")
+
+        return qs.filter(filters)
+
     def get_object(self):
         """
-        Overridden method for getting an object without first filtering by user.
+        Overridden method for getting an object without first filtering by user
         """
         lookup_field = self.lookup_field or "pk"
         lookup_value = self.kwargs.get(lookup_field)
-        try:
-            obj = Task.objects.get(pk=lookup_value)
-        except Task.DoesNotExist:
-            raise NotFound()
+        
+        obj = get_object_or_404(Task, **{lookup_field: lookup_value})
+        
         try:
             self.check_object_permissions(self.request, obj)
         except PermissionDenied:
             if self.request.method in SAFE_METHODS:
                 raise NotFound()
             raise
+
         return obj
 
     @action(detail=True, methods=["post"])
@@ -77,9 +102,9 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
                 })
         except Exception as e:
             logger.error(f"Error toggling favorite for task {pk}: {e}")
-            return Response(
-                {"error": "Failed to update favorite status"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            return error_response(
+                "Failed to update favorite status",
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
     @action(detail=True, methods=["post"])
@@ -97,18 +122,20 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
                 })
         except Exception as e:
             logger.error(f"Error toggling completion for task {pk}: {e}")
-            return Response(
-                {"error": "Failed to update completion status"},
+            return error_response(
+                "Failed to update completion status",
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
     @action(detail=False, methods=["get"])
+    @method_decorator(cache_page(60))
     def today(self, request):
-        today_tasks = TaskService.filter_today_tasks(self.get_queryset())
-        serializer = self.get_serializer(today_tasks, many=True)
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=["get"])
+    @method_decorator(cache_page(60))
     def favorites(self, request):
         favorites_qs = self.get_queryset().filter(is_favorite=True)
         serializer = self.get_serializer(favorites_qs, many=True)
@@ -121,14 +148,13 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
 
         try:
             TaskService.move_task_to_project(task, project_id, request.user)
-            return Response({"status": "Task moved successfully"})
+            return status_response("Task moved successfully")
         except ValueError as e:
-            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+            return error_response(str(e), status.HTTP_404_NOT_FOUND)
         except Exception as e:
             logger.error(f"Error moving task: {e}", exc_info=True)
-            return Response(
-                {"error": "Failed to move task"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            return error_response(
+                "Failed to move task", status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -142,10 +168,12 @@ class CategoryViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [IsAuthenticated, IsOwner]
     queryset = Category.objects.all()
-    
+
     @action(detail=True, methods=["get"])
     def tasks(self, request, pk=None):
         category = self.get_object()
         tasks = CategoryService.get_tasks_for_category(category)
-        serializer = TaskSerializer(tasks, many=True, context={'request': request})
+        serializer = TaskSerializer(
+            tasks, many=True, context={"request": request}
+        )
         return Response(serializer.data)

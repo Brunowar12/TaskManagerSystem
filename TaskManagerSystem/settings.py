@@ -31,7 +31,30 @@ ALLOWED_HOSTS = config(
     cast=lambda v: [s.strip() for s in v.split(",")],
 )
 AUTH_USER_MODEL = 'users.User'
+
 ADMIN_ROLE_NAMES = ["Admin",]
+ROLE_PERMISSIONS = {
+    "Admin": [
+        "change_project", "delete_project",
+        "add_task", "change_task", "delete_task", "view_task",
+        "add_projectsharelink", "delete_projectsharelink",
+        "add_projectmembership", "change_projectmembership", "delete_projectmembership",
+    ],
+    "Moderator": [
+        "change_project",
+        "add_task", "change_task", "delete_task", "view_task",
+        # share links
+        "add_projectsharelink", "delete_projectsharelink",
+        # can assign roles lower than Moderator
+        "add_projectmembership", "change_projectmembership",  # but NOT delete owner/admin
+    ],
+    "Member": [
+        "view_task", "change_task", "view_projectmembership",
+    ],
+    "Viewer": [
+        "view_task",
+    ],
+}
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 25 # 25 Mb restriction
 API_VERSION = '1.0.0'

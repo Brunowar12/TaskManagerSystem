@@ -14,6 +14,6 @@ class IsOwner(BasePermission):
         if user_field is None:
             logger.error("Object has no ownership attribute")
             raise PermissionDenied(
-                "Access denied: missing ownership information."
+                "Access denied: missing ownership information"
             )
         return user_field == request.user

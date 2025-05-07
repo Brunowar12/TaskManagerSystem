@@ -1,12 +1,16 @@
+# mypy: disable-error-code=var-annotated
+
 import logging
-from django.db import models
-from django.utils import timezone
 from django.conf import settings
+from django.db import models
+from django.dispatch import receiver
+from django.utils import timezone
 
 from api.validators import TEXT_FIELD_VALIDATOR
 from projects.models import Project
 
 logger = logging.getLogger(__name__)
+
 
 class Category(models.Model):
     name = models.CharField(
@@ -25,6 +29,7 @@ class Category(models.Model):
 
     def __str__(self):
         return f"{self.name} (User: {self.user.username})"
+
 
 class Task(models.Model):
     PRIORITY_CHOICES = [
@@ -56,8 +61,9 @@ class Task(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     completed_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
+        indexes = [models.Index(fields=["due_date"]),]
         ordering = ['id']
 
     def update_completed_at(self):
@@ -69,14 +75,15 @@ class Task(models.Model):
     def save(self, *args, **kwargs):
         self.update_completed_at()        
         super().save(*args, **kwargs)
-        
-        if self.completed and hasattr(self.user, 'last_task_completed_at'):
-            try:
-                self.user.last_task_completed_at = timezone.now()
-                self.user.save(update_fields=["last_task_completed_at"])
-            except Exception as e:
-                logger.error("Error updating user last_task_completed_at: %s", e)
-
 
     def __str__(self):
-        return f"{self.title} - {self.user.username if self.user else 'No user'}"
+        return (
+            f"{self.title} - {self.user.username if self.user else 'No user'}"
+        )
+
+
+@receiver(models.signals.post_save, sender=Task)
+def update_user_last_task_completed(sender, instance, created, **kwargs):
+    if instance.completed and instance.user:
+        instance.user.last_task_completed_at = timezone.now()
+        instance.user.save(update_fields=["last_task_completed_at"])
