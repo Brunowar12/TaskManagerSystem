@@ -1,15 +1,14 @@
 from django.contrib.auth.models import Permission
-from django.db.models import Count
 from rest_framework import serializers
-from .models import Project, Role, ProjectMembership
 
+from .models import Project, Role, ProjectMembership
 
 class ProjectSerializer(serializers.ModelSerializer):
     tasks_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
-        fields = ["id", "name", "owner", "tasks_count", "created_at"]
+        fields = ["id", "name", "description", "owner", "tasks_count", "created_at"]
         read_only_fields = ["id", "owner", "tasks_count", "created_at"]
 
     def get_tasks_count(self, obj):

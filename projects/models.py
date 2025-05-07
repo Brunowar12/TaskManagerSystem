@@ -1,3 +1,5 @@
+# mypy: disable-error-code=var-annotated
+
 import uuid
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
@@ -26,8 +28,21 @@ class Project(models.Model):
 
 
 class Role(models.Model):
+    ADMIN, MODERATOR, MEMBER, VIEWER = "Admin", "Moderator", "Member", "Viewer"
+    FIXED_ROLES = [ADMIN, MODERATOR, MEMBER, VIEWER]
+    
     name = models.CharField(max_length=64, unique=True)
     permissions = models.ManyToManyField(Permission, blank=True)
+    
+    def clean(self):
+        if self.name not in self.FIXED_ROLES:
+            raise ValidationError(
+                f"Custom roles are not allowed. Use one of: {', '.join(self.FIXED_ROLES)}"
+            )
+            
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -70,6 +85,7 @@ class ProjectShareLink(models.Model):
         help_text="Maximum number of uses. Leave blank for unlimited uses",
     )
     used_count = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
     expires_at = models.DateTimeField()
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE
@@ -79,26 +95,23 @@ class ProjectShareLink(models.Model):
     def clean(self):
         errors = {}
         if self.max_uses is not None and self.max_uses <= 0:
-            errors["max_uses"] = (
-                "The max_uses value must be a positive number or left blank"
-            )
+            errors["max_uses"] = "The max_uses value must be a positive number or left blank"
         if self.max_uses is not None and self.used_count > self.max_uses:
             errors["used_count"] = "The number of uses exceeds the set limit"
-        if timezone.now() >= self.expires_at:
-            errors["expires_at"] = "The link has expired"
+        if self.expires_at <= timezone.now():
+            errors["expires_at"] = "The expiration date must be in the future"
 
         if errors:
             raise ValidationError(errors)
 
+    def is_expired(self):
+        return timezone.now() >= self.expires_at
+
+    def is_usage_exceeded(self):
+        return self.max_uses is not None and self.used_count >= self.max_uses
+
     def is_valid(self):
-        """
-        A method for checking link validity that uses clean()
-        """
-        try:
-            self.clean()
-        except ValidationError:
-            return False
-        return True
+        return self.is_active and not self.is_expired() and not self.is_usage_exceeded()
 
     def __str__(self):
         return f"Link to {self.project.name} ({self.role.name})"
