@@ -330,19 +330,21 @@ class TaskAPITests(BaseAPITestCase):
         )
         response = self.client.get(url)
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
 
     def test_get_tasks_by_project(self):
         project = Project.objects.create(name="Proj1", owner=self.user)
-        self.task_today.project = project
-        self.task_today.save()
-        self.task_today.refresh_from_db()
-        url = reverse("project-tasks", kwargs={"pk": project.id})
+        self.task_today = Task.objects.create(
+            title="Today Task", project=project, user=self.user,
+            due_date="2025-05-07", priority="M", completed=False
+        )
+        url = reverse("project-tasks-list", kwargs={"project_pk": project.id})
         response = self.client.get(url)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('count'), 1)
+        self.assertEqual(response.data.get('results', [])[0].get('title'), 'Today Task')
 
     def test_task_today_action(self):
         response = self.client.get(self.task_today_ep)
