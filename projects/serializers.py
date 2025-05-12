@@ -73,12 +73,6 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
         }
 
 
-class PermissionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Permission
-        fields = ["id", "name", "codename"]
-
-
 class ShareLinkSerializer(serializers.Serializer):
     role_id = serializers.IntegerField()
     max_uses = serializers.IntegerField(
@@ -88,3 +82,12 @@ class ShareLinkSerializer(serializers.Serializer):
         default=60, min_value=1,
         help_text="Link duration in minutes (minimum 1 minute)",
     )
+
+
+class KickUserSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    
+    
+class AssignRoleSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    role_id = serializers.IntegerField()

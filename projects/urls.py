@@ -5,21 +5,22 @@ from tasks.views import TaskViewSet
 
 from .views import (
     ProjectViewSet, RoleViewSet, ProjectMembershipViewSet, 
-    PermissionViewSet, join_project
+    join_project
 )
 
 # ViewSet routers
 router = routers.DefaultRouter()
-router.register(r"projects", ProjectViewSet, basename="project")
+router.register(r"", ProjectViewSet, basename="project")
 router.register(r"roles", RoleViewSet, basename="role")
-router.register(r'permissions', PermissionViewSet, basename="permissions")
 router.register(
     r"project-memberships",
     ProjectMembershipViewSet,
     basename="project-membership",
 )
 
-projects_router = routers.NestedDefaultRouter(router, r"projects", lookup="project")
+projects_router = routers.NestedDefaultRouter(
+    router, r"", lookup="project"
+)
 projects_router.register(r"tasks", TaskViewSet, basename="project-tasks")
 
 urlpatterns = [

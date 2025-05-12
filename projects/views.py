@@ -1,6 +1,5 @@
 import logging
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
 from django.db import transaction
 from django.db.models import Q, Count
 from django.shortcuts import get_object_or_404
@@ -17,10 +16,12 @@ from api.utils import error_response, status_response
 
 from .models import Project, ProjectMembership, Role, ProjectShareLink
 from .serializers import (
-    ProjectSerializer, RoleSerializer, ProjectMembershipSerializer, 
-    PermissionSerializer, ShareLinkSerializer
+    KickUserSerializer, ProjectSerializer, RoleSerializer, 
+    ProjectMembershipSerializer, ShareLinkSerializer
 )
-from .services import ProjectService, ProjectMembershipService, ProjectShareLinkService
+from .services import (
+    ProjectService, ProjectMembershipService, ProjectShareLinkService,
+)
 from .permissions import (
     IsProjectAdmin, IsProjectOwner, IsProjectModeratorRole,
     IsProjectAdminRole, IsProjectMemberRole, IsProjectViewerRole
@@ -136,7 +137,9 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         )
         return Response({"share_url": f"/projects/join/{share_link.token}/"}, status=201)
 
-    @action(detail=True, methods=["delete"], permission_classes=[IsProjectAdmin])
+    @action(
+        detail=True, methods=["delete"], permission_classes=[IsProjectAdmin]
+    )
     def delete_share_link(self, request, pk=None, link_id=None):
         project = ProjectService.get_project_or_404(
             pk=self.kwargs["pk"], user=request.user
@@ -155,7 +158,14 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
             "Share link deleted", status.HTTP_204_NO_CONTENT
         )
 
-    @action(detail=True, methods=['post'], url_path='kick', permission_classes=[IsAuthenticated, IsProjectOwner|IsProjectAdminRole])
+    @action(
+        detail=True, methods=["post"], url_path="kick",
+        permission_classes=[
+            IsAuthenticated,
+            IsProjectOwner | IsProjectAdminRole,
+        ],
+        serializer_class=KickUserSerializer
+    )
     def kick(self, request, pk=None):
         project = ProjectService.get_project_or_404(
             pk=self.kwargs["pk"], user=request.user
@@ -180,11 +190,6 @@ class RoleViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
     permission_classes = [IsAuthenticated]
-
-
-class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Permission.objects.all()
-    serializer_class = PermissionSerializer
 
 
 class ProjectMembershipViewSet(viewsets.ReadOnlyModelViewSet):
