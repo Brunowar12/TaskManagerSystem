@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, serializers
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -12,30 +12,25 @@ from .serializers import (
 )
 from .services import UserService
 
-class UserViewSet(viewsets.GenericViewSet):
+class AuthViewSet(viewsets.GenericViewSet):
     """
-    ViewSet for user-related operations
+    Handles user registration, login, and logout
     """
+    throttle_classes = [AnonRateThrottle]
 
     def get_serializer_class(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return serializers.Serializer
+        
         if self.action == 'register':
             return UserRegistrationSerializer
         elif self.action == 'login':
             return UserLoginSerializer
-        else:
-            return UserProfileSerializer
 
     def get_permissions(self):
         if self.action in ['register', 'login']:
-            permission_classes = [AllowAny]
-        else:
-            permission_classes = [IsAuthenticated]
-        return [permission() for permission in permission_classes]
-
-    def get_throttles(self):
-        if self.action in ['register', 'login']:
-            return [AnonRateThrottle()]
-        return []
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     @action(detail=False, methods=['post'])
     def register(self, request):
@@ -47,9 +42,7 @@ class UserViewSet(viewsets.GenericViewSet):
         data = UserService.login_user(request.data)
         return Response(data, status=status.HTTP_200_OK)
 
-    @action(
-        detail=False, methods=["post"], permission_classes=[IsAuthenticated]
-    )
+    @action(detail=False, methods=['post'])
     def logout(self, request):
         refresh_token = request.data.get("refresh")
         if not refresh_token:
@@ -64,6 +57,14 @@ class UserViewSet(viewsets.GenericViewSet):
                 f"Unexpected error {str(e)}",
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+    
+
+class UserViewSet(viewsets.GenericViewSet):
+    """
+    Handles viewing and updating user profile
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserProfileSerializer
 
     @action(detail=False, methods=['get'])
     def profile(self, request):
