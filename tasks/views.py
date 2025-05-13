@@ -13,12 +13,15 @@ from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_page
+from drf_yasg.utils import swagger_auto_schema
 
 from api.mixins import UserQuerysetMixin
 from api.utils import error_response, status_response
 
 from .serializers import (
-    TaskSerializer, CategorySerializer
+    TaskSerializer, CategorySerializer,
+    ToggleCompletedResponseSerializer, ToggleFavoriteResponseSerializer,
+    MoveTaskResponseSerializer, MoveTaskSerializer, 
 )
 from .services import TaskService, CategoryService
 from .mixins import IsOwner
@@ -88,7 +91,10 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
 
         return obj
 
-    @action(detail=True, methods=["post"])
+    @action(
+        detail=True, methods=["post"],
+        serializer_class=ToggleFavoriteResponseSerializer
+    )
     def toggle_favorite(self, request, pk=None):
         try:
             task = self.get_object()
@@ -107,7 +113,10 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(detail=True, methods=["post"])
+    @action(
+        detail=True, methods=["post"],
+        serializer_class=ToggleCompletedResponseSerializer
+    )
     def toggle_completed(self, request, pk=None):
         try:
             task = self.get_object()
@@ -141,8 +150,19 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         serializer = self.get_serializer(favorites_qs, many=True)
         return Response(serializer.data)
 
-    @action(detail=True, methods=["post"])
-    def move_task(self, request, pk=None):
+    @swagger_auto_schema(
+        method='post',
+        request_body=MoveTaskSerializer,
+        responses={200: MoveTaskResponseSerializer}
+    )
+    @action(
+        detail=True, methods=["post"],
+        serializer_class=MoveTaskSerializer
+    )
+    def move_task(self, request, project_pk=None, pk=None):
+        if project_pk is not None:
+            raise NotFound("This endpoint is not available via /projects/{project_pk}/tasks/{pk}/move_task/")
+        
         task = self.get_object()
         project_id = request.data.get("project_id")
 
@@ -156,6 +176,16 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
             return error_response(
                 "Failed to move task", status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+    @action(
+        detail=True, methods=["post"],
+        url_path='move_task', permission_classes=[IsAuthenticated],
+    )
+    @swagger_auto_schema(auto_schema=None)
+    def nested_move_task(self, request, project_pk=None, pk=None):
+        if getattr(self, 'swagger_fake_view', False):
+            raise NotFound()
+        return self.move_task(request, pk=pk)
 
 
 class CategoryViewSet(UserQuerysetMixin, viewsets.ModelViewSet):

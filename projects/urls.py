@@ -10,13 +10,13 @@ from .views import (
 
 # ViewSet routers
 router = routers.DefaultRouter()
-router.register(r"", ProjectViewSet, basename="project")
 router.register(r"roles", RoleViewSet, basename="role")
 router.register(
     r"project-memberships",
     ProjectMembershipViewSet,
     basename="project-membership",
 )
+router.register(r"", ProjectViewSet, basename="project")
 
 projects_router = routers.NestedDefaultRouter(
     router, r"", lookup="project"
@@ -26,9 +26,9 @@ projects_router.register(r"tasks", TaskViewSet, basename="project-tasks")
 urlpatterns = [
     path("", include(router.urls)),
     path("", include(projects_router.urls)),
-    path("projects/join/<uuid:token>/", join_project, name="join-project"),
+    path("join/<uuid:token>/", join_project, name="join-project"),
     path(
-        "projects/<int:pk>/delete-share-link/<int:link_id>/",
+        "<int:pk>/delete-share-link/<int:link_id>/",
         ProjectViewSet.as_view({"delete": "delete_share_link"}),
         name="project-delete-share-link",
     ),
