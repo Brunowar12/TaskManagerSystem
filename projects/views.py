@@ -193,7 +193,9 @@ class RoleViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ProjectMembershipViewSet(viewsets.ReadOnlyModelViewSet):
-    """Read-only viewset for viewing project members"""
+    """
+    Read-only viewset for viewing project members
+    """
     serializer_class = ProjectMembershipSerializer
     permission_classes = [IsAuthenticated]
 

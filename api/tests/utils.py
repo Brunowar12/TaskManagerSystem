@@ -40,11 +40,11 @@ class TestHelper:
             AssertionError: If user registration or login fails
         """
         user_data = {"email": email, "password": password}
-        response = client.post(reverse("user-register"), user_data)
+        response = client.post(reverse("auth-register"), user_data)
         assert response.status_code == status.HTTP_201_CREATED, f"User registration failed: {response.data}"
 
         user = User.objects.get(email=email)
-        response = client.post(reverse("user-login"), user_data)
+        response = client.post(reverse("auth-login"), user_data)
         assert response.status_code == status.HTTP_200_OK, f"User login failed: {response.data}"
 
         token = response.data.get("access")
