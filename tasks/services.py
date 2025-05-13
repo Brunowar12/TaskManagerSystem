@@ -1,6 +1,5 @@
 import logging
-from django.utils.timezone import now
-from rest_framework.exceptions import ValidationError
+from django.db.models import Q
 
 logger = logging.getLogger(__name__)
 
@@ -28,13 +27,20 @@ class TaskService:
         task.update_completed_at()
         task.save()
         return task
-    
+
     @staticmethod
     def move_task_to_project(task, project_id, user):
         from projects.models import Project
 
         try:
-            new_project = Project.objects.get(id=project_id, owner=user)
+            new_project = (
+                Project.objects.filter(
+                    Q(id=project_id)
+                    & (Q(owner=user) | Q(memberships__user=user))
+                )
+                .distinct()
+                .get()
+            )
         except Project.DoesNotExist:
             raise ValueError("Project not found or access denied")
 
@@ -42,21 +48,6 @@ class TaskService:
         task.save()
 
         return task
-
-    @staticmethod
-    def filter_today_tasks(queryset):
-        try:
-            return queryset.filter(due_date__date=now().date())
-        except Exception as e:
-            logger.error(f"Error filtering today's tasks: {e}")
-            raise ValidationError("Error filtering today's tasks") from e
-
-    @staticmethod
-    def filter_by_priority(queryset, priority):
-        if priority and priority in ["L", "M", "H"]:
-            return queryset.filter(priority=priority)
-        return queryset
-
 
 class CategoryService:
     """

@@ -24,6 +24,25 @@ class TaskSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "The due date cannot be in the past")
         return value
+    
+    
+class ToggleFavoriteResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    is_favorite = serializers.BooleanField()
+
+
+class ToggleCompletedResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    completed = serializers.BooleanField()
+    completed_at = serializers.DateTimeField(allow_null=True)
+    
+
+class MoveTaskSerializer(serializers.Serializer):
+    project_id = serializers.IntegerField()
+
+
+class MoveTaskResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
 
 
 class CategorySerializer(serializers.ModelSerializer):

@@ -51,6 +51,7 @@ jobs:
           echo "django-filter>=23.2,<24.0" >> requirements.in
           echo "python-decouple>=3.8" >> requirements.in
           echo "django-cors-headers>=4.6.0" >> requirements.in
+          echo "drf-yasg==1.21.10" >> requirements.in
           pip-compile requirements.in
         fi
         pip install -r requirements.txt
@@ -74,11 +75,17 @@ jobs:
     - name: Run migrations
       run: python manage.py migrate
 
-    - name: Run tests
+    - name: Run tests with coverage
       run: |
         pip install coverage
         coverage run --source='.' manage.py test api.tests
         coverage report -m
+        coverage xml
+        
+    - name: Upload coverage to Coveralls
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Collect static files
       if: github.event_name == 'push'

@@ -1,15 +1,14 @@
 from django.contrib.auth.models import Permission
-from django.db.models import Count
 from rest_framework import serializers
-from .models import Project, Role, ProjectMembership
 
+from .models import Project, Role, ProjectMembership
 
 class ProjectSerializer(serializers.ModelSerializer):
     tasks_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
-        fields = ["id", "name", "owner", "tasks_count", "created_at"]
+        fields = ["id", "name", "description", "owner", "tasks_count", "created_at"]
         read_only_fields = ["id", "owner", "tasks_count", "created_at"]
 
     def get_tasks_count(self, obj):
@@ -74,12 +73,6 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
         }
 
 
-class PermissionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Permission
-        fields = ["id", "name", "codename"]
-
-
 class ShareLinkSerializer(serializers.Serializer):
     role_id = serializers.IntegerField()
     max_uses = serializers.IntegerField(
@@ -89,3 +82,12 @@ class ShareLinkSerializer(serializers.Serializer):
         default=60, min_value=1,
         help_text="Link duration in minutes (minimum 1 minute)",
     )
+
+
+class KickUserSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    
+    
+class AssignRoleSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    role_id = serializers.IntegerField()
