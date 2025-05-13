@@ -1,7 +1,7 @@
 # 🧠 TaskManagerSystem
 
 [![Django CI](https://github.com/Brunowar12/TaskManagerSystem/actions/workflows/django.yml/badge.svg)](https://github.com/Brunowar12/TaskManagerSystem/actions/workflows/django.yml)
-[![Coverage Status](https://coveralls.io/repos/github/Brunowar12/TaskManagerSystem/badge.svg?branch=master)](https://coveralls.io/github/Brunowar12/TaskManagerSystem?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/Brunowar12/TaskManagerSystem/badge.svg?branch=polishing-%26-refinement)](https://coveralls.io/github/Brunowar12/TaskManagerSystem?branch=polishing-%26-refinement)
 
 A full-featured Task and Project Management REST API built with Django and Django REST Framework. Supports task categorization, project membership with role-based access control, and invitation links.
 
