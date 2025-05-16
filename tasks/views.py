@@ -134,6 +134,7 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
                     "status": "completion status updated",
                     "completed": updated_task.completed,
                     "completed_at": updated_task.completed_at,
+                    "completed_by": updated_task.completed_by.id if updated_task.completed_by else None
                 })
         except Exception as e:
             logger.error(f"Error toggling completion for task {pk}: {e}")

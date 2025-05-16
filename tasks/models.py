@@ -41,7 +41,6 @@ class Task(models.Model):
     title = models.CharField(max_length=64, validators=[TEXT_FIELD_VALIDATOR])
     description = models.TextField(blank=True, 
         validators=[TEXT_FIELD_VALIDATOR])
-    completed = models.BooleanField(default=False)
     due_date = models.DateTimeField()
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
@@ -58,9 +57,19 @@ class Task(models.Model):
         default='M')
     is_favorite = models.BooleanField(default=False, verbose_name="Favorite")
 
-    created_at = models.DateTimeField(default=timezone.now)
-    completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    completed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tasks_completed",
+        help_text="User who marked the task as completed",
+    )
 
     class Meta:
         indexes = [models.Index(fields=["due_date"]),]
