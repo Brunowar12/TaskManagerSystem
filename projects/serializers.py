@@ -40,13 +40,9 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class RoleSerializer(serializers.ModelSerializer):
-    permissions = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Permission.objects.all()
-    )
-
     class Meta:
         model = Role
-        fields = ["id", "name", "permissions"]
+        fields = ["id", "name"]
 
 
 class ProjectMembershipSerializer(serializers.ModelSerializer):

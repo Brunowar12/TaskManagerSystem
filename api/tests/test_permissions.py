@@ -4,7 +4,7 @@ from rest_framework.test import APIRequestFactory
 
 from api.tests.utils import TestHelper
 from projects.models import Role, Project, ProjectMembership
-from projects.permissions import IsProjectAdmin, IsProjectMemberRole
+from projects.permissions import IsProjectAdmin, IsProjectMinRole
 
 from .test_setup import BaseAPITestCase
 
@@ -79,6 +79,6 @@ class PermissionTests(BaseAPITestCase):
         self.assertTrue(permission.has_object_permission(request, None, self.project))
 
     def test_is_project_admin_denies_for_member(self):
-        permission = IsProjectMemberRole()
+        permission = IsProjectMinRole('Member')
         request = self.create_request(self.another_user)
         self.assertFalse(permission.has_object_permission(request, None, self.project))

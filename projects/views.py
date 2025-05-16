@@ -13,7 +13,6 @@ from rest_framework.response import Response
 from api.mixins import UserQuerysetMixin
 from api.utils import error_response, status_response
 
-
 from .models import Project, ProjectMembership, Role, ProjectShareLink
 from .serializers import (
     KickUserSerializer, ProjectSerializer, RoleSerializer, 
@@ -22,10 +21,7 @@ from .serializers import (
 from .services import (
     ProjectService, ProjectMembershipService, ProjectShareLinkService,
 )
-from .permissions import (
-    IsProjectAdmin, IsProjectOwner, IsProjectModeratorRole,
-    IsProjectAdminRole, IsProjectMemberRole, IsProjectViewerRole
-)
+from .permissions import IsProjectAdmin, IsProjectMinRole
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -42,36 +38,27 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     queryset = Project.objects.all().prefetch_related('tasks')
     permission_classes = [IsAuthenticated]
 
+    ACTION_PERMISSIONS = {
+        "list": [IsProjectMinRole("Viewer")],
+        "retrieve": [IsProjectMinRole("Viewer")],
+        "create": [IsProjectMinRole("Member")],
+        "update": [IsProjectMinRole("Member")],
+        "partial_update": [IsProjectMinRole("Member")],
+        "assign_role": [IsProjectMinRole("Moderator"), IsProjectAdmin()],
+        "generate_share_link": [
+            IsProjectMinRole("Moderator"),
+            IsProjectAdmin(),
+        ],
+        "delete_share_link": [IsProjectMinRole("Moderator"), IsProjectAdmin()],
+        "kick": [IsProjectMinRole("Admin"), IsProjectAdmin()],
+        "destroy": [IsProjectMinRole("Admin"), IsProjectAdmin()],
+    }
+
     def get_permissions(self):
-        base = [IsAuthenticated()]
-
-        action_map = {
-            "list": [IsProjectViewerRole()],
-            "retrieve": [IsProjectViewerRole()],
-            "update": [
-                IsProjectMemberRole(),
-                IsProjectModeratorRole(),
-                IsProjectAdminRole(),
-            ],
-            "partial_update": [
-                IsProjectMemberRole(),
-                IsProjectModeratorRole(),
-                IsProjectAdminRole(),
-            ],
-            "assign_role": [IsProjectAdminRole(), IsProjectModeratorRole()],
-            "generate_share_link": [
-                IsProjectAdminRole(),
-                IsProjectModeratorRole(),
-            ],
-            "delete_share_link": [
-                IsProjectAdminRole(),
-                IsProjectModeratorRole(),
-            ],
-            "kick": [IsProjectAdminRole(), IsProjectModeratorRole()],
-            "destroy": [IsProjectAdminRole()],
-        }
-
-        return base + action_map.get(self.action, [])
+        perms = [IsAuthenticated()] + self.ACTION_PERMISSIONS.get(
+            self.action, []
+        )
+        return perms
 
     def get_queryset(self):
         user = self.request.user
@@ -83,7 +70,13 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
             .order_by('id')
         )
 
-    @action(detail=True, methods=["post"], permission_classes=[IsProjectAdmin])
+    def perform_create(self, serializer):
+        project = ProjectService.create_project(
+            owner=self.request.user, **serializer.validated_data
+        )
+        serializer.instance = project
+
+    @action(detail=True, methods=["post"])
     def assign_role(self, request, pk=None):
         project = ProjectService.get_project_or_404(
             pk=self.kwargs["pk"], user=request.user
@@ -112,8 +105,7 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         return status_response("Role assigned")
 
     @action(
-        detail=True, methods=["post"],
-        permission_classes=[IsProjectAdmin | IsProjectModeratorRole],
+        detail=True, methods=["post"], serializer_class=ShareLinkSerializer
     )
     def generate_share_link(self, request, pk=None):      
         project = ProjectService.get_project_or_404(
@@ -123,36 +115,36 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         if ProjectShareLink.objects.filter(
             project=project, is_active=True, expires_at__gt=timezone.now()
         ).exists():
-            return error_response("An active share link already exists for this project")
+            return error_response(
+                "An active share link already exists for this project"
+            )
 
-        serializer = ShareLinkSerializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        data = serializer.validated_data
 
         share_link = ProjectShareLinkService.create_share_link(
             project=project,
-            role_id=serializer.validated_data["role_id"],
+            role_id=data["role_id"],
             user=request.user,
-            max_uses=serializer.validated_data.get("max_uses"),
-            expires_in=serializer.validated_data["expires_in"],
+            max_uses=data.get("max_uses"),
+            expires_in=data["expires_in"],
         )
-        return Response({"share_url": f"/projects/join/{share_link.token}/"}, status=201)
+        url = f"/projects/join/{share_link.token}/"
+        return Response({"share_url": url}, status=status.HTTP_201_CREATED)
 
     @action(
-        detail=True, methods=["delete"], permission_classes=[IsProjectAdmin]
+        detail=True, methods=["delete"],
+        url_path="share_link/(?P<link_id>[^/.]+)",
     )
     def delete_share_link(self, request, pk=None, link_id=None):
         project = ProjectService.get_project_or_404(
             pk=self.kwargs["pk"], user=request.user
         )
-        try:
-            share_link = ProjectShareLink.objects.get(
-                id=link_id, project=project
-            )
-        except ProjectShareLink.DoesNotExist:
-            return error_response(
-                "Share link not found", status.HTTP_404_NOT_FOUND
-            )
-
+        share_link = get_object_or_404(
+            ProjectShareLink, id=link_id, project=project
+        )
         share_link.delete()
         return status_response(
             "Share link deleted", status.HTTP_204_NO_CONTENT
@@ -160,21 +152,21 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
 
     @action(
         detail=True, methods=["post"], url_path="kick",
-        permission_classes=[
-            IsAuthenticated,
-            IsProjectOwner | IsProjectAdminRole,
-        ],
         serializer_class=KickUserSerializer
     )
     def kick(self, request, pk=None):
         project = ProjectService.get_project_or_404(
             pk=self.kwargs["pk"], user=request.user
         )
-        user_id = request.data.get('user_id')
-        membership = get_object_or_404(ProjectMembership, project=project, user__id=user_id)
+        user_id = request.data.get("user_id")
+        membership = get_object_or_404(
+            ProjectMembership, project=project, user__id=user_id
+        )
 
         if membership.user == project.owner:
-            return error_response("It is impossible to exclude the project owner")
+            return error_response(
+                "It is impossible to exclude the project owner"
+            )
 
         membership.delete()
         return status_response("Member successfully excluded")
