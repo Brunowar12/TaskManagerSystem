@@ -21,7 +21,7 @@ class PermissionTests(BaseAPITestCase):
 
     def setUp(self):
         super().setUp()
-        self.admin_role = self.get_or_create_role("Moderator")
+        self.admin_role = self.get_or_create_role("Admin")
         self.project = self.create_project_with_membership(
             "PermProj", self.user, self.admin_role
         )
@@ -47,12 +47,11 @@ class PermissionTests(BaseAPITestCase):
         viewer_role = self.get_or_create_role("Viewer")
         ProjectMembership.objects.create(
             user=self.another_user, project=self.project, role=viewer_role
-        )
+        )#
 
         url = reverse("project-assign-role", kwargs={"pk": self.project.id})
         data = {"user_id": self.another_user.id, "role_id": self.admin_role.id}
         response = self.client.post(url, data)
-        print(response.data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK, "Admin role assignment failed")
 

@@ -14,24 +14,35 @@ class TaskAPITests(BaseAPITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.task_today = Task.objects.create(
-            title="Today Task",
-            due_date=make_aware(
-                datetime.combine(now().date(), datetime.min.time())
-            ),
-            user=cls.user,
-            is_favorite=True,
+        cls.task_list = Task.objects.bulk_create(
+            [
+                Task(
+                    title="Simple Task",
+                    due_date=TestHelper.get_valid_due_date(0),
+                    user=cls.user,
+                    is_favorite=False,
+                    priority="M",
+                ),
+                Task(
+                    title="Today Task",
+                    due_date=TestHelper.get_valid_due_date(0),
+                    user=cls.user,
+                    is_favorite=True,
+                    priority="H",
+                ),
+                Task(
+                    title="Future Task",
+                    due_date=TestHelper.get_valid_due_date(),
+                    user=cls.user,
+                    is_favorite=False,
+                    priority="L",
+                ),
+            ]
         )
-        cls.task_future = Task.objects.create(
-            title="Future Task",
-            due_date=make_aware(
-                datetime.combine(
-                    now().date() + timedelta(days=365), datetime.min.time()
-                )
-            ),
-            user=cls.user,
-            is_favorite=False,
-        )
+
+        cls.task = cls.task_list[0]
+        cls.today_task = cls.task_list[1]
+        cls.future_task = cls.task_list[2]
 
     def setUp(self):
         super().setUp()
@@ -122,11 +133,7 @@ class TaskAPITests(BaseAPITestCase):
         )
 
     def test_task_update(self):
-        task = self.api_post(
-            self.task_list_ep,
-            {"title": "Old Task", "due_date": TestHelper.get_valid_due_date()},
-        ).data
-        url = reverse("task-detail", kwargs={"pk": task["id"]})
+        url = reverse("task-detail", kwargs={"pk": self.task.id})
         response = self.client.patch(url, {"title": "Updated Task"})
 
         self.assertEqual(
@@ -137,12 +144,7 @@ class TaskAPITests(BaseAPITestCase):
         )
 
     def test_task_update_unauthenticated(self):
-        task = self.api_post(
-            self.task_list_ep, {
-                "title": "Old Task", 
-                "due_date": TestHelper.get_valid_due_date()
-            }).data
-        url = reverse("task-detail", kwargs={"pk": task["id"]})
+        url = reverse("task-detail", kwargs={"pk": self.task.id})
         self.client.credentials()
         response = self.client.patch(url, {"title": "Updated Task"})
 
@@ -158,12 +160,7 @@ class TaskAPITests(BaseAPITestCase):
         )
 
     def test_task_deletion(self):
-        task = self.api_post(
-            self.task_list_ep, {
-                "title": "Task to Delete",
-                "due_date": TestHelper.get_valid_due_date(),
-            }).data
-        url = reverse("task-detail", kwargs={"pk": task["id"]})
+        url = reverse("task-detail", kwargs={"pk": self.task.id})
         response = self.client.delete(url)
 
         self.assertEqual(
@@ -177,12 +174,7 @@ class TaskAPITests(BaseAPITestCase):
         )
 
     def test_task_deletion_unauthenticated(self):
-        task = self.api_post(
-            self.task_list_ep, {
-                "title": "Task to Delete",
-                "due_date": TestHelper.get_valid_due_date(),
-            }).data
-        url = reverse("task-detail", kwargs={"pk": task["id"]})
+        url = reverse("task-detail", kwargs={"pk": self.task.id})
         self.client.credentials()
         response = self.client.delete(url)
 
@@ -251,16 +243,14 @@ class TaskAPITests(BaseAPITestCase):
         )
 
     def test_toggle_favorite(self):
-        task = self.task_today
-        url = reverse("task-toggle-favorite", kwargs={"pk": task.id})
+        url = reverse("task-toggle-favorite", kwargs={"pk": self.today_task.id})
         response = self.api_post(url, data={})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["is_favorite"], not task.is_favorite)
+        self.assertEqual(response.data["is_favorite"], not self.today_task.is_favorite)
 
     def test_toggle_completed(self):
-        task = self.task_future
-        url = reverse("task-toggle-completed", kwargs={"pk": task.id})
+        url = reverse("task-toggle-completed", kwargs={"pk": self.future_task.id})
         response = self.api_post(url, data={})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -308,25 +298,25 @@ class TaskAPITests(BaseAPITestCase):
         self.assertIsNotNone(detail["completed_at"], "Completed at not set")
 
     def test_task_str_representation(self):
-        task = self.task_today
+        task = self.today_task
         self.assertIn(task.title, str(task))
         self.assertIn(self.user.username, str(task))
 
     def test_move_task_to_project(self):
         project = Project.objects.create(name="Move Project", owner=self.user)
-        url = reverse("task-move-task", kwargs={"pk": self.task_today.id})
+        url = reverse("task-move-task", kwargs={"pk": self.task.id})
         response = self.api_post(url, {"project_id": project.id})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["status"], "Task moved successfully")
 
     def test_get_tasks_by_category(self):
-        self.task_today.category = Category.objects.create(
+        self.today_task.category = Category.objects.create(
             name="Work", user=self.user
         )
-        self.task_today.save()
+        self.today_task.save()
         url = reverse(
-            "category-tasks", kwargs={"pk": self.task_today.category.id}
+            "category-tasks", kwargs={"pk": self.today_task.category.id}
         )
         response = self.client.get(url)
 
@@ -363,13 +353,14 @@ class TaskAPITests(BaseAPITestCase):
     # filtering
 
     def test_filter_by_status(self):
-        self.task_today.completed = False
-        self.task_today.save()
+        self.today_task.completed = False
+        self.today_task.save()
 
-        self.task_future.completed = True
-        self.task_future.save()
+        self.future_task.completed = True
+        self.future_task.save()
 
-        response = self.client.get(self.task_list_ep, {"completed": "False"})
+        response = self.client.get(self.task_list_ep, {"completed": "True"})
+        print(response.data)
 
         self.assertEqual(
             response.status_code,
@@ -381,18 +372,19 @@ class TaskAPITests(BaseAPITestCase):
             1,
             "Incorrect number of tasks",
         )
-        self.assertFalse(
+        self.assertTrue(
             response.data["results"][0]["completed"], "Incorrect task returned"
         )
 
     def test_filter_by_priority(self):
-        self.task_today.priority = "M"
-        self.task_today.save()
+        self.task.priority = "M"
+        self.task.save()
 
-        self.task_future.priority = "L"
-        self.task_future.save()
+        self.future_task.priority = "L"
+        self.future_task.save()
 
         response = self.client.get(self.task_list_ep, {"priority": "M"})
+        print(response.data)
 
         self.assertEqual(
             response.status_code,
@@ -411,7 +403,17 @@ class TaskAPITests(BaseAPITestCase):
         )
 
     def test_filter_by_today(self):
+        self.task.due_date = now()
+        self.task.save()
+
+        self.future_task.due_date = now() + timedelta(days=1)
+        self.future_task.save()
+        
+        self.today_task.due_date = now() + timedelta(days=2)
+        self.today_task.save()
+        
         response = self.client.get(self.task_list_ep, {"today": "true"})
+        print(response.data)
 
         self.assertEqual(
             response.status_code,
@@ -430,8 +432,8 @@ class TaskAPITests(BaseAPITestCase):
         )
 
     def test_combined_filters(self):
-        self.task_today.priority = "H"
-        self.task_today.save()
+        self.today_task.priority = "H"
+        self.today_task.save()
 
         response = self.client.get(
             self.task_list_ep, {"search": "Today", "priority": "H"}
@@ -463,7 +465,7 @@ class TaskAPITests(BaseAPITestCase):
         )
         titles = [task["title"] for task in response.data.get("results", [])]
         expected_titles = sorted(
-            [self.task_today.title, self.task_future.title]
+            [self.today_task.title, self.future_task.title, self.task.title]
         )
         self.assertEqual(
             titles, expected_titles, "Tasks are not sorted correctly by title"

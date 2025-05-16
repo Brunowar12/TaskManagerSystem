@@ -53,12 +53,12 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
 
     def get_permissions(self):
         perms = [IsAuthenticated()]
-        min_role = self.ACTION_MIN_ROLE.get(self.action)
+        min_role = self.ACTION_PERMISSIONS.get(self.action)
         if min_role:
             perms.append(
                 IsProjectAdmin()
                 if min_role == "Admin"
-                else IsProjectMinRole(min_role)()
+                else IsProjectMinRole(min_role)
             )
         return perms
 
@@ -93,7 +93,7 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         ).first()
 
     def _forbidden(self, msg):
-        return error_response(msg, status=status.HTTP_403_FORBIDDEN)
+        return error_response(msg, status.HTTP_403_FORBIDDEN)
 
     #
     # === ACTIONS ===
@@ -102,11 +102,16 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def assign_role(self, request, pk=None):
         """        
-        Assign a role to a user in a project
+        Assign a role to a user in a project.
+        Prevents self-assignment, assigning to owner,
+        or assigning role ≥ assigner's role (except Admin/Owner).
         """
         project = self._get_project(pk)
         target = get_object_or_404(User, id=request.data.get("user_id"))
         role = get_object_or_404(Role, id=request.data.get("role_id"))
+        
+        if target == project.owner:
+            return error_response("Cannot assign role to the project owner")
 
         if target == request.user:
             return self._forbidden("You cannot change your own role")
@@ -115,17 +120,21 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
             return error_response("User must join via ShareLink")
 
         assigner = self._get_membership(project, request.user)
-        assigner_role = assigner.role.name if assigner else "Owner"
+        assigner_role = assigner.role.name if assigner else "Owner"        
         order = IsProjectMinRole.ROLE_ORDER
-        if order.index(role.name) >= order.index(assigner_role):
-            return self._forbidden(
-                f"Cannot assign '{role.name}' ≥ your '{assigner_role}'"
-            )
+        
+        if assigner_role not in ("Admin", "Owner"):
+            if order.index(role.name) >= order.index(assigner_role):
+                return self._forbidden(
+                    f"Cannot assign '{role.name}' ≥ your '{assigner_role}'"
+                )
 
         try:
             ProjectMembershipService.assign_role(project, target, role)
-        except ValidationError as e:
-            return error_response(e.detail)
+        except Exception as e:
+            message = getattr(e, 'detail', str(e))
+            return error_response(message)
+
         return status_response("Role assigned")
 
     @action(
