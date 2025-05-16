@@ -17,6 +17,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from api.mixins import UserQuerysetMixin
 from api.utils import error_response, status_response
+from projects.permissions import IsProjectMinRole
 
 from .serializers import (
     TaskSerializer, CategorySerializer,
@@ -24,7 +25,7 @@ from .serializers import (
     MoveTaskResponseSerializer, MoveTaskSerializer, 
 )
 from .services import TaskService, CategoryService
-from .mixins import IsOwner
+from .mixins import IsOwner, ProjectTaskPermission
 from .models import Task, Category
 
 logger = logging.getLogger(__name__)
@@ -47,6 +48,11 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         "title", "due_date", "priority",
         "created_at", "updated_at",
     ]
+    
+    def get_permissions(self):
+        if self.kwargs.get('project_pk'):
+            return [IsAuthenticated(), ProjectTaskPermission()]
+        return [IsAuthenticated(), IsOwner()]
 
     def get_queryset(self):
         qs = super().get_queryset()        
@@ -72,23 +78,22 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
             filters &= Q(is_favorite=is_fav.lower() == "true")
 
         return qs.filter(filters)
+    
+    def perform_create(self, serializer):
+        project_pk = self.kwargs.get('project_pk')
+        save_kwargs = {'user': self.request.user}
+        if project_pk is not None:
+            save_kwargs['project_id'] = project_pk
+        serializer.save(**save_kwargs)
 
     def get_object(self):
-        """
-        Overridden method for getting an object without first filtering by user
-        """
-        lookup_field = self.lookup_field or "pk"
-        lookup_value = self.kwargs.get(lookup_field)
-        
-        obj = get_object_or_404(Task, **{lookup_field: lookup_value})
-        
+        obj = get_object_or_404(Task, pk=self.kwargs.get(self.lookup_field))
         try:
             self.check_object_permissions(self.request, obj)
         except PermissionDenied:
             if self.request.method in SAFE_METHODS:
                 raise NotFound()
             raise
-
         return obj
 
     @action(
@@ -115,7 +120,8 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
 
     @action(
         detail=True, methods=["post"],
-        serializer_class=ToggleCompletedResponseSerializer
+        serializer_class=ToggleCompletedResponseSerializer,
+        permission_classes=[IsProjectMinRole('Member')]
     )
     def toggle_completed(self, request, pk=None):
         try:
@@ -136,7 +142,7 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=["get"], permission_classes=[IsProjectMinRole('Member')])
     @method_decorator(cache_page(60))
     def today(self, request):
         queryset = self.get_queryset()
@@ -161,7 +167,7 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     )
     def move_task(self, request, project_pk=None, pk=None):
         if project_pk is not None:
-            raise NotFound("This endpoint is not available via /projects/{project_pk}/tasks/{pk}/move_task/")
+            raise NotFound("Use /tasks/{pk}/move_task/ to move tasks")
         
         task = self.get_object()
         project_id = request.data.get("project_id")
