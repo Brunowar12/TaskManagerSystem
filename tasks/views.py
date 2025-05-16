@@ -48,7 +48,7 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         "title", "due_date", "priority",
         "created_at", "updated_at",
     ]
-    
+
     def get_permissions(self):
         if self.kwargs.get('project_pk'):
             return [IsAuthenticated(), ProjectTaskPermission()]
@@ -57,7 +57,7 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         qs = super().get_queryset()        
         filters = Q(user=self.request.user)
-        
+
         project_id = self.kwargs.get("project_pk")
         if project_id is not None:
             return Task.objects.filter(project_id=project_id)
@@ -78,7 +78,7 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
             filters &= Q(is_favorite=is_fav.lower() == "true")
 
         return qs.filter(filters)
-    
+
     def perform_create(self, serializer):
         project_pk = self.kwargs.get('project_pk')
         save_kwargs = {'user': self.request.user}
@@ -123,19 +123,25 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         serializer_class=ToggleCompletedResponseSerializer,
         permission_classes=[IsProjectMinRole('Member')]
     )
-    def toggle_completed(self, request, pk=None):
+    def toggle_completed(self, request, project_pk=None, pk=None):
         try:
             task = self.get_object()
-            updated_task = TaskService.toggle_completed(task)
+            updated_task = TaskService.toggle_completed(task, self.request.user)
             logger.info(
                 f"Task {task.id} completion status updated to {updated_task.completed}"
             )
-            return Response({
+            return Response(
+                {
                     "status": "completion status updated",
                     "completed": updated_task.completed,
                     "completed_at": updated_task.completed_at,
-                    "completed_by": updated_task.completed_by.id if updated_task.completed_by else None
-                })
+                    "completed_by": (
+                        updated_task.completed_by.id
+                        if updated_task.completed_by
+                        else None
+                    ),
+                }
+            )
         except Exception as e:
             logger.error(f"Error toggling completion for task {pk}: {e}")
             return error_response(
@@ -143,7 +149,10 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(detail=False, methods=["get"], permission_classes=[IsProjectMinRole('Member')])
+    @action(
+        detail=False, methods=["get"],
+        permission_classes=[IsProjectMinRole("Member")],
+    )
     @method_decorator(cache_page(60))
     def today(self, request):
         queryset = self.get_queryset()
@@ -169,7 +178,7 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     def move_task(self, request, project_pk=None, pk=None):
         if project_pk is not None:
             raise NotFound("Use /tasks/{pk}/move_task/ to move tasks")
-        
+
         task = self.get_object()
         project_id = request.data.get("project_id")
 
