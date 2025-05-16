@@ -39,25 +39,27 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     ACTION_PERMISSIONS = {
-        "list": [IsProjectMinRole("Viewer")],
-        "retrieve": [IsProjectMinRole("Viewer")],
-        "create": [IsProjectMinRole("Member")],
-        "update": [IsProjectMinRole("Member")],
-        "partial_update": [IsProjectMinRole("Member")],
-        "assign_role": [IsProjectMinRole("Moderator"), IsProjectAdmin()],
-        "generate_share_link": [
-            IsProjectMinRole("Moderator"),
-            IsProjectAdmin(),
-        ],
-        "delete_share_link": [IsProjectMinRole("Moderator"), IsProjectAdmin()],
-        "kick": [IsProjectMinRole("Admin"), IsProjectAdmin()],
-        "destroy": [IsProjectMinRole("Admin"), IsProjectAdmin()],
+        "list": ["Viewer"],
+        "retrieve": ["Viewer"],
+        "update": ["Member"],
+        "partial_update": ["Member"],
+        "assign_role": ["Moderator"],
+        "generate_share_link": ["Moderator"],
+        "delete_share_link": ["Moderator"],
+        "kick": ["Admin"],
+        "destroy": ["Admin"],
+        "leave_project": ["Viewer"],
     }
 
     def get_permissions(self):
-        perms = [IsAuthenticated()] + self.ACTION_PERMISSIONS.get(
-            self.action, []
-        )
+        perms = [IsAuthenticated()]
+        min_role = self.ACTION_MIN_ROLE.get(self.action)
+        if min_role:
+            perms.append(
+                IsProjectAdmin()
+                if min_role == "Admin"
+                else IsProjectMinRole(min_role)()
+            )
         return perms
 
     def get_queryset(self):
@@ -76,32 +78,54 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         )
         serializer.instance = project
 
-    @action(detail=True, methods=["post"])
-    def assign_role(self, request, pk=None):
-        project = ProjectService.get_project_or_404(
-            pk=self.kwargs["pk"], user=request.user
+    #
+    # === HELPERS ===
+    #
+
+    def _get_project(self, pk=None):
+        return ProjectService.get_project_or_404(
+            pk or self.kwargs["pk"], self.request.user
         )
 
-        user_id = request.data.get("user_id")
-        role_id = request.data.get("role_id")
-
-        user = get_object_or_404(User, id=user_id)
-        role = get_object_or_404(Role, id=role_id)
-
-        if not ProjectMembership.objects.filter(
+    def _get_membership(self, project, user):
+        return ProjectMembership.objects.filter(
             project=project, user=user
-        ).exists():
-            return error_response(
-                "The user must join via invitation (ShareLink)"
+        ).first()
+
+    def _forbidden(self, msg):
+        return error_response(msg, status=status.HTTP_403_FORBIDDEN)
+
+    #
+    # === ACTIONS ===
+    #
+
+    @action(detail=True, methods=["post"])
+    def assign_role(self, request, pk=None):
+        """        
+        Assign a role to a user in a project
+        """
+        project = self._get_project(pk)
+        target = get_object_or_404(User, id=request.data.get("user_id"))
+        role = get_object_or_404(Role, id=request.data.get("role_id"))
+
+        if target == request.user:
+            return self._forbidden("You cannot change your own role")
+
+        if not self._get_membership(project, target):
+            return error_response("User must join via ShareLink")
+
+        assigner = self._get_membership(project, request.user)
+        assigner_role = assigner.role.name if assigner else "Owner"
+        order = IsProjectMinRole.ROLE_ORDER
+        if order.index(role.name) >= order.index(assigner_role):
+            return self._forbidden(
+                f"Cannot assign '{role.name}' ≥ your '{assigner_role}'"
             )
 
         try:
-            ProjectMembershipService.assign_role(project, user, role)
+            ProjectMembershipService.assign_role(project, target, role)
         except ValidationError as e:
-            return error_response(str(e.detail))
-        except Exception as e:
-            return error_response(str(e))
-
+            return error_response(e.detail)
         return status_response("Role assigned")
 
     @action(
@@ -109,21 +133,35 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         serializer_class=KickUserSerializer
     )
     def kick(self, request, pk=None):
-        project = ProjectService.get_project_or_404(
-            pk=self.kwargs["pk"], user=request.user
-        )
+        """        
+        Kick user from project (not owner)
+        """
+        project = self._get_project(pk)
         user_id = request.data.get("user_id")
         membership = get_object_or_404(
             ProjectMembership, project=project, user__id=user_id
         )
-
         if membership.user == project.owner:
-            return error_response(
-                "It is impossible to exclude the project owner"
-            )
-
+            return error_response("Cannot kick project owner")
+        
         membership.delete()
-        return status_response("Member successfully excluded")
+        return status_response("Member excluded")
+
+    @action(detail=True, methods=["post"], url_path="leave")
+    def leave_project(self, request, pk=None):
+        """
+        Leave project (not owner)
+        """
+        project = self._get_project(pk)
+        if project.owner == request.user:
+            return self._forbidden("Owner cannot leave project")
+        
+        membership = self._get_membership(project, request.user)
+        if not membership:
+            return error_response("Not a member of this project")
+        
+        membership.delete()
+        return status_response("You left the project")
 
 
 class RoleViewSet(viewsets.ReadOnlyModelViewSet):

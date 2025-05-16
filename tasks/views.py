@@ -60,7 +60,7 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         
         project_id = self.kwargs.get("project_pk")
         if project_id is not None:
-            filters &= Q(project_id=project_id)
+            return Task.objects.filter(project_id=project_id)
 
         if TaskService.is_today_filter(self.request):
             filters &= Q(due_date__date=now().date())
