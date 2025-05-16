@@ -15,8 +15,8 @@ from api.utils import error_response, status_response
 
 from .models import Project, ProjectMembership, Role, ProjectShareLink
 from .serializers import (
-    KickUserSerializer, ProjectSerializer, RoleSerializer, 
-    ProjectMembershipSerializer, ShareLinkSerializer
+    KickUserSerializer, ProjectSerializer, ProjectShareLinkSerializer,
+    RoleSerializer, ProjectMembershipSerializer, ShareLinkCreateSerializer
 )
 from .services import (
     ProjectService, ProjectMembershipService, ProjectShareLinkService,
@@ -105,52 +105,6 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         return status_response("Role assigned")
 
     @action(
-        detail=True, methods=["post"], serializer_class=ShareLinkSerializer
-    )
-    def generate_share_link(self, request, pk=None):      
-        project = ProjectService.get_project_or_404(
-            pk=self.kwargs["pk"], user=request.user
-        )
-
-        if ProjectShareLink.objects.filter(
-            project=project, is_active=True, expires_at__gt=timezone.now()
-        ).exists():
-            return error_response(
-                "An active share link already exists for this project"
-            )
-
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        data = serializer.validated_data
-
-        share_link = ProjectShareLinkService.create_share_link(
-            project=project,
-            role_id=data["role_id"],
-            user=request.user,
-            max_uses=data.get("max_uses"),
-            expires_in=data["expires_in"],
-        )
-        url = f"/projects/join/{share_link.token}/"
-        return Response({"share_url": url}, status=status.HTTP_201_CREATED)
-
-    @action(
-        detail=True, methods=["delete"],
-        url_path="share_link/(?P<link_id>[^/.]+)",
-    )
-    def delete_share_link(self, request, pk=None, link_id=None):
-        project = ProjectService.get_project_or_404(
-            pk=self.kwargs["pk"], user=request.user
-        )
-        share_link = get_object_or_404(
-            ProjectShareLink, id=link_id, project=project
-        )
-        share_link.delete()
-        return status_response(
-            "Share link deleted", status.HTTP_204_NO_CONTENT
-        )
-
-    @action(
         detail=True, methods=["post"], url_path="kick",
         serializer_class=KickUserSerializer
     )
@@ -202,6 +156,72 @@ class ProjectMembershipViewSet(viewsets.ReadOnlyModelViewSet):
             .select_related("user", "role")
             .order_by("id")
         )
+
+
+class ProjectShareLinkViewSet(viewsets.ModelViewSet):
+    """
+    Read-only viewset for viewing project share links
+    """
+
+    serializer_class = ProjectShareLinkSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "id"
+
+    def get_permissions(self):
+        perms = [permission() for permission in self.permission_classes]
+
+        if self.action in ("list", "retrieve", "create", "destroy"):
+            perms.append(IsProjectMinRole("Moderator"))
+        return perms
+
+    def get_queryset(self):
+        project = ProjectService.get_project_or_404(
+            self.kwargs["project_pk"], self.request.user
+        )
+        return ProjectShareLink.objects.filter(project=project)
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return ShareLinkCreateSerializer
+        return ProjectShareLinkSerializer
+
+    def create(self, request, *args, **kwargs):
+        project = ProjectService.get_project_or_404(
+            self.kwargs["project_pk"], request.user
+        )
+
+        if ProjectShareLink.objects.filter(
+            project=project, is_active=True, expires_at__gt=timezone.now()
+        ).exists():
+            return error_response(
+                "An active share link already exists for this project"
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        share_link = ProjectShareLinkService.create_share_link(
+            project=project,
+            role_id=data["role_id"],
+            user=request.user,
+            max_uses=data.get("max_uses"),
+            expires_in=data["expires_in"],
+        )
+        output = ProjectShareLinkSerializer(
+            share_link, context={"request": request}
+        )
+        return Response(output.data, status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, *args, **kwargs):
+        project = ProjectService.get_project_or_404(
+            self.kwargs["project_pk"], request.user
+        )
+        share_link = get_object_or_404(
+            ProjectShareLink, id=self.kwargs["id"], project=project
+        )
+        share_link.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["POST"])
