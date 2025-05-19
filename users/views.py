@@ -45,16 +45,23 @@ class AuthViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=['post'])
     def logout(self, request):
         refresh_token = request.data.get("refresh")
+        error_messages_map = {
+            "Invalid token format": "Incorrect token format",
+            "Token expired": "Expired token",
+            "Token already revoked": "The token has already been revoked",
+        }
+        
         if not refresh_token:
             return error_response("Refresh token is required")
         try:
             data = UserService.logout_user(refresh_token)
             return Response(data, status=status.HTTP_200_OK)
         except ValueError as e:
-            return error_response(str(e), exc=e)
+            user_message = error_messages_map.get(str(e), "Unknown token error")
+            return error_response(user_message, exc=e)
         except Exception as e:
             return error_response(
-                "An unexpected error occured",
+                "Internal server error",
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
                 exc=e,
             )
