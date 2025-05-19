@@ -112,10 +112,11 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
                     "is_favorite": updated_task.is_favorite,
                 })
         except Exception as e:
-            logger.error(f"Error toggling favorite for task {pk}: {e}")
+            logger.exception(f"Error toggling favorite for task {pk}")
             return error_response(
                 "Failed to update favorite status",
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
+                exc=e
             )
 
     @action(
@@ -143,10 +144,11 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
                 }
             )
         except Exception as e:
-            logger.error(f"Error toggling completion for task {pk}: {e}")
+            logger.exception(f"Error toggling completion for task {pk}")
             return error_response(
                 "Failed to update completion status",
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
+                exc=e
             )
 
     @action(
@@ -186,11 +188,13 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
             TaskService.move_task_to_project(task, project_id, request.user)
             return status_response("Task moved successfully")
         except ValueError as e:
-            return error_response(str(e), status.HTTP_404_NOT_FOUND)
+            return error_response(str(e), status.HTTP_404_NOT_FOUND, exc=e)
         except Exception as e:
-            logger.error(f"Error moving task: {e}", exc_info=True)
+            logger.exception(f"Error moving task: {e}")
             return error_response(
-                "Failed to move task", status.HTTP_500_INTERNAL_SERVER_ERROR
+                "Failed to move task",
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
+                exc=e,
             )
 
     @action(

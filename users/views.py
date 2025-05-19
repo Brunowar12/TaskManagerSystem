@@ -21,7 +21,7 @@ class AuthViewSet(viewsets.GenericViewSet):
     def get_serializer_class(self):
         if getattr(self, 'swagger_fake_view', False):
             return serializers.Serializer
-        
+
         if self.action == 'register':
             return UserRegistrationSerializer
         elif self.action == 'login':
@@ -51,13 +51,14 @@ class AuthViewSet(viewsets.GenericViewSet):
             data = UserService.logout_user(refresh_token)
             return Response(data, status=status.HTTP_200_OK)
         except ValueError as e:
-            return error_response(str(e))
+            return error_response(str(e), exc=e)
         except Exception as e:
             return error_response(
-                f"Unexpected error {str(e)}",
+                "An unexpected error occured",
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
+                exc=e,
             )
-    
+
 
 class UserViewSet(viewsets.GenericViewSet):
     """
