@@ -7,13 +7,24 @@ on:
     branches: ["master"]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
     strategy:
+      fail-fast: false
       matrix:
-        python-version: [3.10.5, 3.11.2, 3.11.7, 3.12.3, 3.12.7]
+        python-version: [3.10, 3.12]
 
     services:
       postgres:
@@ -33,44 +44,38 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+          fetch-depth: 1
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+        cache: pip
+
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
 
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pip-tools
-        if [ ! -f requirements.txt ]; then
-          echo "Generating requirements.txt..."
-          echo "django>=5.0,<6.0" >> requirements.in
-          echo "djangorestframework>=3.12.0,<4.0" >> requirements.in
-          echo "psycopg2>=2.9.0" >> requirements.in
-          echo "django-filter>=23.2,<24.0" >> requirements.in
-          echo "python-decouple>=3.8" >> requirements.in
-          echo "django-cors-headers>=4.6.0" >> requirements.in
-          echo "drf-yasg==1.21.10" >> requirements.in
-          pip-compile requirements.in
-        fi
-        pip install -r requirements.txt
+      run: pip install --upgrade pip && pip install -r requirements.txt
 
-    - name: Set Environment Variables
+    - name: Set up environment
       run: |
         echo "SECRET_KEY=${{ secrets.SECRET_KEY || 'test-secret-key' }}" >> $GITHUB_ENV
-        echo "DB_NAME=test_db" >> $GITHUB_ENV
-        echo "DB_USER=postgres" >> $GITHUB_ENV
-        echo "DB_PASSWORD=password" >> $GITHUB_ENV
-        echo "DB_HOST=localhost" >> $GITHUB_ENV
-        echo "DB_PORT=5432" >> $GITHUB_ENV
+        echo DB_NAME=test_db >> $GITHUB_ENV
+        echo DB_USER=postgres >> $GITHUB_ENV
+        echo DB_PASSWORD=password >> $GITHUB_ENV
+        echo DB_HOST=localhost >> $GITHUB_ENV
+        echo DB_PORT=5432 >> $GITHUB_ENV
 
     - name: Wait for PostgreSQL to be ready
       run: |
-        until pg_isready -h localhost -p 5432 -U postgres; do
-          echo "Waiting for PostgreSQL to be ready..."
-          sleep 5
-        done
+        until pg_isready -h localhost -U postgres; do sleep 1; done
 
     - name: Run migrations
       run: python manage.py migrate
