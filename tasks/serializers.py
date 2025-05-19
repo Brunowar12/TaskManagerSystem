@@ -4,18 +4,24 @@ from .models import Task, Category
 
 
 class TaskSerializer(serializers.ModelSerializer):
-    category_name = serializers.StringRelatedField(
-        source="category.name", read_only=True)
-    user_name = serializers.StringRelatedField(
-        source="user.username", read_only=True)
+    category_name: serializers.StringRelatedField = (
+        serializers.StringRelatedField(source="category.name", read_only=True)
+    )
+    user_name: serializers.StringRelatedField = serializers.StringRelatedField(
+        source="user.username", read_only=True
+    )
+    completed_by = serializers.SerializerMethodField()
+    completed_by_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Task
         fields = ["id", "title", "description", "category", "category_name",
             "due_date", "priority", "completed", "is_favorite", "user",
-            "user_name", "created_at", "updated_at", "completed_at"]
+            "user_name", "created_at", "updated_at", "completed_at",
+            "completed_by", "completed_by_name"
+        ]
         read_only_fields = [ "id", "created_at", "updated_at", "user",
-            "completed_at", "user_name"]
+            "completed_at", "user_name", "completed_by", "completed_by_name"]
 
     def validate_due_date(self, value):
         if value is None:
@@ -24,8 +30,14 @@ class TaskSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "The due date cannot be in the past")
         return value
-    
-    
+
+    def get_completed_by(self, obj):
+        return obj.completed_by.id if obj.completed_by else None
+
+    def get_completed_by_name(self, obj):
+        return obj.completed_by.username if obj.completed_by else None
+
+
 class ToggleFavoriteResponseSerializer(serializers.Serializer):
     status = serializers.CharField()
     is_favorite = serializers.BooleanField()
@@ -35,7 +47,7 @@ class ToggleCompletedResponseSerializer(serializers.Serializer):
     status = serializers.CharField()
     completed = serializers.BooleanField()
     completed_at = serializers.DateTimeField(allow_null=True)
-    
+
 
 class MoveTaskSerializer(serializers.Serializer):
     project_id = serializers.IntegerField()

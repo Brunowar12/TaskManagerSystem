@@ -1,6 +1,11 @@
 import logging
 from django.db.models import Q
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from tasks.models import Task
+    from users.models import User
+
 logger = logging.getLogger(__name__)
 
 
@@ -22,10 +27,16 @@ class TaskService:
         return task
 
     @staticmethod
-    def toggle_completed(task):
+    def toggle_completed(task: 'Task', user: 'User') -> 'Task':
         task.completed = not task.completed
         task.update_completed_at()
-        task.save()
+
+        if task.completed:
+            task.completed_by = user
+        else:
+            task.completed_by = None
+
+        task.save(update_fields=["completed", "completed_at", "completed_by"])
         return task
 
     @staticmethod

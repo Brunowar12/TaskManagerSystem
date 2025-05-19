@@ -247,9 +247,10 @@ class ShareLinkTests(ProjectsAPITests):
 
     def test_generate_and_join(self):
         url = reverse(
-            "project-generate-share-link", kwargs={"pk": self.project.id}
+            "project-share-links-list", kwargs={"project_pk": self.project.id}
         )
         response = self.api_post(url, {"role_id": self.role.id, "expires_in": 60})
+        
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         link = ProjectShareLink.objects.get(project=self.project)
         
@@ -269,7 +270,7 @@ class ShareLinkTests(ProjectsAPITests):
     def test_invalid_params_and_errors(self):
         # invalid params
         url = reverse(
-            "project-generate-share-link", kwargs={"pk": self.proj_neg.id}
+            "project-share-links-list", kwargs={"project_pk": self.proj_neg.id}
         )
         invite_link = self.api_post(
             url, {"role_id": self.role_neg.id, "max_uses": -5, "expires_in": 0}
@@ -318,8 +319,8 @@ class ShareLinkTests(ProjectsAPITests):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
         fake = self.client.delete(
             reverse(
-                "project-delete-share-link",
-                kwargs={"pk": self.project.id, "link_id": 9999},
+                "project-share-links-detail",
+                kwargs={"project_pk": self.project.id, "id": 9999},
             )
         )
         self.assertEqual(fake.status_code, status.HTTP_404_NOT_FOUND)
@@ -328,8 +329,8 @@ class ShareLinkTests(ProjectsAPITests):
         link_ok = self.create_share_link(self.project)
         success = self.api_delete(
             reverse(
-                "project-delete-share-link",
-                kwargs={"pk": self.project.id, "link_id": link_ok.id},
+                "project-share-links-detail",
+                kwargs={"project_pk": self.project.id, "id": link_ok.id},
             )
         )
         self.assertEqual(success.status_code, status.HTTP_204_NO_CONTENT)

@@ -1,14 +1,16 @@
-from django.contrib.auth.models import Permission
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 
-from .models import Project, Role, ProjectMembership
+from .models import Project, ProjectShareLink, Role, ProjectMembership
 
 class ProjectSerializer(serializers.ModelSerializer):
     tasks_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
-        fields = ["id", "name", "description", "owner", "tasks_count", "created_at"]
+        fields = [
+            "id", "name", "description", "owner", "tasks_count", "created_at"
+        ]
         read_only_fields = ["id", "owner", "tasks_count", "created_at"]
 
     def get_tasks_count(self, obj):
@@ -40,20 +42,16 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class RoleSerializer(serializers.ModelSerializer):
-    permissions = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Permission.objects.all()
-    )
-
     class Meta:
         model = Role
-        fields = ["id", "name", "permissions"]
+        fields = ["id", "name"]
 
 
 class ProjectMembershipSerializer(serializers.ModelSerializer):
-    role_name = serializers.StringRelatedField(
+    role_name: serializers.StringRelatedField = serializers.StringRelatedField(
         source="role.name", read_only=True
     )
-    user_name = serializers.StringRelatedField(
+    user_name: serializers.StringRelatedField = serializers.StringRelatedField(
         source="user.username", read_only=True
     )
     user_details = serializers.SerializerMethodField()
@@ -73,21 +71,46 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
         }
 
 
-class ShareLinkSerializer(serializers.Serializer):
-    role_id = serializers.IntegerField()
+class ShareLinkCreateSerializer(serializers.Serializer):
+    role_id = serializers.IntegerField(
+        required=False, default=4, min_value=1, max_value=4
+    )
     max_uses = serializers.IntegerField(
         required=False, allow_null=True, min_value=1
     )
-    expires_in = serializers.IntegerField(
-        default=60, min_value=1,
-        help_text="Link duration in minutes (minimum 1 minute)",
-    )
+    expires_in = serializers.IntegerField(default=60, min_value=1)
 
+
+class ProjectShareLinkSerializer(serializers.ModelSerializer):
+    role_name: serializers.StringRelatedField = serializers.StringRelatedField(
+        source="role.name", read_only=True
+    )
+    created_by: serializers.StringRelatedField = (
+        serializers.StringRelatedField(
+            source="created_by.username", read_only=True
+        )
+    )
+    token = serializers.CharField(write_only=True)
+    share_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectShareLink
+        fields = [
+            "id", "token", "share_url", "role_name",
+            "max_uses", "expires_at", "is_active",
+            "created_by", "created_at",
+        ]
+        read_only_fields = ["share_url", "role_name", "created_by", "created_at"]
+
+    def get_share_url(self, obj):
+        request = self.context.get("request")
+        url = reverse("join-project", kwargs={"token": obj.token}, request=request)
+        return url
 
 class KickUserSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
-    
-    
+
+
 class AssignRoleSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
     role_id = serializers.IntegerField()

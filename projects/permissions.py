@@ -43,46 +43,25 @@ class IsProjectAdmin(BasePermission):
         return is_admin or is_owner
 
 
-
-class IsProjectRole(BasePermission):
+class IsProjectMinRole(BasePermission):
     """
-    Permission class to check if a user has a specific role in a project
-
-    Subclasses should define the `role_names` attribute with a list of allowed role names
+    Permission class to check if a user has a certain role in a project
+    """
+    ROLE_ORDER = ['Viewer', 'Member', 'Moderator', 'Admin', 'Owner']
     
-    Grants access if user.owner or has role.name from the allowed_roles list
-    """
-    def __init__(self, *, role_names: list[str]):
-        self.role_names = role_names
+    def __init__(self, min_role: str):
+        self.min_role = min_role
 
     def has_object_permission(self, request, view, obj):
         user = request.user
-        if hasattr(obj, 'owner') and obj.owner == user:
+        if getattr(obj, 'owner', None) == user:
             return True
 
-        return ProjectMembership.objects.filter(
-            project=obj,
-            user=user,
-            role__name__in=self.role_names
-        ).exists()
+        try:
+            user_role = ProjectMembership.objects.get(
+                project=obj, user=user
+            ).role.name
+        except ProjectMembership.DoesNotExist:
+            return False
 
-
-class IsProjectOwner(IsProjectRole):
-    def __init__(self):
-        super().__init__(role_names=['Owner'])
-
-class IsProjectAdminRole(IsProjectRole):
-    def __init__(self):
-        super().__init__(role_names=settings.ADMIN_ROLE_NAMES)
-        
-class IsProjectModeratorRole(IsProjectRole):
-    def __init__(self):
-        super().__init__(role_names=['Moderator'])
-
-class IsProjectMemberRole(IsProjectRole):
-    def __init__(self):
-        super().__init__(role_names=['Member'])
-
-class IsProjectViewerRole(IsProjectRole):
-    def __init__(self):
-        super().__init__(role_names=['Viewer'])
+        return self.ROLE_ORDER.index(user_role) >= self.ROLE_ORDER.index(self.min_role)

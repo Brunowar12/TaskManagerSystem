@@ -12,6 +12,18 @@ class ProjectService:
     Service for operations with projects
     """
     @staticmethod
+    @transaction.atomic
+    def create_project(owner, **data):
+        project = Project.objects.create(owner=owner, **data)
+        admin_role = Role.objects.get(name="Admin")
+        ProjectMembership.objects.get_or_create(
+            user=owner,
+            project=project,
+            defaults={"role": admin_role}
+        )
+        return project
+    
+    @staticmethod
     def get_project_or_404(pk, user):
         project = get_object_or_404(
             Project.objects.prefetch_related("memberships__role"), pk=pk

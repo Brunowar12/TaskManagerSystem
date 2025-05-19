@@ -4,8 +4,8 @@ from rest_framework_nested import routers
 from tasks.views import TaskViewSet
 
 from .views import (
-    ProjectViewSet, RoleViewSet, ProjectMembershipViewSet, 
-    join_project
+    ProjectShareLinkViewSet, ProjectViewSet, RoleViewSet, 
+    ProjectMembershipViewSet, join_project
 )
 
 # ViewSet routers
@@ -22,14 +22,10 @@ projects_router = routers.NestedDefaultRouter(
     router, r"", lookup="project"
 )
 projects_router.register(r"tasks", TaskViewSet, basename="project-tasks")
+projects_router.register(r"share_links", ProjectShareLinkViewSet, basename="project-share-links")
 
 urlpatterns = [
     path("", include(router.urls)),
     path("", include(projects_router.urls)),
     path("join/<uuid:token>/", join_project, name="join-project"),
-    path(
-        "<int:pk>/delete-share-link/<int:link_id>/",
-        ProjectViewSet.as_view({"delete": "delete_share_link"}),
-        name="project-delete-share-link",
-    ),
 ]
