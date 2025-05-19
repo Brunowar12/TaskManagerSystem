@@ -1,6 +1,7 @@
 # 🧠 TaskManagerSystem
 
 [![Django CI](https://github.com/Brunowar12/TaskManagerSystem/actions/workflows/django.yml/badge.svg)](https://github.com/Brunowar12/TaskManagerSystem/actions/workflows/django.yml)
+[![codebeat badge](https://codebeat.co/badges/1e2ea64b-07c9-48ae-aa60-2f91b7a83f53)](https://codebeat.co/projects/github-com-brunowar12-taskmanagersystem-master)
 [![Coverage Status](https://coveralls.io/repos/github/Brunowar12/TaskManagerSystem/badge.svg?branch=polishing-%26-refinement)](https://coveralls.io/github/Brunowar12/TaskManagerSystem?branch=polishing-%26-refinement)
 
 A full-featured Task and Project Management REST API built with Django and Django REST Framework. Supports task categorization, project membership with role-based access control, and invitation links.
@@ -10,12 +11,14 @@ A full-featured Task and Project Management REST API built with Django and Djang
 ## 🚀 Features
 
 ### 🔐 User Authentication
+
 - Register/Login via email & password
 - JWT-based secure authentication (`SimpleJWT`)
 - Token blacklisting on logout
 - Profile view & update support
 
 ### ✅ Task Management
+
 - Create, read, update, delete tasks
 - Set priority, due dates, completion & favorite flags
 - Task filtering: status, priority, search, due today
@@ -23,11 +26,13 @@ A full-featured Task and Project Management REST API built with Django and Djang
 - Bulk task retrieval via project or category
 
 ### 🗂 Category Support
+
 - Create, read, update, delete categories
 - Set categories to tasks
 - Filter tasks by category
 
 ### 🧱 Project & Role System
+
 - Create and manage projects
 - Built-in roles: Admin, Moderator, Member, Viewer
 - Assign roles to members
@@ -35,6 +40,7 @@ A full-featured Task and Project Management REST API built with Django and Djang
 - Invitation system via share links with expiration & usage limits
 
 ### 🔐 Security & Validation
+
 - SQLi, XSS & JSON payload protection
 - Custom regex validators for usernames, categories, phone numbers
 - Rate-limited endpoints (optional)
@@ -45,6 +51,7 @@ A full-featured Task and Project Management REST API built with Django and Djang
 ## ⚙️ Tech Stack
 
 ### 🔧 Backend
+
 - [Python 3.11+](https://www.python.org/) / [Django 5.1](https://www.djangoproject.com/)
 - [Django REST Framework](https://www.django-rest-framework.org/)
 - [PostgreSQL](https://www.postgresql.org/)
@@ -57,6 +64,7 @@ A full-featured Task and Project Management REST API built with Django and Djang
 ## 🛠 Installation
 
 ### Prerequisites
+
 - Python >= 3.11
 - PostgreSQL >= 13
 
@@ -96,7 +104,7 @@ python manage.py runserver
 
 Visit:
 
-* [http://127.0.0.1:8000](http://127.0.0.1:8000) for Django backend
+- [http://127.0.0.1:8000](http://127.0.0.1:8000) for Django backend
 
 ---
 
@@ -109,28 +117,28 @@ Visit:
 
 ### 🔐 Auth
 
-* `POST /api/auth/register/` – Register new user
-* `POST /api/auth/login/` – Log in, get tokens
-* `POST /api/auth/logout/` – Logout and blacklist token
-* `POST /api/auth/token/refresh/` – Refresh JWT
+- `POST /api/auth/register/` – Register new user
+- `POST /api/auth/login/` – Log in, get tokens
+- `POST /api/auth/logout/` – Logout and blacklist token
+- `POST /api/auth/token/refresh/` – Refresh JWT
 
 ### 📝 Tasks
 
-* `GET /api/tasks/` – List tasks (filters, pagination)
-* `POST /api/tasks/` – Create a task
-* `PATCH /api/tasks/{id}/` – Update a task
-* `DELETE /api/tasks/{id}/` – Delete a task
-* `POST /api/tasks/{id}/toggle-favorite/`
-* `POST /api/tasks/{id}/toggle-completed/`
+- `GET /api/tasks/` – List tasks (filters, pagination)
+- `POST /api/tasks/` – Create a task
+- `PATCH /api/tasks/{id}/` – Update a task
+- `DELETE /api/tasks/{id}/` – Delete a task
+- `POST /api/tasks/{id}/toggle-favorite/`
+- `POST /api/tasks/{id}/toggle-completed/`
 
 ### 📁 Projects & Roles
 
-* `GET /api/projects/` – List accessible projects
-* `POST /api/projects/` – Create new project
-* `POST /api/projects/{id}/assign_role/` – Assign role
-* `POST /api/projects/{id}/generate_share_link/` – Create invitation
-* `POST /api/projects/join/{token}/` – Join via link
-* `DELETE /api/projects/{id}/delete-share-link/{link_id}/`
+- `GET /api/projects/` – List accessible projects
+- `POST /api/projects/` – Create new project
+- `POST /api/projects/{id}/assign_role/` – Assign role
+- `POST /api/projects/{id}/generate_share_link/` – Create invitation
+- `POST /api/projects/join/{token}/` – Join via link
+- `DELETE /api/projects/{id}/delete-share-link/{link_id}/`
 
 ---
 
@@ -145,10 +153,10 @@ coverage report -m
 
 Tests cover:
 
-* Role-based permissions
-* CRUD for tasks, projects, categories
-* Security checks (XSS, SQLi, payload limits)
-* Share link lifecycle
+- Role-based permissions
+- CRUD for tasks, projects, categories
+- Security checks (XSS, SQLi, payload limits)
+- Share link lifecycle
 
 GitHub Actions runs all tests and enforces 90%+ coverage.
 
