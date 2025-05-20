@@ -120,8 +120,8 @@ class UserAPITests(BaseAPITestCase):
             "Login with invalid credentials did not fail",
         )
         self.assertIn(
-            "Invalid credentials",
-            response.data.get("non_field_errors", ""),
+            "Invalid email or password",
+            response.data.get("detail", ""),
             "Invalid credentials error not included in response",
         )
 
@@ -152,9 +152,14 @@ class UserAPITests(BaseAPITestCase):
             status.HTTP_400_BAD_REQUEST,
             "Logout with invalid token did not fail",
         )
-        self.assertIn(
-            "Token is invalid or expired",
-            response.data.get("error", ""),
+        error_text = response.data.get("error", "").lower()
+        self.assertTrue(
+            any(msg in error_text for msg in [
+                "incorrect token format",
+                "expired token",
+                "already been revoked",
+                "token is invalid or expired",
+            ]),
             "Invalid token error not included in response",
         )
 

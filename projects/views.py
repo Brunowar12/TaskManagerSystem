@@ -1,5 +1,6 @@
 import logging
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q, Count
 from django.shortcuts import get_object_or_404
@@ -130,6 +131,8 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
 
         try:
             ProjectMembershipService.assign_role(project, target, role)
+        except ValidationError as e:
+            return error_response(e.messages[0], exc=e)
         except Exception as e:
             message = getattr(e, 'detail', str(e))
             return error_response(message, exc=e)
