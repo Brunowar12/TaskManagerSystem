@@ -12,7 +12,7 @@ router.register(r'', UserViewSet, basename='user')
 urlpatterns = [
     path('', include(router.urls)),
     
-    # Token URLs remain separate
+    # JWT Token endpoints
     path("token/", include([        
         path("refresh/", TokenRefreshView.as_view(), name="token_refresh"),
         path('blacklist/', TokenBlacklistView.as_view(), name='token_blacklist'),
