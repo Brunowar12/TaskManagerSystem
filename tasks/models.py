@@ -1,6 +1,7 @@
 # mypy: disable-error-code=var-annotated
 
 import logging
+
 from django.conf import settings
 from django.db import models
 from django.dispatch import receiver
@@ -86,9 +87,8 @@ class Task(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return (
-            f"{self.title} - {self.user.username if self.user else 'No user'}"
-        )
+        user_display = self.user.username if self.user else "No user"
+        return f"{self.title} - {user_display}"
 
 
 @receiver(models.signals.post_save, sender=Task)

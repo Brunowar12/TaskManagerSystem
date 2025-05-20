@@ -1,11 +1,4 @@
 import logging
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.exceptions import NotFound, PermissionDenied
-from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
-from rest_framework.response import Response
-
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
@@ -15,32 +8,41 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_page
 from drf_yasg.utils import swagger_auto_schema
 
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
+from rest_framework.response import Response
+
 from api.mixins import UserQuerysetMixin
 from api.utils import error_response, status_response
 from projects.permissions import IsProjectMinRole
 
+from .mixins import IsOwner, ProjectTaskPermission
+from .models import Task, Category
+from .services import TaskService, CategoryService
 from .serializers import (
     TaskSerializer, CategorySerializer,
     ToggleCompletedResponseSerializer, ToggleFavoriteResponseSerializer,
     MoveTaskResponseSerializer, MoveTaskSerializer, 
 )
-from .services import TaskService, CategoryService
-from .mixins import IsOwner, ProjectTaskPermission
-from .models import Task, Category
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
 class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     """
-    ViewSet for operations with tasks
-    
-    Allows you to view, create, edit, and delete tasks
-    Includes additional methods for changing the favorite status and completion
+    ViewSet for operations with tasks.
+
+    Allows viewing, creating, editing, and deleting tasks.
+    Includes extra actions for toggling favorite/completed status
+    and moving tasks between projects.
     """
+    
+    queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated, IsOwner]
-    queryset = Task.objects.all()
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     search_fields = ["title", "description"]
     filterset_fields = ["completed", "priority", "is_favorite", "category"]
@@ -56,12 +58,14 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()        
-        filters = Q(user=self.request.user)
 
         project_id = self.kwargs.get("project_pk")
         if project_id is not None:
-            return Task.objects.filter(project_id=project_id)
-
+            # Nested: all tasks in given project
+            return qs.filter(project_id=project_id)
+        
+        # Nested: all tasks in given project
+        filters = Q(user=self.request.user, project__isnull=True)
         if TaskService.is_today_filter(self.request):
             filters &= Q(due_date__date=now().date())
 
@@ -210,14 +214,15 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
 
 class CategoryViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     """
-    ViewSet for operations with categories
-    
-    Allows you to view, create, edit, and delete categories
-    Includes an additional method for getting tasks in a category
+    ViewSet for operations with categories.
+
+    Allows viewing, creating, editing, and deleting categories.
+    Includes an extra action to list tasks within a category.
     """
+    
+    queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsAuthenticated, IsOwner]
-    queryset = Category.objects.all()
 
     @action(detail=True, methods=["get"])
     def tasks(self, request, pk=None):
