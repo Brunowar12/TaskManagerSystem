@@ -64,7 +64,7 @@ class AuthViewSet(viewsets.GenericViewSet):
             return Response(data, status=status.HTTP_200_OK)
         except ValueError as e:
             user_message = error_messages_map.get(str(e), "Unknown token error")
-            return error_response(user_message, exc=e)
+            return error_response(user_message, status.HTTP_401_UNAUTHORIZED, exc=e)
         except Exception as e:
             return error_response(
                 "Internal server error",

@@ -12,7 +12,7 @@ from .utils import TestHelper
 
 User = get_user_model()
 
-FIXED_ROLES = ["Admin", "Moderator", "Member", "Viewer"]
+FIXED_ROLES = ("Admin", "Moderator", "Member", "Viewer")
 
 class ProjectsAPITests(BaseAPITestCase):
     @classmethod

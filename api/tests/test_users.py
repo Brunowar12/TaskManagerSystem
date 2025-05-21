@@ -149,7 +149,7 @@ class UserAPITests(BaseAPITestCase):
 
         self.assertEqual(
             response.status_code,
-            status.HTTP_400_BAD_REQUEST,
+            status.HTTP_401_UNAUTHORIZED,
             "Logout with invalid token did not fail",
         )
         error_text = response.data.get("error", "").lower()
@@ -160,7 +160,7 @@ class UserAPITests(BaseAPITestCase):
                 "already been revoked",
                 "token is invalid or expired",
             ]),
-            "Invalid token error not included in response",
+            f"Expected error message not found in response: {error_text}",
         )
 
     def test_user_registration_duplicate_email(self):

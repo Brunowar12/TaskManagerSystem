@@ -17,7 +17,7 @@ class IsOwner(BasePermission):
         user_field = getattr(obj, "user", None) or getattr(obj, "owner", None)
         
         if user_field is None:
-            logger.error("Object has no ownership attribute")
+            logger.error(f"Object {type(obj).__name__} has no ownership attribute")
             raise PermissionDenied(
                 "Access denied: missing ownership information"
             )
@@ -31,6 +31,7 @@ class ProjectTaskPermission(BasePermission):
     """
     def has_permission(self, request, view):
         project_pk = view.kwargs.get('project_pk')
+        
         if not project_pk:
             return True
 

@@ -360,7 +360,6 @@ class TaskAPITests(BaseAPITestCase):
         self.future_task.save()
 
         response = self.client.get(self.task_list_ep, {"completed": "True"})
-        print(response.data)
 
         self.assertEqual(
             response.status_code,
@@ -384,7 +383,6 @@ class TaskAPITests(BaseAPITestCase):
         self.future_task.save()
 
         response = self.client.get(self.task_list_ep, {"priority": "M"})
-        print(response.data)
 
         self.assertEqual(
             response.status_code,
@@ -413,7 +411,6 @@ class TaskAPITests(BaseAPITestCase):
         self.today_task.save()
         
         response = self.client.get(self.task_list_ep, {"today": "true"})
-        print(response.data)
 
         self.assertEqual(
             response.status_code,
