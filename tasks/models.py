@@ -1,6 +1,7 @@
 # mypy: disable-error-code=var-annotated
 
 import logging
+
 from django.conf import settings
 from django.db import models
 from django.dispatch import receiver
@@ -13,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class Category(models.Model):
+    """A category of tasks linked to a specific user"""
     name = models.CharField(
         max_length=20,
         validators=[TEXT_FIELD_VALIDATOR]
@@ -32,6 +34,12 @@ class Category(models.Model):
 
 
 class Task(models.Model):
+    """
+    User tasks:
+    - tracking of deadline, priority, category and project
+    - automatic update of the completion time
+    - logs of completed tasks (via signal)
+    """
     PRIORITY_CHOICES = [
         ('L', 'Low'),
         ('M', 'Medium'),
@@ -39,22 +47,26 @@ class Task(models.Model):
     ]
 
     title = models.CharField(max_length=64, validators=[TEXT_FIELD_VALIDATOR])
-    description = models.TextField(blank=True, 
-        validators=[TEXT_FIELD_VALIDATOR])
+    description = models.TextField(
+        blank=True, validators=[TEXT_FIELD_VALIDATOR]
+    )
     due_date = models.DateTimeField()
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE, 
         related_name="tasks")
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, null=True, blank=True, 
-        related_name="tasks")
+        related_name="tasks"
+    )
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, related_name="tasks",
         null=True, blank=True
     )
-    priority = models.CharField(max_length=1, choices=PRIORITY_CHOICES, 
-        default='M')
+    priority = models.CharField(
+        max_length=1, choices=PRIORITY_CHOICES, default='M'
+    )
     is_favorite = models.BooleanField(default=False, verbose_name="Favorite")
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -76,23 +88,25 @@ class Task(models.Model):
         ordering = ['id']
 
     def update_completed_at(self):
+        """Update the completed_at field when the task is marked as completed"""
         if self.completed and not self.completed_at:
             self.completed_at = timezone.now()
         elif not self.completed and self.completed_at:
             self.completed_at = None
 
     def save(self, *args, **kwargs):
+        """Before saving, update completed_at depending on completed"""
         self.update_completed_at()        
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return (
-            f"{self.title} - {self.user.username if self.user else 'No user'}"
-        )
+        user_display = self.user.username if self.user else "No user"
+        return f"{self.title} - {user_display}"
 
 
 @receiver(models.signals.post_save, sender=Task)
 def update_user_last_task_completed(sender, instance, created, **kwargs):
+    """Signal: if the task is just completed, update user.last_task_completed_at"""
     if instance.completed and instance.user:
         instance.user.last_task_completed_at = timezone.now()
         instance.user.save(update_fields=["last_task_completed_at"])

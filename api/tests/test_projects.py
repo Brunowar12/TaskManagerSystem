@@ -1,4 +1,5 @@
 from datetime import timedelta
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
@@ -11,8 +12,6 @@ from .test_setup import BaseAPITestCase
 from .utils import TestHelper
 
 User = get_user_model()
-
-FIXED_ROLES = ["Admin", "Moderator", "Member", "Viewer"]
 
 class ProjectsAPITests(BaseAPITestCase):
     @classmethod
@@ -30,7 +29,7 @@ class ProjectsAPITests(BaseAPITestCase):
 
     @classmethod
     def create_role(cls, name):
-        assert name in FIXED_ROLES, f"Role '{name}' is not fixed"
+        assert name in settings.ROLE_ORDER, f"Role '{name}' is not fixed"
         return Role.objects.get_or_create(name=name)[0]
 
     @classmethod

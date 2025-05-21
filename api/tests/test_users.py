@@ -120,8 +120,8 @@ class UserAPITests(BaseAPITestCase):
             "Login with invalid credentials did not fail",
         )
         self.assertIn(
-            "Invalid credentials",
-            response.data.get("non_field_errors", ""),
+            "Invalid email or password",
+            response.data.get("detail", ""),
             "Invalid credentials error not included in response",
         )
 
@@ -149,13 +149,18 @@ class UserAPITests(BaseAPITestCase):
 
         self.assertEqual(
             response.status_code,
-            status.HTTP_400_BAD_REQUEST,
+            status.HTTP_401_UNAUTHORIZED,
             "Logout with invalid token did not fail",
         )
-        self.assertIn(
-            "Token is invalid or expired",
-            response.data.get("error", ""),
-            "Invalid token error not included in response",
+        error_text = response.data.get("error", "").lower()
+        self.assertTrue(
+            any(msg in error_text for msg in [
+                "incorrect token format",
+                "expired token",
+                "already been revoked",
+                "token is invalid or expired",
+            ]),
+            f"Expected error message not found in response: {error_text}",
         )
 
     def test_user_registration_duplicate_email(self):

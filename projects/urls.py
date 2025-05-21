@@ -8,19 +8,15 @@ from .views import (
     ProjectMembershipViewSet, join_project
 )
 
-# ViewSet routers
+# Main ViewSet routers
 router = routers.DefaultRouter()
 router.register(r"roles", RoleViewSet, basename="role")
-router.register(
-    r"project-memberships",
-    ProjectMembershipViewSet,
-    basename="project-membership",
-)
+router.register(r"project-memberships", ProjectMembershipViewSet,
+            basename="project-membership")
 router.register(r"", ProjectViewSet, basename="project")
 
-projects_router = routers.NestedDefaultRouter(
-    router, r"", lookup="project"
-)
+# Nested router for tasks and share-links
+projects_router = routers.NestedDefaultRouter(router, r"", lookup="project")
 projects_router.register(r"tasks", TaskViewSet, basename="project-tasks")
 projects_router.register(r"share_links", ProjectShareLinkViewSet, basename="project-share-links")
 

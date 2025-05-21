@@ -4,6 +4,7 @@ from django.utils.timezone import now
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import RefreshToken
+
 from .models import User
 
 User = get_user_model()
@@ -23,6 +24,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         fields = ["email", "password"]
 
     def create(self, validated_data):
+        """ Creates a user instance with hashed password """
         user = User(email=validated_data["email"],)
         user.set_password(validated_data["password"])
         user.save()
@@ -30,17 +32,25 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField(help_text="User email")
-    password = serializers.CharField(write_only=True, help_text="User password")
+    password = serializers.CharField(
+        write_only=True, help_text="User password"
+    )
 
     def validate(self, data):
+        """ Validates user credentials and returns JWT tokens """
         user = authenticate(email=data["email"], password=data["password"])
+
         if not user:
-            raise serializers.ValidationError("Invalid credentials")
-        
+            raise serializers.ValidationError(
+                {"detail": "Invalid email or password"}
+            )
+
+        # Update last login time
         user.last_login_at = now()
         user.save(update_fields=["last_login_at"])
-        
+
         token = RefreshToken.for_user(user)
+        
         return {
             "username": user.username,
             "email": user.email,
@@ -75,5 +85,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "last_task_completed_at"]
     
     def update(self, instance, validated_data):
+        """ Automatically update 'last_profile_edit_at' timestamp on profile update """
         instance.last_profile_edit_at = now()
         return super().update(instance, validated_data)
