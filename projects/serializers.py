@@ -90,22 +90,18 @@ class ProjectShareLinkSerializer(serializers.ModelSerializer):
             source="created_by.username", read_only=True
         )
     )
-    token = serializers.CharField(write_only=True)
-    share_url = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectShareLink
         fields = [
-            "id", "token", "share_url", "role_name",
+            "id", "token", "role_name",
             "max_uses", "expires_at", "is_active",
             "created_by", "created_at",
         ]
-        read_only_fields = ["share_url", "role_name", "created_by", "created_at"]
+        read_only_fields = [
+            "role_name", "created_by", "created_at"
+        ]
 
-    def get_share_url(self, obj):
-        request = self.context.get("request")
-        url = reverse("join-project", kwargs={"token": obj.token}, request=request)
-        return url
 
 class KickUserSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
