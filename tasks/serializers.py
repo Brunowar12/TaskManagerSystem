@@ -1,5 +1,6 @@
 from django.utils import timezone
 from rest_framework import serializers
+
 from .models import Task, Category
 
 
@@ -15,13 +16,16 @@ class TaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ["id", "title", "description", "category", "category_name",
+        fields = [
+            "id", "title", "description", "category", "category_name",
             "due_date", "priority", "completed", "is_favorite", "user",
             "user_name", "created_at", "updated_at", "completed_at",
             "completed_by", "completed_by_name"
         ]
-        read_only_fields = [ "id", "created_at", "updated_at", "user",
-            "completed_at", "user_name", "completed_by", "completed_by_name"]
+        read_only_fields = [
+            "id", "created_at", "updated_at", "user",
+            "completed_at", "user_name", "completed_by", "completed_by_name"
+        ]
 
     def validate_due_date(self, value):
         if value is None:

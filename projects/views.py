@@ -1,5 +1,7 @@
 import logging
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q, Count
 from django.shortcuts import get_object_or_404
@@ -107,11 +109,10 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         """
         project = self._get_project(pk)
         target = get_object_or_404(User, id=request.data.get("user_id"))
-        role = get_object_or_404(Role, id=request.data.get("role_id"))
-        
+        new_role = get_object_or_404(Role, id=request.data.get("role_id"))
+
         if target == project.owner:
             return error_response("Cannot assign role to the project owner")
-
         if target == request.user:
             return self._forbidden("You cannot change your own role")
 
@@ -119,17 +120,20 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
             return error_response("User must join via ShareLink")
 
         assigner = self._get_membership(project, request.user)
-        assigner_role = assigner.role.name if assigner else "Owner"        
-        order = IsProjectMinRole.ROLE_ORDER
-        
+        assigner_role = assigner.role.name if assigner else "Owner"    
+
+        hierarchy = settings.ROLE_ORDER        
         if assigner_role not in ("Admin", "Owner"):
-            if order.index(role.name) >= order.index(assigner_role):
-                return self._forbidden(
-                    f"Cannot assign '{role.name}' ≥ your '{assigner_role}'"
+            if hierarchy.index(new_role.name) >= hierarchy.index(assigner_role):
+                return error_response(
+                    f"Cannot assign role '{new_role.name}'",
+                    status.HTTP_403_FORBIDDEN,
                 )
 
         try:
-            ProjectMembershipService.assign_role(project, target, role)
+            ProjectMembershipService.assign_role(project, target, new_role)
+        except ValidationError as e:
+            return error_response(e.messages[0], exc=e)
         except Exception as e:
             message = getattr(e, 'detail', str(e))
             return error_response(message, exc=e)
@@ -151,7 +155,7 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         )
         if membership.user == project.owner:
             return error_response("Cannot kick project owner")
-        
+
         membership.delete()
         return status_response("Member excluded")
 
@@ -163,11 +167,11 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         project = self._get_project(pk)
         if project.owner == request.user:
             return self._forbidden("Owner cannot leave project")
-        
+
         membership = self._get_membership(project, request.user)
         if not membership:
             return error_response("Not a member of this project")
-        
+
         membership.delete()
         return status_response("You left the project")
 
@@ -209,13 +213,11 @@ class ProjectShareLinkViewSet(viewsets.ModelViewSet):
     Read-only viewset for viewing project share links
     """
 
-    serializer_class = ProjectShareLinkSerializer
-    permission_classes = [IsAuthenticated]
     lookup_field = "id"
+    permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        perms = [permission() for permission in self.permission_classes]
-
+        perms = super().get_permissions()
         if self.action in ("list", "retrieve", "create", "destroy"):
             perms.append(IsProjectMinRole("Moderator"))
         return perms

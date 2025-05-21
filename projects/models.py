@@ -11,6 +11,7 @@ from api.validators import TEXT_FIELD_VALIDATOR
 
 
 class Project(models.Model):
+    """Project with name, description, and owner"""
     name = models.CharField(max_length=128, validators=[TEXT_FIELD_VALIDATOR])
     description = models.TextField(blank=True)
     owner = models.ForeignKey(
@@ -28,16 +29,15 @@ class Project(models.Model):
 
 
 class Role(models.Model):
-    ADMIN, MODERATOR, MEMBER, VIEWER = "Admin", "Moderator", "Member", "Viewer"
-    FIXED_ROLES = [ADMIN, MODERATOR, MEMBER, VIEWER]
-    
+    """Static project roles; prohibition to create custom ones"""
     name = models.CharField(max_length=64, unique=True)
     permissions = models.ManyToManyField(Permission, blank=True)
     
     def clean(self):
-        if self.name not in self.FIXED_ROLES:
+        fixed = settings.ROLE_ORDER
+        if self.name not in fixed:
             raise ValidationError(
-                f"Custom roles are not allowed. Use one of: {', '.join(self.FIXED_ROLES)}"
+                f"Custom roles are not allowed. Use one of: {', '.join(fixed)}"
             )
             
     def save(self, *args, **kwargs):
@@ -49,6 +49,7 @@ class Role(models.Model):
 
 
 class ProjectMembership(models.Model):
+    """The relationship 'user --> project --> role' """
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -69,6 +70,7 @@ class ProjectMembership(models.Model):
 
 
 class ProjectShareLink(models.Model):
+    """Token for invitation to the project with a limits"""
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, related_name="share_links"
@@ -95,7 +97,9 @@ class ProjectShareLink(models.Model):
     def clean(self):
         errors = {}
         if self.max_uses is not None and self.max_uses <= 0:
-            errors["max_uses"] = "The max_uses value must be a positive number or left blank"
+            errors["max_uses"] = (
+                "The max_uses value must be a positive number or left blank"
+            )
         if self.max_uses is not None and self.used_count > self.max_uses:
             errors["used_count"] = "The number of uses exceeds the set limit"
         if self.expires_at <= timezone.now():
@@ -111,7 +115,11 @@ class ProjectShareLink(models.Model):
         return self.max_uses is not None and self.used_count >= self.max_uses
 
     def is_valid(self):
-        return self.is_active and not self.is_expired() and not self.is_usage_exceeded()
+        return (
+            self.is_active
+            and not self.is_expired()
+            and not self.is_usage_exceeded()
+        )
 
     def __str__(self):
         return f"Link to {self.project.name} ({self.role.name})"

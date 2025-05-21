@@ -1,10 +1,8 @@
 from django.urls import path, include
 from rest_framework.routers import SimpleRouter
-from .views import (
-    TaskViewSet, CategoryViewSet
-)
 
-# ViewSet routers
+from .views import TaskViewSet, CategoryViewSet
+
 router = SimpleRouter()
 router.register(r'', TaskViewSet, basename='task')
 

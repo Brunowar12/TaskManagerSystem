@@ -1,4 +1,5 @@
 import logging
+
 from django.core.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
@@ -11,13 +12,16 @@ class IsOwner(BasePermission):
     """
     Checking whether the user is the owner of the object
     """
+    
     def has_object_permission(self, request, view, obj):
         user_field = getattr(obj, "user", None) or getattr(obj, "owner", None)
+        
         if user_field is None:
-            logger.error("Object has no ownership attribute")
+            logger.error(f"Object {type(obj).__name__} has no ownership attribute")
             raise PermissionDenied(
                 "Access denied: missing ownership information"
             )
+            
         return user_field == request.user
     
 
@@ -25,19 +29,21 @@ class ProjectTaskPermission(BasePermission):
     """    
     Checking whether the user has the required permission for the project task
     """
+    def _get_min_role(self, method):
+        if method in SAFE_METHODS:
+            return 'Viewer'
+        elif method in ('PUT', 'PATCH'):
+            return 'Member'
+        return 'Moderator'
+    
     def has_permission(self, request, view):
-        project_pk = view.kwargs.get('project_pk')
-        if not project_pk:
-            return True
-
-        if request.method in SAFE_METHODS:
-            min_role = 'Viewer'
-        elif request.method in ('PUT', 'PATCH'):
-            min_role = 'Member'
-        else:
-            min_role = 'Moderator'
-
-        return IsProjectMinRole(min_role).has_permission(request, view)
+        return True
 
     def has_object_permission(self, request, view, obj):
-        return self.has_permission(request, view)
+        project = getattr(obj, 'project', None)
+        if project is None:
+            return True
+        
+        min_role = self._get_min_role(request.method)
+        
+        return IsProjectMinRole(min_role).has_object_permission(request, view, obj)
