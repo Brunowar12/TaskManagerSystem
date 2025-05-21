@@ -28,8 +28,7 @@ class Project(models.Model):
 
 
 class Role(models.Model):
-    ADMIN, MODERATOR, MEMBER, VIEWER = "Admin", "Moderator", "Member", "Viewer"
-    FIXED_ROLES = [ADMIN, MODERATOR, MEMBER, VIEWER]
+    FIXED_ROLES = settings.ROLE_ORDER
     
     name = models.CharField(max_length=64, unique=True)
     permissions = models.ManyToManyField(Permission, blank=True)
@@ -95,7 +94,9 @@ class ProjectShareLink(models.Model):
     def clean(self):
         errors = {}
         if self.max_uses is not None and self.max_uses <= 0:
-            errors["max_uses"] = "The max_uses value must be a positive number or left blank"
+            errors["max_uses"] = (
+                "The max_uses value must be a positive number or left blank"
+            )
         if self.max_uses is not None and self.used_count > self.max_uses:
             errors["used_count"] = "The number of uses exceeds the set limit"
         if self.expires_at <= timezone.now():

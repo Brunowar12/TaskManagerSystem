@@ -54,7 +54,7 @@ class IsProjectMinRole(BasePermission):
     """
     Permission class to check if a user has a certain role in a project
     """
-    ROLE_ORDER = ('Viewer', 'Member', 'Moderator', 'Admin')
+    ROLE_ORDER = settings.ROLE_ORDER
 
     def __init__(self, min_role):
         if isinstance(min_role, (list, tuple)):

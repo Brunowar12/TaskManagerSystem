@@ -55,6 +55,7 @@ ROLE_PERMISSIONS = {
         "view_task",
     ],
 }
+ROLE_ORDER = tuple(reversed(ROLE_PERMISSIONS.keys()))
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 25 # 25 Mb restriction
 API_VERSION = '1.0.0'
