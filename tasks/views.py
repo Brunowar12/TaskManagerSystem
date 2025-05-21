@@ -19,8 +19,8 @@ from api.mixins import UserQuerysetMixin
 from api.utils import error_response, status_response
 from projects.permissions import IsProjectMinRole
 
-from .mixins import IsOwner, ProjectTaskPermission
 from .models import Task, Category
+from .permissions import IsOwner, ProjectTaskPermission
 from .services import TaskService, CategoryService
 from .serializers import (
     TaskSerializer, CategorySerializer,
