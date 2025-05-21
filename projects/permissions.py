@@ -1,4 +1,5 @@
 import logging
+
 from django.conf import settings
 from rest_framework.permissions import BasePermission
 
@@ -9,11 +10,13 @@ logger = logging.getLogger(__name__)
 
 def _get_project_from_obj(obj):
     """Gets a project object from any related object"""
-    return obj if isinstance(obj, Project) else getattr(obj, "project", None)
+    if isinstance(obj, Project):
+        return obj
+    return getattr(obj, "project", None)
 
 def _user_is_owner(user, project):
     """Shortcut for project owner"""
-    return project.owner == user
+    return project.owner_id == user.id
 
 def _user_has_role(user, project, roles):
     """Checks if the user has one of the specified roles in the project"""
@@ -29,10 +32,10 @@ class IsProjectAdmin(BasePermission):
 
     Checks if the user is the owner of the project or has an admin role
     """
-    def has_permission(self, request, view):
-        return request.user and request.user.is_authenticated
+    def has_permission(self, request, view) -> bool:
+        return bool(request.user and request.user.is_authenticated)
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request, view, obj) -> bool:
         project = _get_project_from_obj(obj)
         user = request.user
 
@@ -45,7 +48,7 @@ class IsProjectAdmin(BasePermission):
         is_admin = _user_has_role(user, project, settings.ADMIN_ROLE_NAMES)
 
         if not is_admin:
-            logger.warning(f"User {user} lacks admin role for project {project.id}")
+            logger.warning(f"User {user.id} lacks admin role for project {project.id}")
 
         return is_admin
 
@@ -67,10 +70,7 @@ class IsProjectMinRole(BasePermission):
 
         self.min_role = min_role
 
-    def has_permission(self, request, view):
-        return True
-
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request, view, obj) -> bool:
         project = _get_project_from_obj(obj)
         user = request.user
 
@@ -86,8 +86,8 @@ class IsProjectMinRole(BasePermission):
             )
         except ProjectMembership.DoesNotExist:
             return False
-        
+
         user_rank = self.ROLE_ORDER.index(membership.role.name)
         min_rank = self.ROLE_ORDER.index(self.min_role)
-        
+
         return user_rank >= min_rank

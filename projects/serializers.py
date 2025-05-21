@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models import Project, ProjectShareLink, Role, ProjectMembership
 
 class ProjectSerializer(serializers.ModelSerializer):
-    tasks_count = serializers.SerializerMethodField()
+    tasks_count = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Project
@@ -11,15 +11,11 @@ class ProjectSerializer(serializers.ModelSerializer):
             "id", "name", "description", "owner", "tasks_count", "created_at"
         ]
         read_only_fields = ["id", "owner", "tasks_count", "created_at"]
-
+    
     def get_tasks_count(self, obj):
         return getattr(obj, "tasks_count", 0)
 
     def validate_name(self, value):
-        if not value:
-            raise serializers.ValidationError(
-                "The name of the project cannot be empty"
-            )
         if len(value) < 3:
             raise serializers.ValidationError(
                 "The project name must contain at least 3 characters"
@@ -27,15 +23,14 @@ class ProjectSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        request = self.context.get("request")
-        owner = request.user if request else None
-        project = self.instance
-        existing = Project.objects.filter(owner=owner, name=attrs.get("name"))
-        if project:
-            existing = existing.exclude(id=project.id)
-        if existing.exists():
+        user = self.context["request"].user
+        name = attrs.get("name")
+        qs = Project.objects.filter(owner=user, name__iexact=name)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
             raise serializers.ValidationError(
-                "You already have a project with this name"
+                "You already have a project with this name."
             )
         return attrs
 
@@ -47,12 +42,8 @@ class RoleSerializer(serializers.ModelSerializer):
 
 
 class ProjectMembershipSerializer(serializers.ModelSerializer):
-    role_name: serializers.StringRelatedField = serializers.StringRelatedField(
-        source="role.name", read_only=True
-    )
-    user_name: serializers.StringRelatedField = serializers.StringRelatedField(
-        source="user.username", read_only=True
-    )
+    user_name = serializers.ReadOnlyField(source="user.username")
+    role_name = serializers.ReadOnlyField(source="role.name")
     user_details = serializers.SerializerMethodField()
 
     class Meta:
@@ -71,9 +62,7 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
 
 
 class ShareLinkCreateSerializer(serializers.Serializer):
-    role_id = serializers.IntegerField(
-        required=False, default=4, min_value=1, max_value=4
-    )
+    role_id = serializers.IntegerField(default=4, min_value=1, max_value=4)
     max_uses = serializers.IntegerField(
         required=False, allow_null=True, min_value=1
     )
@@ -81,14 +70,8 @@ class ShareLinkCreateSerializer(serializers.Serializer):
 
 
 class ProjectShareLinkSerializer(serializers.ModelSerializer):
-    role_name: serializers.StringRelatedField = serializers.StringRelatedField(
-        source="role.name", read_only=True
-    )
-    created_by: serializers.StringRelatedField = (
-        serializers.StringRelatedField(
-            source="created_by.username", read_only=True
-        )
-    )
+    role_name = serializers.ReadOnlyField(source="role.name")
+    created_by = serializers.ReadOnlyField(source="created_by.username")
 
     class Meta:
         model = ProjectShareLink
@@ -98,7 +81,7 @@ class ProjectShareLinkSerializer(serializers.ModelSerializer):
             "created_by", "created_at",
         ]
         read_only_fields = [
-            "role_name", "created_by", "created_at"
+            "id", "token" ,"role_name", "created_by", "created_at"
         ]
 
 

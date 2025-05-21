@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -9,13 +10,17 @@ from .models import Project, ProjectMembership, ProjectShareLink, Role
 
 class ProjectService:
     """
-    Service for operations with projects
+    Service for working with projects:
+    - creating a project with automatic assignment of the Admin role
+    - receiving a project with access verification
     """
     @staticmethod
     @transaction.atomic
     def create_project(owner, **data):
+        """Creates a new project and adds an owner with the Admin role"""
         project = Project.objects.create(owner=owner, **data)
         admin_role = Role.objects.get(name="Admin")
+        
         ProjectMembership.objects.get_or_create(
             user=owner,
             project=project,
@@ -25,19 +30,27 @@ class ProjectService:
     
     @staticmethod
     def get_project_or_404(pk, user):
+        """
+        Returns the project by pk if the user is the owner 
+        or member; otherwise calls PermissionDenied
+        """
         project = get_object_or_404(
             Project.objects.prefetch_related("memberships__role"), pk=pk
         )
-        if not (
-            project.owner == user
-            or project.memberships.filter(user=user).exists()
-        ):
+        
+        is_member = project.memberships.filter(user=user).exists()
+        if project.owner != user and not is_member:
             raise PermissionError("You do not have acces to this project")
+        
         return project
     
 class ProjectShareLinkService:
+    """
+    Service for validation and creation of links to join the project
+    """
     @staticmethod
-    def validate_share_link(link):
+    def validate_share_link(link: ProjectShareLink):
+        """Checks whether the link is valid, not expired, and not expired"""
         if not link.is_valid():
             if link.is_expired():
                 raise PermissionDenied("Link has expired")
@@ -46,9 +59,13 @@ class ProjectShareLinkService:
             raise PermissionDenied("Link is inactive")
         
     @staticmethod
-    def create_share_link(project, role_id, user, max_uses, expires_in):
+    def create_share_link(project: Project, role_id: int, user, max_uses: int | None, expires_in: int):
+        """
+        Creates a new active link with the specified parameters:
+        - role, lifetime in minutes, maximum number of uses
+        """
         role = get_object_or_404(Role, id=role_id)
-        expires_at = timezone.now() + timezone.timedelta(minutes=expires_in)
+        expires_at = timezone.now() + timedelta(minutes=expires_in)
 
         share_link = ProjectShareLink.objects.create(
             project=project,
@@ -61,34 +78,38 @@ class ProjectShareLinkService:
 
 
 class ProjectMembershipService:
+    """
+    Service for working with project membership:
+    - assigning and changing roles
+    """
     @staticmethod
+    @transaction.atomic
     def assign_role(project, user, role):
         """
-        Assigns a role to a user in the project. If the user already
-        has another role, it updates it
-        Throws a ValidationError if the rules are violated
+        Assigns or updates a user role in the project.
+        Throws a ValidationError if:
+        - the user is the project owner
+        - the role has not changed
         """
         if user == project.owner:
             raise ValidationError("Cannot assign role to the project owner")
+        
+        membership = (
+            ProjectMembership.objects
+            .select_for_update()
+            .filter(user=user, project=project)
+            .first()
+        )
 
-        with transaction.atomic():
-            existing_membership = (
-                ProjectMembership.objects.select_for_update()
-                .filter(user=user, project=project)
-                .first()
+        if membership:
+            if membership.role == role:
+                raise ValidationError("User already has this role in project")
+
+            membership.role = role
+            membership.save(update_fields=['role'])
+        else:
+            membership = ProjectMembership.objects.create(
+                user=user, project=project, role=role
             )
-
-            if existing_membership:
-                if existing_membership.role == role:
-                    raise ValidationError(
-                        "User already has this role in the project"
-                    )
-
-                existing_membership.role = role
-                existing_membership.save()
-                return existing_membership, False
-            else:
-                membership = ProjectMembership.objects.create(
-                    user=user, project=project, role=role
-                )
-                return membership, True
+        
+        return membership

@@ -213,13 +213,11 @@ class ProjectShareLinkViewSet(viewsets.ModelViewSet):
     Read-only viewset for viewing project share links
     """
 
-    serializer_class = ProjectShareLinkSerializer
-    permission_classes = [IsAuthenticated]
     lookup_field = "id"
+    permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        perms = [permission() for permission in self.permission_classes]
-
+        perms = super().get_permissions()
         if self.action in ("list", "retrieve", "create", "destroy"):
             perms.append(IsProjectMinRole("Moderator"))
         return perms
