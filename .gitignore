@@ -10,6 +10,7 @@ db.sqlite3
 
 # Environments
 .env
+.env.docker
 .venv/
 venv/
 
