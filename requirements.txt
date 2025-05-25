@@ -12,11 +12,12 @@ djangorestframework==3.15.2
 djangorestframework_simplejwt==5.4.0
 drf-nested-routers==0.94.1
 drf-yasg==1.21.10
+gunicorn==23.0.0
 idna==3.10
 inflection==0.5.1
 packaging==24.2
 pip-tools==7.4.1
-psycopg2==2.9.10
+psycopg2-binary==2.9.10
 PyJWT==2.10.1
 pyproject_hooks==1.2.0
 python-decouple==3.8
