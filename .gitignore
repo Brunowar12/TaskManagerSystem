@@ -19,6 +19,7 @@ venv/
 .idea/
 
 # Logs
+/logs
 *.log
 *.pot
 *.mo
