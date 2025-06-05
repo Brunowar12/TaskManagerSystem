@@ -6,6 +6,7 @@ from api.utils import error_response
 
 logger = logging.getLogger(__name__)
 
+
 def custom_exception_handler(exc, context):
     """
     Custom handler for exceptions in the API

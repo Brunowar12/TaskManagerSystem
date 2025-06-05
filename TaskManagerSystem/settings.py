@@ -55,7 +55,7 @@ ROLE_PERMISSIONS = {
 }
 ROLE_ORDER = tuple(reversed(ROLE_PERMISSIONS.keys()))
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 25 # 25 Mb restriction
+DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 25  # 25 Mb restriction
 API_VERSION = '1.0.0'
 
 DJANGO_APPS = [
@@ -154,7 +154,7 @@ REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'UNAUTHENTICATED_USER': None,    
     'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle', # not auth request
+        'rest_framework.throttling.AnonRateThrottle',  # not auth request
         'rest_framework.throttling.UserRateThrottle'
     ],
     "DEFAULT_THROTTLE_RATES": {"anon": "10000/minute", "user": "10000/minute"},

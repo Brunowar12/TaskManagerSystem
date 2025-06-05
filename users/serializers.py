@@ -9,6 +9,7 @@ from .models import User
 
 User = get_user_model()
 
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True, required=True, validators=[validate_password],
@@ -29,6 +30,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.set_password(validated_data["password"])
         user.save()
         return user
+
 
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField(help_text="User email")
@@ -58,11 +60,13 @@ class UserLoginSerializer(serializers.Serializer):
             "access": str(token.access_token),
         }
 
+
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["username", "email"]
         read_only_fields = ["username"]
+
 
 class UserProfileSerializer(serializers.ModelSerializer):
     last_profile_edit_at = serializers.DateTimeField(read_only=True)

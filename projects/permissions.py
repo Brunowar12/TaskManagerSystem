@@ -14,9 +14,11 @@ def _get_project_from_obj(obj):
         return obj
     return getattr(obj, "project", None)
 
+
 def _user_is_owner(user, project):
     """Shortcut for project owner"""
     return project.owner_id == user.id
+
 
 def _user_has_role(user, project, roles):
     """Checks if the user has one of the specified roles in the project"""
@@ -25,6 +27,7 @@ def _user_has_role(user, project, roles):
         user=user,
         role__name__in=roles
     ).exists()
+
 
 class IsProjectAdmin(BasePermission):
     """

@@ -43,7 +43,8 @@ class ProjectService:
             raise PermissionError("You do not have acces to this project")
         
         return project
-    
+
+
 class ProjectShareLinkService:
     """
     Service for validation and creation of links to join the project

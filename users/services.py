@@ -8,6 +8,7 @@ from .serializers import (
 
 User = get_user_model()
 
+
 class UserService:
     @staticmethod
     def register_user(data):

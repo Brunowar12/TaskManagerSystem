@@ -78,6 +78,7 @@ class TaskService:
 
         return task
 
+
 class CategoryService:
     """
     Service for operations with categories

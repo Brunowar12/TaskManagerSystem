@@ -11,6 +11,7 @@ from api.validators import (
     PHONE_NUMBER_VALIDATOR,
 )
 
+
 class User(AbstractUser):
     """
     Custom user model extending AbstractUser:
