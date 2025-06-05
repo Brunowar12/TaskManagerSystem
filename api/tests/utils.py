@@ -7,6 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
+
 class TokenService:
     """
     Utility class for generating tokens
@@ -22,6 +23,7 @@ class TokenService:
             'refresh': str(refresh_obj)
         }
 
+
 class TestHelper:
     @staticmethod
     def create_test_user(client, email="testuser@example.com", password="testpassword123"):
@@ -30,22 +32,27 @@ class TestHelper:
 
         Args:
             client: The test client instance.
-            email (str): The email address of the test user. Defaults to "testuser@example.com"
-            password (str): The password of the test user. Defaults to "testpassword123"
+            email (str): The email address of the test user. 
+                Defaults to "testuser@example.com"
+            password (str): The password of the test user. 
+                Defaults to "testpassword123"
 
         Returns:
-            tuple: A tuple containing the created user instance, access token, and refresh token
+            tuple: A tuple containing the created user instance, access token, and 
+                refresh token
 
         Raises:
             AssertionError: If user registration or login fails
         """
         user_data = {"email": email, "password": password}
         response = client.post(reverse("auth-register"), user_data)
-        assert response.status_code == status.HTTP_201_CREATED, f"User registration failed: {response.data}"
+        if response.status_code != status.HTTP_201_CREATED:
+            raise AssertionError(f"User registration failed: {response.data}")
 
         user = User.objects.get(email=email)
         response = client.post(reverse("auth-login"), user_data)
-        assert response.status_code == status.HTTP_200_OK, f"User login failed: {response.data}"
+        if response.status_code != status.HTTP_200_OK:
+            raise AssertionError(f"User login failed: {response.data}")
 
         token = response.data.get("access")
         refresh = response.data.get("refresh")
@@ -58,11 +65,14 @@ class TestHelper:
         Creates a test user via ORM
 
         Args:
-            email (str): The email address of the test user. Defaults to "testuser@example.com"
-            password (str): The password of the test user. Defaults to "testpassword123"
+            email (str): The email address of the test user. 
+                Defaults to "testuser@example.com"
+            password (str): The password of the test user. 
+                Defaults to "testpassword123"
 
         Returns:
-            tuple: A tuple containing the created user instance, access token, and refresh token
+            tuple: A tuple containing the created user instance, access token, 
+                and refresh token
         """
         user = User.objects.create_user(
             username=email.split("@")[0], email=email, password=password
@@ -80,7 +90,8 @@ class TestHelper:
             days (int): The number of days from the current date. Defaults to 14
 
         Returns:
-            str: A future date in ISO format (YYYY-MM-DDTHH:MM:SSZ) with microseconds set to 0
+            str: A future date in ISO format (YYYY-MM-DDTHH:MM:SSZ)
+                with microseconds set to 0
         """
         future_date = timezone.now() + timedelta(days=days)
         return future_date.replace(microsecond=0).isoformat() + "Z"
