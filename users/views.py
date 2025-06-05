@@ -11,6 +11,7 @@ from .serializers import (
 )
 from .services import UserService
 
+
 class AuthViewSet(viewsets.GenericViewSet):
     """
     Handles user registration, login, and logout
@@ -26,7 +27,7 @@ class AuthViewSet(viewsets.GenericViewSet):
         # Dynamically choose serializer based on action
         if self.action == 'register':
             return UserRegistrationSerializer
-        elif self.action == 'login':
+        if self.action == 'login':
             return UserLoginSerializer
 
     def get_permissions(self):

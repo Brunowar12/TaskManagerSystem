@@ -32,8 +32,8 @@ class ProjectTaskPermission(BasePermission):
     def _get_min_role(self, method):
         if method in SAFE_METHODS:
             return 'Viewer'
-        elif method in ('PUT', 'PATCH'):
-            return 'Member'
+        if method in ('PUT', 'PATCH'):
+            return 'Member'        
         return 'Moderator'
     
     def has_permission(self, request, view):
