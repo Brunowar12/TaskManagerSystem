@@ -2,16 +2,20 @@ from rest_framework import serializers
 
 from .models import Project, ProjectShareLink, Role, ProjectMembership
 
+
 class ProjectSerializer(serializers.ModelSerializer):
     tasks_count = serializers.SerializerMethodField(read_only=True)
+    owner_name: serializers.StringRelatedField = (
+        serializers.StringRelatedField(source="owner.username", read_only=True)
+    )
 
     class Meta:
         model = Project
         fields = [
-            "id", "name", "description", "owner", "tasks_count", "created_at"
+            "id", "name", "description", "owner", "owner_name", "tasks_count", "created_at"
         ]
         read_only_fields = ["id", "owner", "tasks_count", "created_at"]
-    
+
     def get_tasks_count(self, obj):
         return getattr(obj, "tasks_count", 0)
 
