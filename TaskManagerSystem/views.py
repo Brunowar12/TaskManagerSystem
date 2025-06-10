@@ -6,6 +6,7 @@ from api.utils import error_response
 
 logger = logging.getLogger(__name__)
 
+
 def custom_exception_handler(exc, context):
     """
     Custom handler for exceptions in the API
@@ -23,8 +24,8 @@ def custom_exception_handler(exc, context):
     else:
         logger.error(f"Unhandled exception: {exc}", exc_info=True)
         return error_response(
-            "Internal server error. Please try again later", 
-            status.HTTP_500_INTERNAL_SERVER_ERROR
+            "Internal server error. Please try again later",
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
     return response

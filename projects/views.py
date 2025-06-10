@@ -31,12 +31,13 @@ User = get_user_model()
 class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     """
     ViewSet for operations with projects
-    
+
     Allows you to view, create, edit, and delete projects
     Includes an additional method for getting tasks in a project
     """
+
     serializer_class = ProjectSerializer
-    queryset = Project.objects.all().prefetch_related('tasks')
+    queryset = Project.objects.all().prefetch_related("tasks")
     permission_classes = [IsAuthenticated]
 
     ACTION_PERMISSIONS = {
@@ -102,7 +103,7 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"])
     def assign_role(self, request, pk=None):
-        """        
+        """
         Assign a role to a user in a project.
         Prevents self-assignment, assigning to owner,
         or assigning role ≥ assigner's role (except Admin/Owner).
@@ -120,15 +121,17 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
             return error_response("User must join via ShareLink")
 
         assigner = self._get_membership(project, request.user)
-        assigner_role = assigner.role.name if assigner else "Owner"    
+        assigner_role = assigner.role.name if assigner else "Owner"
 
-        hierarchy = settings.ROLE_ORDER        
-        if assigner_role not in ("Admin", "Owner"):
-            if hierarchy.index(new_role.name) >= hierarchy.index(assigner_role):
-                return error_response(
-                    f"Cannot assign role '{new_role.name}'",
-                    status.HTTP_403_FORBIDDEN,
-                )
+        hierarchy = settings.ROLE_ORDER
+        if (
+            assigner_role not in ("Admin", "Owner") and
+            hierarchy.index(new_role.name) >= hierarchy.index(assigner_role)
+        ):
+            return error_response(
+                f"Cannot assign role '{new_role.name}'",
+                status.HTTP_403_FORBIDDEN,
+            )
 
         try:
             ProjectMembershipService.assign_role(project, target, new_role)
@@ -145,7 +148,7 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         serializer_class=KickUserSerializer
     )
     def kick(self, request, pk=None):
-        """        
+        """
         Kick user from project (not owner)
         """
         project = self._get_project(pk)
@@ -179,10 +182,11 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
 class RoleViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Read‑only endpoints for project roles.
-    
+
     All roles are created and managed via migrations/signals,
     not via API. This ViewSet only allows listing and retrieving.
     """
+
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
     permission_classes = [IsAuthenticated]
@@ -192,6 +196,7 @@ class ProjectMembershipViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Read-only viewset for viewing project members
     """
+
     serializer_class = ProjectMembershipSerializer
     permission_classes = [IsAuthenticated]
 

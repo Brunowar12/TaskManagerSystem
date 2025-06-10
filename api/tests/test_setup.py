@@ -18,6 +18,7 @@ class BaseAPITestCase(APITestCase):
         setUp(): Configure test client
         api_post(): Make authenticated POST request
     """
+
     @classmethod
     def setUpTestData(cls):
         cls.user, cls.token, cls.refresh = TestHelper.create_test_user_via_orm()
@@ -33,10 +34,10 @@ class BaseAPITestCase(APITestCase):
         cls.user_update_profile_ep = reverse("user-update-profile")
         cls.project_list_ep = reverse("project-list")
         cls.role_list_ep = reverse("role-list")
-    
+
     def setUp(self):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
-    
+
     def api_post(self, endpoint: str, data: dict, token: Optional[str] = None):
         return self.client.post(
             endpoint, data, format="json",

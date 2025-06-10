@@ -8,6 +8,7 @@ from .serializers import (
 
 User = get_user_model()
 
+
 class UserService:
     @staticmethod
     def register_user(data):
@@ -18,7 +19,7 @@ class UserService:
         """
         serializer = UserRegistrationSerializer(data=data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()        
+        serializer.save()
         return serializer.data
 
     @staticmethod

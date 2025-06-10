@@ -9,6 +9,7 @@ from .models import User
 
 User = get_user_model()
 
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True, required=True, validators=[validate_password],
@@ -24,11 +25,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         fields = ["email", "password"]
 
     def create(self, validated_data):
-        """ Creates a user instance with hashed password """
+        """Creates a user instance with hashed password"""
         user = User(email=validated_data["email"],)
         user.set_password(validated_data["password"])
         user.save()
         return user
+
 
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField(help_text="User email")
@@ -37,7 +39,7 @@ class UserLoginSerializer(serializers.Serializer):
     )
 
     def validate(self, data):
-        """ Validates user credentials and returns JWT tokens """
+        """Validates user credentials and returns JWT tokens"""
         user = authenticate(email=data["email"], password=data["password"])
 
         if not user:
@@ -50,7 +52,7 @@ class UserLoginSerializer(serializers.Serializer):
         user.save(update_fields=["last_login_at"])
 
         token = RefreshToken.for_user(user)
-        
+
         return {
             "username": user.username,
             "email": user.email,
@@ -58,15 +60,17 @@ class UserLoginSerializer(serializers.Serializer):
             "access": str(token.access_token),
         }
 
+
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["username", "email"]
         read_only_fields = ["username"]
 
+
 class UserProfileSerializer(serializers.ModelSerializer):
     last_profile_edit_at = serializers.DateTimeField(read_only=True)
-    
+
     class Meta:
         model = User
         fields = [
@@ -80,11 +84,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "last_task_completed_at",
         ]
         read_only_fields = [
-            "last_login_at", 
-            "last_profile_edit_at", 
-            "last_task_completed_at"]
-    
+            "last_login_at",
+            "last_profile_edit_at",
+            "last_task_completed_at",
+        ]
+
     def update(self, instance, validated_data):
-        """ Automatically update 'last_profile_edit_at' timestamp on profile update """
+        """Automatically update 'last_profile_edit_at' timestamp on profile update"""
         instance.last_profile_edit_at = now()
         return super().update(instance, validated_data)

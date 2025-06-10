@@ -2,6 +2,7 @@ import logging
 from django.db.models import Q
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from tasks.models import Task
     from users.models import User
@@ -35,7 +36,7 @@ class TaskService:
         return task
 
     @staticmethod
-    def toggle_completed(task: 'Task', user: 'User') -> 'Task':
+    def toggle_completed(task: "Task", user: "User") -> "Task":
         """
         Toggle the completed flag on a task, update timestamps,
         and record the user who completed it
@@ -77,6 +78,7 @@ class TaskService:
         task.save()
 
         return task
+
 
 class CategoryService:
     """

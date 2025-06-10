@@ -11,6 +11,7 @@ from api.validators import (
     PHONE_NUMBER_VALIDATOR,
 )
 
+
 class User(AbstractUser):
     """
     Custom user model extending AbstractUser:
@@ -18,7 +19,7 @@ class User(AbstractUser):
     - automatically generates a unique username if not specified
     - contains additional dates and profile fields
     """
-    
+
     username = models.CharField(
         max_length=80,
         unique=True,
@@ -63,16 +64,16 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ["username"]
 
     def save(self, *args, **kwargs):
-        """ 
-        When creating a user, if the username is not specified, 
-        we generate it based on email 
+        """
+        When creating a user, if the username is not specified,
+        we generate it based on email
         """
         if self.email:
             self.email = self.email.lower()
-            
+
         if not self.pk and not self.username:
             self.username = self.generate_username()
-            
+
         super().save(*args, **kwargs)
 
     @transaction.atomic
@@ -82,15 +83,20 @@ class User(AbstractUser):
         If such a username exists, adds a random suffix of length 10
         """
         base_username = self.email.split("@", 1)[0]
-        max_base_length = self._meta.get_field('username').max_length - 10
+        max_base_length = self._meta.get_field("username").max_length - 10
         base_username = base_username[:max_base_length]
-        
+
         new_username = base_username
 
-        while User.objects.filter(username=new_username).select_for_update().exists():
+        while (
+            User.objects
+            .filter(username=new_username)
+            .select_for_update()
+            .exists()
+        ):
             random_suffix = get_random_string(length=10)
             new_username = f"{base_username}{random_suffix}"
-            
+
         return new_username
 
     def __str__(self):

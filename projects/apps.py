@@ -13,9 +13,9 @@ class ProjectsConfig(AppConfig):
     def create_roles_and_permissions(self, **kwargs):
         from django.contrib.auth.models import Permission
         from .models import Role
-        
+
         for role_name, perm_codenames in settings.ROLE_PERMISSIONS.items():
-            role, created = Role.objects.get_or_create(name=role_name)
+            role, _ = Role.objects.get_or_create(name=role_name)
             perms = Permission.objects.filter(codename__in=perm_codenames)
             role.permissions.set(perms)
             role.save()

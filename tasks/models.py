@@ -15,14 +15,12 @@ logger = logging.getLogger(__name__)
 
 class Category(models.Model):
     """A category of tasks linked to a specific user"""
-    name = models.CharField(
-        max_length=20,
-        validators=[TEXT_FIELD_VALIDATOR]
-    )
+
+    name = models.CharField(max_length=20, validators=[TEXT_FIELD_VALIDATOR])
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
-        related_name="categories"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="categories",
     )
 
     class Meta:
@@ -40,10 +38,11 @@ class Task(models.Model):
     - automatic update of the completion time
     - logs of completed tasks (via signal)
     """
+
     PRIORITY_CHOICES = [
-        ('L', 'Low'),
-        ('M', 'Medium'),
-        ('H', 'High'),
+        ("L", "Low"),
+        ("M", "Medium"),
+        ("H", "High"),
     ]
 
     title = models.CharField(max_length=64, validators=[TEXT_FIELD_VALIDATOR])
@@ -65,7 +64,7 @@ class Task(models.Model):
         null=True, blank=True
     )
     priority = models.CharField(
-        max_length=1, choices=PRIORITY_CHOICES, default='M'
+        max_length=1, choices=PRIORITY_CHOICES, default="M"
     )
     is_favorite = models.BooleanField(default=False, verbose_name="Favorite")
 
@@ -85,7 +84,7 @@ class Task(models.Model):
 
     class Meta:
         indexes = [models.Index(fields=["due_date"]),]
-        ordering = ['id']
+        ordering = ["id"]
 
     def update_completed_at(self):
         """Update the completed_at field when the task is marked as completed"""
@@ -96,7 +95,7 @@ class Task(models.Model):
 
     def save(self, *args, **kwargs):
         """Before saving, update completed_at depending on completed"""
-        self.update_completed_at()        
+        self.update_completed_at()
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -106,6 +105,7 @@ class Task(models.Model):
 
 @receiver(models.signals.post_save, sender=Task)
 def update_user_last_task_completed(sender, instance, created, **kwargs):
+    _, _ = sender, created
     """Signal: if the task is just completed, update user.last_task_completed_at"""
     if instance.completed and instance.user:
         instance.user.last_task_completed_at = timezone.now()

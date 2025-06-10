@@ -12,6 +12,7 @@ from api.validators import TEXT_FIELD_VALIDATOR
 
 class Project(models.Model):
     """Project with name, description, and owner"""
+
     name = models.CharField(max_length=128, validators=[TEXT_FIELD_VALIDATOR])
     description = models.TextField(blank=True)
     owner = models.ForeignKey(
@@ -30,16 +31,17 @@ class Project(models.Model):
 
 class Role(models.Model):
     """Static project roles; prohibition to create custom ones"""
+
     name = models.CharField(max_length=64, unique=True)
     permissions = models.ManyToManyField(Permission, blank=True)
-    
+
     def clean(self):
         fixed = settings.ROLE_ORDER
         if self.name not in fixed:
             raise ValidationError(
                 f"Custom roles are not allowed. Use one of: {', '.join(fixed)}"
             )
-            
+
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
@@ -49,7 +51,8 @@ class Role(models.Model):
 
 
 class ProjectMembership(models.Model):
-    """The relationship 'user --> project --> role' """
+    """The relationship 'user --> project --> role'"""
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -71,6 +74,7 @@ class ProjectMembership(models.Model):
 
 class ProjectShareLink(models.Model):
     """Token for invitation to the project with a limits"""
+
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, related_name="share_links"

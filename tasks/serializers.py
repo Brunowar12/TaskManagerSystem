@@ -32,7 +32,8 @@ class TaskSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Due date cannot be None")
         if value < timezone.now():
             raise serializers.ValidationError(
-                "The due date cannot be in the past")
+                "The due date cannot be in the past"
+            )
         return value
 
     def get_completed_by(self, obj):
@@ -63,11 +64,14 @@ class MoveTaskResponseSerializer(serializers.Serializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     tasks_count = serializers.SerializerMethodField()
+    user_name: serializers.StringRelatedField = serializers.StringRelatedField(
+        source="user.username", read_only=True
+    )
 
     class Meta:
         model = Category
-        fields = ["id", "name", "user", "tasks_count"]
-        read_only_fields = ["user", "tasks_count"]
+        fields = ["id", "name", "user", "user_name", "tasks_count"]
+        read_only_fields = ["user", "user_name", "tasks_count"]
 
     def validate_name(self, value):
         if not value.strip():
