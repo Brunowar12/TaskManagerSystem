@@ -15,12 +15,13 @@ class TokenService:
     Methods:
         generate_tokens_for: Generates access and refresh tokens for the specified user
     """
+
     @staticmethod
     def generate_tokens_for(user):
         refresh_obj = RefreshToken.for_user(user)
         return {
-            'access': str(refresh_obj.access_token),
-            'refresh': str(refresh_obj)
+            "access": str(refresh_obj.access_token),
+            "refresh": str(refresh_obj),
         }
 
 
@@ -78,8 +79,8 @@ class TestHelper:
             username=email.split("@")[0], email=email, password=password
         )
         tokens = TokenService.generate_tokens_for(user)
-        
-        return user, tokens['access'], tokens['refresh']
+
+        return user, tokens["access"], tokens["refresh"]
 
     @staticmethod
     def get_valid_due_date(days: int = 14):

@@ -6,6 +6,7 @@ from .models import User
 
 class CustomUserAdmin(UserAdmin):
     """Advanced user admin with additional profile fields"""
+
     fieldsets = list(UserAdmin.fieldsets) + [
         (
             None,

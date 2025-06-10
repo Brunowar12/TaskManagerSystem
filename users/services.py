@@ -19,7 +19,7 @@ class UserService:
         """
         serializer = UserRegistrationSerializer(data=data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()        
+        serializer.save()
         return serializer.data
 
     @staticmethod

@@ -5,5 +5,5 @@ urlpatterns = [
     path("status/", api_status),
     path("account/", include("users.urls")),
     path("tasks/", include("tasks.urls")),
-    path("projects/", include("projects.urls"))
+    path("projects/", include("projects.urls")),
 ]

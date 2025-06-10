@@ -25,9 +25,9 @@ ALLOWED_HOSTS = config(
 AUTH_USER_MODEL = 'users.User'
 
 # Security settings
-SECURE_BROWSER_XSS_FILTER = True    # enable X-XSS-Protection
+SECURE_BROWSER_XSS_FILTER = True  # enable X-XSS-Protection
 SECURE_CONTENT_TYPE_NOSNIFF = True  # enable X-Content-Type-Options
-X_FRAME_OPTIONS = 'DENY'            # prevent clickjacking
+X_FRAME_OPTIONS = 'DENY'  # prevent clickjacking
 
 
 ADMIN_ROLE_NAMES = ["Admin",]
@@ -65,7 +65,7 @@ DJANGO_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.test"
+    "django.test",
 ]
 
 THIRD_PARTY_APPS = [
@@ -76,11 +76,7 @@ THIRD_PARTY_APPS = [
     "corsheaders",
 ]
 
-LOCAL_APPS = [
-    "users",
-    "tasks",
-    "projects"
-]
+LOCAL_APPS = ["users", "tasks", "projects"]
 
 # Application definition
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -191,8 +187,8 @@ DATABASES = {
 }
 
 # Logging
-LOG_DIR = BASE_DIR / 'logs'  
-LOG_DIR.mkdir(exist_ok=True)  
+LOG_DIR = BASE_DIR / 'logs'
+LOG_DIR.mkdir(exist_ok=True)
 LOGGING = {
     'version': 1,  # version of the logging configuration
     'disable_existing_loggers': False,  # dont disable existing loggers

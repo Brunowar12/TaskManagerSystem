@@ -23,9 +23,7 @@ def _user_is_owner(user, project):
 def _user_has_role(user, project, roles):
     """Checks if the user has one of the specified roles in the project"""
     return ProjectMembership.objects.filter(
-        project=project,
-        user=user,
-        role__name__in=roles
+        project=project, user=user, role__name__in=roles
     ).exists()
 
 
@@ -35,6 +33,7 @@ class IsProjectAdmin(BasePermission):
 
     Checks if the user is the owner of the project or has an admin role
     """
+
     def has_permission(self, request, view) -> bool:
         return bool(request.user and request.user.is_authenticated)
 
@@ -51,7 +50,9 @@ class IsProjectAdmin(BasePermission):
         is_admin = _user_has_role(user, project, settings.ADMIN_ROLE_NAMES)
 
         if not is_admin:
-            logger.warning(f"User {user.id} lacks admin role for project {project.id}")
+            logger.warning(
+                f"User {user.id} lacks admin role for project {project.id}"
+            )
 
         return is_admin
 
@@ -60,6 +61,7 @@ class IsProjectMinRole(BasePermission):
     """
     Permission class to check if a user has a certain role in a project
     """
+
     ROLE_ORDER = settings.ROLE_ORDER
 
     def __init__(self, min_role):

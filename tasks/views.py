@@ -40,7 +40,7 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     Includes extra actions for toggling favorite/completed status
     and moving tasks between projects.
     """
-    
+
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated, IsOwner]
@@ -53,18 +53,18 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     ]
 
     def get_permissions(self):
-        if self.kwargs.get('project_pk'):
+        if self.kwargs.get("project_pk"):
             return [IsAuthenticated(), ProjectTaskPermission()]
         return [IsAuthenticated(), IsOwner()]
 
     def get_queryset(self):
-        qs = super().get_queryset()        
+        qs = super().get_queryset()
 
         project_id = self.kwargs.get("project_pk")
         if project_id is not None:
             # Nested: all tasks in given project
             return qs.filter(project_id=project_id)
-        
+
         # Nested: all tasks in given project
         filters = Q(user=self.request.user, project__isnull=True)
         if TaskService.is_today_filter(self.request):
@@ -85,10 +85,10 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         return qs.filter(filters)
 
     def perform_create(self, serializer):
-        project_pk = self.kwargs.get('project_pk')
-        save_kwargs = {'user': self.request.user}
+        project_pk = self.kwargs.get("project_pk")
+        save_kwargs = {"user": self.request.user}
         if project_pk is not None:
-            save_kwargs['project_id'] = project_pk
+            save_kwargs["project_id"] = project_pk
         serializer.save(**save_kwargs)
 
     def get_object(self):
@@ -121,13 +121,13 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
             return error_response(
                 "Failed to update favorite status",
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
-                exc=e
+                exc=e,
             )
 
     @action(
         detail=True, methods=["post"],
         serializer_class=ToggleCompletedResponseSerializer,
-        permission_classes=[IsProjectMinRole('Member')]
+        permission_classes=[IsProjectMinRole('Member')],
     )
     def toggle_completed(self, request, project_pk=None, pk=None):
         try:
@@ -153,7 +153,7 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
             return error_response(
                 "Failed to update completion status",
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
-                exc=e
+                exc=e,
             )
 
     @action(
@@ -174,14 +174,11 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @swagger_auto_schema(
-        method='post',
+        method="post",
         request_body=MoveTaskSerializer,
-        responses={200: MoveTaskResponseSerializer}
+        responses={200: MoveTaskResponseSerializer},
     )
-    @action(
-        detail=True, methods=["post"],
-        serializer_class=MoveTaskSerializer
-    )
+    @action(detail=True, methods=["post"], serializer_class=MoveTaskSerializer)
     def move_task(self, request, project_pk=None, pk=None):
         if project_pk is not None:
             raise NotFound("Use /tasks/{pk}/move_task/ to move tasks")
@@ -208,7 +205,7 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     )
     @swagger_auto_schema(auto_schema=None)
     def nested_move_task(self, request, project_pk=None, pk=None):
-        if getattr(self, 'swagger_fake_view', False):
+        if getattr(self, "swagger_fake_view", False):
             raise NotFound()
         return self.move_task(request, pk=pk)
 
@@ -220,7 +217,7 @@ class CategoryViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     Allows viewing, creating, editing, and deleting categories.
     Includes an extra action to list tasks within a category.
     """
-    
+
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsAuthenticated, IsOwner]

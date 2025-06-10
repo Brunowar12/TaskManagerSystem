@@ -5,12 +5,14 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([AllowAny])
 def api_status(request):
-    return Response({
-        "status": "ok",
-        "version": getattr(settings, 'API_VERSION', 'dev'),
-        "date": datetime.now(),
-        "message": "TaskManager API is up and running"
-    })
+    return Response(
+        {
+            "status": "ok",
+            "version": getattr(settings, "API_VERSION", "dev"),
+            "date": datetime.now(),
+            "message": "TaskManager API is up and running",
+        }
+    )

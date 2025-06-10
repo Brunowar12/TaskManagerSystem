@@ -406,10 +406,10 @@ class TaskAPITests(BaseAPITestCase):
 
         self.future_task.due_date = now() + timedelta(days=1)
         self.future_task.save()
-        
+
         self.today_task.due_date = now() + timedelta(days=2)
         self.today_task.save()
-        
+
         response = self.client.get(self.task_list_ep, {"today": "true"})
 
         self.assertEqual(
