@@ -110,14 +110,16 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
             task = self.get_object()
             updated_task = TaskService.toggle_favorite(task)
             logger.info(
-                f"Task {task.id} favorite status updated to {updated_task.is_favorite}"
+                "Task %s favorite status updated to %s",
+                task.id,
+                updated_task.is_favorite,
             )
             return Response({
                     "status": "favorite status updated",
                     "is_favorite": updated_task.is_favorite,
                 })
         except Exception as e:
-            logger.exception(f"Error toggling favorite for task {pk}")
+            logger.exception("Error toggling favorite for task %s", pk)
             return error_response(
                 "Failed to update favorite status",
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -132,9 +134,13 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
     def toggle_completed(self, request, project_pk=None, pk=None):
         try:
             task = self.get_object()
-            updated_task = TaskService.toggle_completed(task, self.request.user)
+            updated_task = TaskService.toggle_completed(
+                task, self.request.user
+            )
             logger.info(
-                f"Task {task.id} completion status updated to {updated_task.completed}"
+                "Task %s completion status updated to %s",
+                task.id,
+                updated_task.completed,
             )
             return Response(
                 {
@@ -149,7 +155,7 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
                 }
             )
         except Exception as e:
-            logger.exception(f"Error toggling completion for task {pk}")
+            logger.exception("Error toggling completion for task %s", pk)
             return error_response(
                 "Failed to update completion status",
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -192,7 +198,7 @@ class TaskViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
         except ValueError as e:
             return error_response(str(e), status.HTTP_404_NOT_FOUND, exc=e)
         except Exception as e:
-            logger.exception(f"Error moving task: {e}")
+            logger.exception("Error moving task: %s", e)
             return error_response(
                 "Failed to move task",
                 status.HTTP_500_INTERNAL_SERVER_ERROR,

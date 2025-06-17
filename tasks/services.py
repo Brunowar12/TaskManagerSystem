@@ -90,4 +90,4 @@ class CategoryService:
         """
         Return all tasks associated with a given category
         """
-        return category.tasks.all()
+        return category.tasks.prefetch_related("user")

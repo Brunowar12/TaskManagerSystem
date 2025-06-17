@@ -18,7 +18,7 @@ class IsOwner(BasePermission):
 
         if user_field is None:
             logger.error(
-                f"Object {type(obj).__name__} has no ownership attribute"
+                "Object %s has no ownership attribute", type(obj).__name__
             )
             raise PermissionDenied(
                 "Access denied: missing ownership information"
@@ -32,7 +32,8 @@ class ProjectTaskPermission(BasePermission):
     Checking whether the user has the required permission for the project task
     """
 
-    def _get_min_role(self, method):
+    @staticmethod
+    def _get_min_role(method):
         if method in SAFE_METHODS:
             return "Viewer"
         if method in ("PUT", "PATCH"):

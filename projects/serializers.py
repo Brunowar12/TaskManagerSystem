@@ -16,10 +16,12 @@ class ProjectSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "owner", "tasks_count", "created_at"]
 
-    def get_tasks_count(self, obj):
+    @staticmethod
+    def get_tasks_count(obj):
         return getattr(obj, "tasks_count", 0)
 
     def validate_name(self, value):
+        value = value.strip()
         if len(value) < 3:
             raise serializers.ValidationError(
                 "The project name must contain at least 3 characters"
@@ -57,7 +59,8 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
             "role", "role_name",
         ]
 
-    def get_user_details(self, obj):
+    @staticmethod
+    def get_user_details(obj):
         return {
             "id": obj.user.id,
             "username": obj.user.username,
@@ -71,22 +74,35 @@ class ShareLinkCreateSerializer(serializers.Serializer):
         required=False, allow_null=True, min_value=1
     )
     expires_in = serializers.IntegerField(default=60, min_value=1)
+    
+    def validate_role_id(self, value):
+        if not Role.objects.filter(id=value).exists():
+            raise serializers.ValidationError("Invalid role_id")
+        return value
 
 
 class ProjectShareLinkSerializer(serializers.ModelSerializer):
     role_name = serializers.ReadOnlyField(source="role.name")
     created_by = serializers.ReadOnlyField(source="created_by.username")
+    uses_left = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectShareLink
         fields = [
             "id", "token", "role_name",
-            "max_uses", "expires_at", "is_active",
+            "max_uses", "expires_at", "is_active", "uses_left",
             "created_by", "created_at",
         ]
         read_only_fields = [
-            "id", "token" ,"role_name", "created_by", "created_at"
+            "id", "token",
+            "role_name", "created_by", "created_at",
         ]
+
+    @staticmethod
+    def get_uses_left(obj):
+        if obj.max_uses is None:
+            return None
+        return max(obj.max_uses - obj.used_count, 0)
 
 
 class KickUserSerializer(serializers.Serializer):

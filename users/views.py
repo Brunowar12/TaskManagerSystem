@@ -29,6 +29,7 @@ class AuthViewSet(viewsets.GenericViewSet):
             return UserRegistrationSerializer
         if self.action == "login":
             return UserLoginSerializer
+        return serializers.Serializer
 
     def get_permissions(self):
         if self.action in ["register", "login"]:
@@ -95,5 +96,8 @@ class UserViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=["put", "patch"])
     def update_profile(self, request):
         """Updates the authenticated user's profile"""
-        data = UserService.update_profile(request.user, request.data)
+        is_partial = request.method == "PATCH"
+        data = UserService.update_profile(
+            request.user, request.data, partial=is_partial
+        )
         return Response(data)

@@ -51,7 +51,7 @@ class IsProjectAdmin(BasePermission):
 
         if not is_admin:
             logger.warning(
-                f"User {user.id} lacks admin role for project {project.id}"
+                "User %s lacks admin role for project %s", user.id, project.id
             )
 
         return is_admin

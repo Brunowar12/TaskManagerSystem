@@ -46,6 +46,7 @@ class TaskAPITests(BaseAPITestCase):
 
     def setUp(self):
         super().setUp()
+        self.task_today = None
 
     # crud
 

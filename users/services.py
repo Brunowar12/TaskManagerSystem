@@ -46,17 +46,16 @@ class UserService:
             msg = str(e).lower()
             if "token is invalid or expired" in msg:
                 raise ValueError("Token expired")
-            elif "token is already blacklisted" in msg:
+            if "token is already blacklisted" in msg:
                 raise ValueError("Token already revoked")
-            else:
-                raise ValueError("Invalid token format")
+            raise ValueError("Invalid token format")
 
     @staticmethod
-    def update_profile(user, data):
+    def update_profile(user, data, partial):
         """
         Handle profile update for the authenticated user
         """
-        serializer = UserProfileSerializer(user, data=data, partial=True)
+        serializer = UserProfileSerializer(user, data=data, partial=partial)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return serializer.data

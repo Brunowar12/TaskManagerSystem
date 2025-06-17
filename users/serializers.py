@@ -12,11 +12,10 @@ User = get_user_model()
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
-        write_only=True, required=True, validators=[validate_password],
-        help_text="Password must follow Django's password validation rules"
+        write_only=True, required=True, help_text="Password must follow Django's password rules"
     )
     email = serializers.EmailField(
-        validators=[UniqueValidator(queryset=User.objects.all())],
+        validators=[UniqueValidator(queryset=User._default_manager.all())],
         help_text="Email must be unique"
     )
 
@@ -24,10 +23,14 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = ["email", "password"]
 
+    def validate_password(self, value):
+        validate_password(value)
+        return value
+
     def create(self, validated_data):
-        """Creates a user instance with hashed password"""
-        user = User(email=validated_data["email"],)
-        user.set_password(validated_data["password"])
+        password = validated_data.pop("password")
+        user = User(**validated_data)
+        user.set_password(password)
         user.save()
         return user
 
@@ -49,7 +52,7 @@ class UserLoginSerializer(serializers.Serializer):
 
         # Update last login time
         user.last_login_at = now()
-        user.save(update_fields=["last_login_at"])
+        User.objects.filter(pk=user.pk).update(last_login_at=now())
 
         token = RefreshToken.for_user(user)
 
@@ -66,6 +69,9 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         model = User
         fields = ["username", "email"]
         read_only_fields = ["username"]
+        extra_kwargs = {
+            "email": {"required": True},
+        }
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -91,5 +97,5 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         """Automatically update 'last_profile_edit_at' timestamp on profile update"""
-        instance.last_profile_edit_at = now()
+        validated_data["last_profile_edit_at"] = now()
         return super().update(instance, validated_data)

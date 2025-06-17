@@ -203,6 +203,7 @@ class RoleAPITests(ProjectsAPITests):
         # second identical assignment should fail
         response2 = self.api_post(url, {"user_id": self.other_user.id, "role_id": self.admin_role.id})
         self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("User already has this role in project", response2.data["non_field_errors"])
 
     def test_cannot_assign_to_owner(self):
         """Owner of the project cannot be assigned a role"""

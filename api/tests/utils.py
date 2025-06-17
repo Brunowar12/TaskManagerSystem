@@ -7,6 +7,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
+DEFAULT_TEST_EMAIL = "testuser@example.com"
+DEFAULT_TEST_PASSWORD = "testpassword123"
+
 
 class TokenService:
     """
@@ -27,7 +30,7 @@ class TokenService:
 
 class TestHelper:
     @staticmethod
-    def create_test_user(client, email="testuser@example.com", password="testpassword123"):
+    def create_test_user(client, email=DEFAULT_TEST_EMAIL, password=DEFAULT_TEST_PASSWORD):
         """
         Creates a test user by registering and logging in through the API
 
@@ -61,7 +64,7 @@ class TestHelper:
         return user, token, refresh
 
     @staticmethod
-    def create_test_user_via_orm(email="testuser@example.com", password="testpassword123"):
+    def create_test_user_via_orm(email=DEFAULT_TEST_EMAIL, password=DEFAULT_TEST_PASSWORD):
         """
         Creates a test user via ORM
 

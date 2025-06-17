@@ -25,7 +25,9 @@ class UserQuerysetMixin:
 
     def perform_create(self, serializer):
         logger.debug(
-            f"Creating object {serializer.Meta.model.__name__} by user_id={self.request.user.pk}"
+            "Creating object %s by user_id=%s",
+            serializer.Meta.model.__name__,
+            self.request.user.pk,
         )
         save_kwargs = {}
         if hasattr(serializer.Meta.model, "owner"):

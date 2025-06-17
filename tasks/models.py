@@ -105,8 +105,8 @@ class Task(models.Model):
 
 @receiver(models.signals.post_save, sender=Task)
 def update_user_last_task_completed(sender, instance, created, **kwargs):
-    _, _ = sender, created
     """Signal: if the task is just completed, update user.last_task_completed_at"""
+    _, _ = sender, created
     if instance.completed and instance.user:
         instance.user.last_task_completed_at = timezone.now()
         instance.user.save(update_fields=["last_task_completed_at"])

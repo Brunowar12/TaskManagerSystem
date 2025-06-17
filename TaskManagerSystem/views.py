@@ -16,13 +16,13 @@ def custom_exception_handler(exc, context):
     # Adaptive logging depending on the type of error
     if response is not None:
         if response.status_code >= 500:
-            logger.error(f"Server error: {exc}", exc_info=True)
+            logger.error("Server error: %s", exc, exc_info=True)
         elif response.status_code >= 400:
-            logger.warning(f"Client error: {exc}")
+            logger.warning("Client error: %s", exc)
         else:
-            logger.info(f"Other exception: {exc}")
+            logger.info("Other exception: %s", exc)
     else:
-        logger.error(f"Unhandled exception: {exc}", exc_info=True)
+        logger.error("Unhandled exception: %s", exc, exc_info=True)
         return error_response(
             "Internal server error. Please try again later",
             status.HTTP_500_INTERNAL_SERVER_ERROR,

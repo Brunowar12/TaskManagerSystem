@@ -5,10 +5,10 @@ from .models import Task, Category
 
 
 class TaskSerializer(serializers.ModelSerializer):
-    category_name: serializers.StringRelatedField = (
-        serializers.StringRelatedField(source="category.name", read_only=True)
+    category_name: serializers.CharField = (
+        serializers.CharField(source="category.name", read_only=True)
     )
-    user_name: serializers.StringRelatedField = serializers.StringRelatedField(
+    user_name: serializers.CharField = serializers.CharField(
         source="user.username", read_only=True
     )
     completed_by = serializers.SerializerMethodField()
@@ -36,11 +36,13 @@ class TaskSerializer(serializers.ModelSerializer):
             )
         return value
 
-    def get_completed_by(self, obj):
-        return obj.completed_by.id if obj.completed_by else None
+    @staticmethod
+    def get_completed_by(obj):
+        return getattr(obj.completed_by, "id", None)
 
-    def get_completed_by_name(self, obj):
-        return obj.completed_by.username if obj.completed_by else None
+    @staticmethod
+    def get_completed_by_name(obj):
+        return getattr(obj.completed_by, "username", None)
 
 
 class ToggleFavoriteResponseSerializer(serializers.Serializer):
@@ -64,7 +66,7 @@ class MoveTaskResponseSerializer(serializers.Serializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     tasks_count = serializers.SerializerMethodField()
-    user_name: serializers.StringRelatedField = serializers.StringRelatedField(
+    user_name: serializers.CharField = serializers.CharField(
         source="user.username", read_only=True
     )
 
@@ -78,5 +80,6 @@ class CategorySerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Category cannot be empty")
         return value
 
-    def get_tasks_count(self, obj):
-        return obj.tasks.count()
+    @staticmethod
+    def get_tasks_count(obj):
+        return getattr(obj, "tasks_count", obj.tasks.count())

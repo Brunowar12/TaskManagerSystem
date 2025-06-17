@@ -135,6 +135,7 @@ class ProjectViewSet(UserQuerysetMixin, viewsets.ModelViewSet):
 
         try:
             ProjectMembershipService.assign_role(project, target, new_role)
+            return status_response("Role assigned successfully", status.HTTP_200_OK)
         except ValidationError as e:
             return error_response(e.messages[0], exc=e)
         except Exception as e:
